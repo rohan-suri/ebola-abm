@@ -17,13 +17,13 @@ import java.io.IOException;
  */
 public class EbolaABM extends SimState
 {
-    public static Continuous2D world;
-    public static SparseGrid2D householdGrid;
+    public Continuous2D world;
+    public SparseGrid2D householdGrid;
 
-    public static int pop_width;
-    public static int pop_height;
-    public static int total_scaled_pop = 0; //number of agents in the model (scaled from total_pop)
-    public static int total_pop = 0; //actual population (not scaled)
+    public int pop_width;
+    public int pop_height;
+    public int total_scaled_pop = 0; //number of agents in the model (scaled from total_pop)
+    public int total_pop = 0; //actual population (not scaled)
 
     public EbolaABM(long seed)
     {
@@ -34,6 +34,8 @@ public class EbolaABM extends SimState
     public void start()
     {
         super.start();
+        EbolaBuilder.initializeWorld(this, Parameters.LIB_POP_PATH);
+        int i = 0;
     }
 
     @Override
@@ -44,7 +46,8 @@ public class EbolaABM extends SimState
 
     public static void main(String[] args)
     {
-
+        doLoop(EbolaABM.class, args);
+        System.exit(0);
     }
 
 }

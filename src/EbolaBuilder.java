@@ -50,6 +50,7 @@ public class EbolaBuilder
             for(int i = 0; i < 4; i++)//skip the next couple of lines (contain useless metadata)
                 land.readLine();
 
+            int max_pop_density = 0;
             for(int i = 0; i < width; i++)
             {
                 line = land.readLine();
@@ -63,31 +64,38 @@ public class EbolaBuilder
                     {
                         ebolaSim.total_pop += num_people;
 
+                        if(num_people > max_pop_density)
+                            max_pop_density = num_people;
                         num_people = scale(num_people, Parameters.SCALE);//Scale the number of agents to reduce size of simulation
 
                         ebolaSim.total_scaled_pop += num_people;
 
 
-
-                        int tfr = (int)Math.round(Parameters.LIB_TFR);
-
                         while(num_people > 0)
                         {
                             Household h = new Household();
 
-                            int x_coord = (i*Parameters.WORLD_TO_POP_SCALE) + (int)(Math.random() * Parameters.WORLD_TO_POP_SCALE);
-                            int y_coord = (j*Parameters.WORLD_TO_POP_SCALE) + (int)(Math.random() * Parameters.WORLD_TO_POP_SCALE);
+                            int x_coord, y_coord;
+                            do
+                            {
+                                y_coord = (i*Parameters.WORLD_TO_POP_SCALE) + (int)(ebolaSim.random.nextDouble() * Parameters.WORLD_TO_POP_SCALE);
+                                x_coord = (j*Parameters.WORLD_TO_POP_SCALE) + (int)(ebolaSim.random.nextDouble() * Parameters.WORLD_TO_POP_SCALE);
+
+                            } while (false);//ebolaSim.householdGrid.getObjectsAtLocation(x_coord, y_coord) != null);
 
                             ebolaSim.householdGrid.setObjectLocation(h, new Int2D(x_coord, y_coord));
-                            System.out.println("House location: " + x_coord + ", " + y_coord);
-                            for(int m = 0; m < tfr; m++)
+                            //System.out.println("House location: " + x_coord + ", " + y_coord);
+                            int household_size  = pickHouseholdSize();
+
+                            for(int m = 0; m < household_size; m++)
                             {
                                 if(num_people == 0)
                                     break;
                                 num_people--;
                                 Resident r = new Resident();
+                                ebolaSim.schedule.scheduleRepeating(r);
                                 r.household = h;
-                                ebolaSim.world.setObjectLocation(r, new Double2D(x_coord, y_coord));
+                                ebolaSim.world.setObjectLocation(r, new Double2D(x_coord + ebolaSim.random.nextDouble(), y_coord + ebolaSim.random.nextDouble()));
                                 h.addMember(r);
                             }
                         }
@@ -98,6 +106,7 @@ public class EbolaBuilder
             System.out.println("total scaled pop = " + ebolaSim.total_scaled_pop);
             System.out.println("total pop = " + ebolaSim.total_pop);
             System.out.println("expected scaled pop = " + ebolaSim.total_pop*1.0*Parameters.SCALE);
+            System.out.println("max_pop_density = " + max_pop_density);
         }
         catch(FileNotFoundException e)
         {
@@ -121,8 +130,16 @@ public class EbolaBuilder
         double val_scaled = val*scalar;
         scaled = (int)val_scaled;
         val_scaled -= (int)val_scaled;
-        if(Math.random() < val_scaled)
+        if(ebolaSim.random.nextDouble() < val_scaled)
             scaled += 1;
         return scaled;
+    }
+
+    public static int pickHouseholdSize()
+    {
+        double average = Parameters.LIB_AVG_HOUSEHOLD_SIZE;
+        double stdv = Parameters.LIB_HOUSEHOLD_STDEV;
+
+
     }
 }

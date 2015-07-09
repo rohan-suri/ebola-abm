@@ -7,9 +7,9 @@ public class Parameters
 
     public static String LIB_POP_PATH = "data/liberia/liberia_pop.asc"; //Path to liberia population data
 
-    public static double LIB_TFR = 4.81; //Liberia's total fertility rate according to CIA World Factbook (2014)
+    public static double LIB_AVG_HOUSEHOLD_SIZE = 5.1; //Liberia's average household size (2008, http://lisgis.net/pg_img/Population%20size%20210512.pdf)
 
-    public static double LIB_TFR_STDEV =  1.61;//RANDOM, taken from TB model
+    public static double LIB_HOUSEHOLD_STDEV =  1.61;//TODO random, taken from TB model
 
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
 
