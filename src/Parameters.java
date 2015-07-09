@@ -3,9 +3,9 @@
  */
 public class Parameters
 {
-    public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.001; //percentage of total population that agents will be created.  Maximimum of 1
 
-    public static String LIB_POP_PATH = "data/liberia/liberia_pop.asc"; //Path to liberia population data
+    public static String POP_PATH = "data/merged_pop.asc"; //Path to liberia population data
 
     public static double LIB_AVG_HOUSEHOLD_SIZE = 5.1; //Liberia's average household size (2008, http://lisgis.net/pg_img/Population%20size%20210512.pdf)
 

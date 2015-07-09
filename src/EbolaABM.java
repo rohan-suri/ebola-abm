@@ -34,7 +34,7 @@ public class EbolaABM extends SimState
     public void start()
     {
         super.start();
-        EbolaBuilder.initializeWorld(this, Parameters.LIB_POP_PATH);
+        EbolaBuilder.initializeWorld(this, Parameters.POP_PATH);
         int i = 0;
     }
 

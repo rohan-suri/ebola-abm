@@ -139,7 +139,7 @@ public class EbolaBuilder
     {
         double average = Parameters.LIB_AVG_HOUSEHOLD_SIZE;
         double stdv = Parameters.LIB_HOUSEHOLD_STDEV;
-
-
+        return (int)Stats.normalToLognormal(Stats.calcLognormalMu(average, stdv), Stats.calcLognormalSigma(average, stdv),
+                ebolaSim.random.nextGaussian());
     }
 }
