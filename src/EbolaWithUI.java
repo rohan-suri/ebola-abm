@@ -59,10 +59,15 @@ public class EbolaWithUI extends GUIState
         });
         display.attach(residentPortrayal, "Residents");
 
-        FieldPortrayal2D businessPortrayal = new SparseGridPortrayal2D();
-        businessPortrayal.setField(((EbolaABM)state).householdGrid);
-        businessPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(0, 128, 255), 1.0, false));
-        display.attach(businessPortrayal, "Businesses");
+        FieldPortrayal2D householdortrayal = new SparseGridPortrayal2D();
+        householdortrayal.setField(((EbolaABM)state).householdGrid);
+        householdortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(0, 128, 255), 1.0, false));
+        display.attach(householdortrayal, "Household");
+
+        FieldPortrayal2D urbanPortrayal = new SparseGridPortrayal2D();
+        urbanPortrayal.setField(((EbolaABM)state).urbanAreasGrid);
+        urbanPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
+        display.attach(urbanPortrayal, "Urban Area");
     }
 
     @Override

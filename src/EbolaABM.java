@@ -19,11 +19,17 @@ public class EbolaABM extends SimState
 {
     public Continuous2D world;
     public SparseGrid2D householdGrid;
+    public SparseGrid2D urbanAreasGrid;
+
 
     public int pop_width;
     public int pop_height;
     public int total_scaled_pop = 0; //number of agents in the model (scaled from total_pop)
     public int total_pop = 0; //actual population (not scaled)
+    int urban_pop = 0;
+    int rural_pop = 0;
+
+    public Bag residents;
 
     public EbolaABM(long seed)
     {
@@ -34,6 +40,7 @@ public class EbolaABM extends SimState
     public void start()
     {
         super.start();
+        residents = new Bag();
         EbolaBuilder.initializeWorld(this, Parameters.POP_PATH);
         int i = 0;
     }

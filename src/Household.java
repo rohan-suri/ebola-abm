@@ -6,6 +6,8 @@ import sim.util.Bag;
 public class Household
 {
     private Bag members;
+    public int x;
+    public int y;
 
     public Household()
     {

@@ -6,12 +6,35 @@ import sim.engine.Steppable;
  */
 public class Resident implements Steppable
 {
-    public int x;
-    public int y;
+    public double x;
+    public double y;
     public Household household;
+    private boolean isUrban;//true - urban, false - rural
+
+    public int getPop_density()
+    {
+        return pop_density;
+    }
+
+    public void setPop_density(int pop_density)
+    {
+        this.pop_density = pop_density;
+    }
+
+    private int pop_density;
 
     @Override
     public void step(SimState state) {
         //TODO
+    }
+
+    public void setIsUrban(boolean val)
+    {
+        isUrban = val;
+    }
+
+    public boolean getIsUrban()
+    {
+        return isUrban;
     }
 }
