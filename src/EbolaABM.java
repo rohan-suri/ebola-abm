@@ -26,8 +26,13 @@ public class EbolaABM extends SimState
     public int pop_height;
     public int total_scaled_pop = 0; //number of agents in the model (scaled from total_pop)
     public int total_pop = 0; //actual population (not scaled)
-    int urban_pop = 0;
-    int rural_pop = 0;
+    int total_urban_pop = 0;
+    int lib_urban_pop = 0;
+    int sl_urban_pop = 0;
+    int guinea_urban_pop = 0;
+    int total_lib_pop = 0;
+    int total_sl_pop = 0;
+    int total_guinea_pop = 0;
 
     public Bag residents;
 
@@ -41,7 +46,7 @@ public class EbolaABM extends SimState
     {
         super.start();
         residents = new Bag();
-        EbolaBuilder.initializeWorld(this, Parameters.POP_PATH);
+        EbolaBuilder.initializeWorld(this, Parameters.POP_PATH, Parameters.ADMIN_PATH);
         int i = 0;
     }
 

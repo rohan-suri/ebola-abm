@@ -9,6 +9,16 @@ public class Household
     public int x;
     public int y;
 
+    public int getCountry() {
+        return country;
+    }
+
+    public void setCountry(int country) {
+        this.country = country;
+    }
+
+    private int country;
+
     public Household()
     {
         super();

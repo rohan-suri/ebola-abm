@@ -1,4 +1,3 @@
-import sim.engine.SimState;
 import sim.field.continuous.Continuous2D;
 import sim.field.grid.SparseGrid2D;
 import sim.util.Double2D;
@@ -16,31 +15,36 @@ public class EbolaBuilder
 {
     public static EbolaABM ebolaSim;
 
-    public static void initializeWorld(EbolaABM sim, String pop_file)
+    public static void initializeWorld(EbolaABM sim, String pop_file, String admin_file)
     {
         ebolaSim = sim;
 
-        addHousesAndResidents(pop_file);
+        addHousesAndResidents(pop_file, admin_file);
     }
 
-    private static void addHousesAndResidents(String pop_file)
+    private static void addHousesAndResidents(String pop_file, String admin_file)
     {
         try
         {
-            // buffer reader - read ascii file
-            BufferedReader land = new BufferedReader(new FileReader(pop_file));
-            String line;
+            // buffer reader - read ascii file for population data
+            BufferedReader pop_reader = new BufferedReader(new FileReader(pop_file));
+            String pop_line;
 
-            // first read the dimensions
-            line = land.readLine(); // read line for width
-            String[] curr_tokens = line.split("\\s+");
+            //buffer reader - read ascii file for admin data
+            BufferedReader admin_reader = new BufferedReader(new FileReader(admin_file));
+            String admin_line;
+            String[] admin_tokens;
+
+            // first read the dimensions - admin and pop should be same height and width
+            pop_line = pop_reader.readLine(); // read line for width
+            String[] curr_tokens = pop_line.split("\\s+");
             String[] prev_tokens = null;
             String[] next_tokens = null;
             int width = Integer.parseInt(curr_tokens[1]);
             ebolaSim.pop_width = width;
 
-            line = land.readLine();
-            curr_tokens = line.split("\\s+");
+            pop_line = pop_reader.readLine();
+            curr_tokens = pop_line.split("\\s+");
             int height = Integer.parseInt(curr_tokens[1]);
             ebolaSim.pop_height = height;
 
@@ -51,93 +55,121 @@ public class EbolaBuilder
             ebolaSim.urbanAreasGrid = new SparseGrid2D((int)(width), (int)(height));
 
             for(int i = 0; i < 4; i++)//skip the next couple of lines (contain useless metadata)
-                land.readLine();
-            line = land.readLine();
-            curr_tokens = line.split("\\s+");
+                pop_reader.readLine();
+
+            for(int i = 0; i < 6; i++)//skip useless metadata
+                admin_reader.readLine();
+
+            pop_line = pop_reader.readLine();
+            pop_line = pop_line.substring(1);
+            curr_tokens = pop_line.split("\\s+");
+            System.out.println(curr_tokens.length);
             int max_pop_density = 0;
             for(int i = 0; i < height; i++)
             {
-                if(i != 0)
-                {
-                    prev_tokens = curr_tokens;
-                    curr_tokens = next_tokens;
-                }
-
-                if(i != width - 1)
-                {
-                    line = land.readLine();
-                    next_tokens = line.split("\\s+");
-                }
-
-                for(int j = 0; j < curr_tokens.length; j++)
-                {
-                    if(curr_tokens[j].equals(""))
-                        continue;
-                    int num_people = Integer.parseInt(curr_tokens[j]);
-                    if(num_people > 0)
+                    if(i != 0)
                     {
-                        ebolaSim.total_pop += num_people;
+                        prev_tokens = curr_tokens;
+                        curr_tokens = next_tokens;
+                    }
 
-                        if(num_people > max_pop_density)
-                            max_pop_density = num_people;
-                        int scaled_num_people = scale(num_people, Parameters.SCALE);//Scale the number of agents to reduce size of simulation
+                    if(i != width - 1)
+                    {
+                        pop_line = pop_reader.readLine();
+                        pop_line = pop_line.substring(1);
+                        next_tokens = pop_line.split("\\s+");
+                    }
 
-                        ebolaSim.total_scaled_pop += scaled_num_people;
-
-                        if(num_people > Parameters.MIN_POP_URBAN || nearbyUrban(prev_tokens, curr_tokens, next_tokens, i, j))//determine if location is urban
+                    admin_line = admin_reader.readLine();
+                    admin_tokens = admin_line.split("\\s+");
+                    for(int j = 0; j < curr_tokens.length; j++)
+                    {
+                        int num_people = Integer.parseInt(curr_tokens[j]);
+                        if(num_people > 0)
                         {
-                            ebolaSim.urbanAreasGrid.setObjectLocation(new Object(), j, i);
-                            ebolaSim.urban_pop += num_people;
-                        }
+                            ebolaSim.total_pop += num_people;
 
+                            if(num_people > max_pop_density)
+                                max_pop_density = num_people;
+                            int scaled_num_people = scale(num_people, Parameters.SCALE);//Scale the number of agents to reduce size of simulation
 
-                        while(scaled_num_people > 0)
-                        {
-                            Household h = new Household();
+                            ebolaSim.total_scaled_pop += scaled_num_people;
 
-                            int x_coord, y_coord;
-                            //randomly pick a space within the sqare kilometer
-                            do
+                            //determine current country
+                            int country = determineCountry(Integer.parseInt(admin_tokens[j]));
+
+                            if(country == Parameters.GUINEA)
+                                ebolaSim.total_guinea_pop += num_people;
+                            else if(country == Parameters.LIBERIA)
+                                ebolaSim.total_lib_pop += num_people;
+                            else
+                                ebolaSim.total_sl_pop += num_people;
+
+                            if(num_people > Parameters.MIN_POP_URBAN || nearbyUrban(prev_tokens, curr_tokens, next_tokens, i, j))//determine if location is urban
                             {
-                                y_coord = (i*Parameters.WORLD_TO_POP_SCALE) + (int)(ebolaSim.random.nextDouble() * Parameters.WORLD_TO_POP_SCALE);
-                                x_coord = (j*Parameters.WORLD_TO_POP_SCALE) + (int)(ebolaSim.random.nextDouble() * Parameters.WORLD_TO_POP_SCALE);
+                                ebolaSim.urbanAreasGrid.setObjectLocation(new Object(), j, i);
+                                ebolaSim.total_urban_pop += num_people;
 
-                            } while (ebolaSim.householdGrid.getObjectsAtLocation(x_coord, y_coord) != null);
+                                if(country == Parameters.GUINEA)
+                                    ebolaSim.guinea_urban_pop += num_people;
+                                else if(country == Parameters.LIBERIA)
+                                    ebolaSim.lib_urban_pop += num_people;
+                                else
+                                    ebolaSim.sl_urban_pop += num_people;
+                            }
 
-                            h.x = x_coord;
-                            h.y = y_coord;
-                            ebolaSim.householdGrid.setObjectLocation(h, new Int2D(x_coord, y_coord));
-                            //System.out.println("House location: " + x_coord + ", " + y_coord);
-                            int household_size  = pickHouseholdSize();//use log distribution to pick correct household size
-
-                            //add members to the household
-                            for(int m = 0; m < household_size; m++)
+                            while(scaled_num_people > 0)
                             {
-                                if(num_people == 0)
-                                    break;
-                                scaled_num_people--;
-                                Resident r = new Resident();
-                                ebolaSim.schedule.scheduleRepeating(r);
-                                r.household = h;
-                                double ran_y = ebolaSim.random.nextDouble();//Add x jitter
-                                double ran_x = ebolaSim.random.nextDouble();//Add y jitter
-                                r.x = x_coord + ran_x;
-                                r.y = y_coord + ran_y;
-                                r.setPop_density(scaled_num_people);
-                                ebolaSim.world.setObjectLocation(r, new Double2D(x_coord + ran_x, y_coord + ran_y));
-                                h.addMember(r);//add the member to the houshold
+                                Household h = new Household();
+
+                                int x_coord, y_coord;
+                                //randomly pick a space within the sqare kilometer
+                                do
+                                {
+                                    y_coord = (i*Parameters.WORLD_TO_POP_SCALE) + (int)(ebolaSim.random.nextDouble() * Parameters.WORLD_TO_POP_SCALE);
+                                    x_coord = (j*Parameters.WORLD_TO_POP_SCALE) + (int)(ebolaSim.random.nextDouble() * Parameters.WORLD_TO_POP_SCALE);
+
+                                } while (ebolaSim.householdGrid.getObjectsAtLocation(x_coord, y_coord) != null);
+
+                                h.x = x_coord;
+                                h.y = y_coord;
+                                h.setCountry(country);
+                                ebolaSim.householdGrid.setObjectLocation(h, new Int2D(x_coord, y_coord));
+                                //System.out.println("House location: " + x_coord + ", " + y_coord);
+                                int household_size  = pickHouseholdSize(country);//use log distribution to pick correct household size
+
+                                //add members to the household
+                                for(int m = 0; m < household_size; m++)
+                                {
+                                    if(num_people == 0)
+                                        break;
+                                    scaled_num_people--;
+                                    Resident r = new Resident();
+                                    ebolaSim.schedule.scheduleRepeating(r);
+                                    r.household = h;
+                                    double ran_y = ebolaSim.random.nextDouble();//Add x jitter
+                                    double ran_x = ebolaSim.random.nextDouble();//Add y jitter
+                                    r.x = x_coord + ran_x;
+                                    r.y = y_coord + ran_y;
+                                    r.setPop_density(scaled_num_people);
+                                    ebolaSim.world.setObjectLocation(r, new Double2D(x_coord + ran_x, y_coord + ran_y));
+                                    h.addMember(r);//add the member to the houshold
+                                }
                             }
                         }
                     }
-                }
             }
 
             System.out.println("total scaled pop = " + ebolaSim.total_scaled_pop);
             System.out.println("total pop = " + ebolaSim.total_pop);
             System.out.println("expected scaled pop = " + ebolaSim.total_pop*1.0*Parameters.SCALE);
             System.out.println("max_pop_density = " + max_pop_density);
-            System.out.println("urban_pop = " + ebolaSim.urban_pop);
-            System.out.println("rural_pop = " + (ebolaSim.total_pop - ebolaSim.urban_pop));
+            System.out.println("total_urban_pop = " + ebolaSim.total_urban_pop);
+            System.out.println("total_rural_pop = " + (ebolaSim.total_pop - ebolaSim.total_urban_pop));
+            System.out.println("sierra_leone urban percentage = " + ebolaSim.sl_urban_pop*1.0/ebolaSim.total_sl_pop);
+            System.out.println("liberia urban percentage = " + ebolaSim.lib_urban_pop*1.0/ebolaSim.total_lib_pop);
+            System.out.println("guinea urban percentage = " + ebolaSim.guinea_urban_pop*1.0/ebolaSim.total_guinea_pop);
+
         }
         catch(FileNotFoundException e)
         {
@@ -147,6 +179,23 @@ public class EbolaBuilder
         {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * @param county_id Id of county
+     * @return country, 0 - Guinea, 1 - Sierra Leone, 2 - Liberia
+     */
+    private static int determineCountry(int county_id)
+    {
+        if(county_id >= Parameters.MIN_GUINEA_COUNTY_ID && county_id <= Parameters.MAX_GUINEA_COUNTY_ID)
+            return Parameters.GUINEA;
+        else if(county_id >= Parameters.MIN_SL_COUNTY_ID && county_id <= Parameters.MAX_SL_COUNTY_ID)
+            return Parameters.SL;
+        else //if(county_id >= Parameters.MIN_LIB_COUNTY_ID && county_id <= Parameters.MAX_LIB_COUNTY_ID)
+            return Parameters.LIBERIA;
+
+        //System.out.println("!!!!!!ERRORRORORORORO!!!!!!! " + county_id);
+        //return 10000;
     }
 
     private static boolean nearbyUrban(String[] prev_tokens, String[] curr_tokens, String[] next_tokens, int i, int j)
@@ -228,9 +277,16 @@ public class EbolaBuilder
         return scaled;
     }
 
-    public static int pickHouseholdSize()
+    public static int pickHouseholdSize(int country)
     {
-        double average = Parameters.LIB_AVG_HOUSEHOLD_SIZE;
+        double average;
+        if(country == Parameters.GUINEA)
+            average = Parameters.GUINEA_AVG_HOUSEHOLD_SIZE;
+        else if(country == Parameters.LIBERIA)
+            average = Parameters.LIB_AVG_HOUSEHOLD_SIZE;
+        else
+            average = Parameters.SL_AVG_HOUSEHOLD_SIZE;
+
         double stdv = Parameters.LIB_HOUSEHOLD_STDEV;
         return (int)Stats.normalToLognormal(Stats.calcLognormalMu(average, stdv), Stats.calcLognormalSigma(average, stdv),
                 ebolaSim.random.nextGaussian());
