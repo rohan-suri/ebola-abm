@@ -11,6 +11,16 @@ public class Resident implements Steppable
     public Household household;
     private boolean isUrban;//true - urban, false - rural
 
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    int age;
+
     public int getPop_density()
     {
         return pop_density;

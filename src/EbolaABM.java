@@ -46,7 +46,7 @@ public class EbolaABM extends SimState
     {
         super.start();
         residents = new Bag();
-        EbolaBuilder.initializeWorld(this, Parameters.POP_PATH, Parameters.ADMIN_PATH);
+        EbolaBuilder.initializeWorld(this, Parameters.POP_PATH, Parameters.ADMIN_PATH, Parameters.AGE_DIST_PATH);
         int i = 0;
     }
 

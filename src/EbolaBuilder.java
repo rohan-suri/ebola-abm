@@ -3,10 +3,13 @@ import sim.field.grid.SparseGrid2D;
 import sim.util.Double2D;
 import sim.util.Int2D;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.text.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import net.sf.csv4j.*;
 
 /**
  * Created by rohansuri on 7/8/15.
@@ -15,11 +18,65 @@ public class EbolaBuilder
 {
     public static EbolaABM ebolaSim;
 
-    public static void initializeWorld(EbolaABM sim, String pop_file, String admin_file)
+    /**
+     * Contains keys that are the integer ids for each of the country's provinces/counties.
+     * The arraylist is has distributions for the following age groups in the following order by increasing intervals of five years:
+     * 0-4, 5-9, 10-14, 15-19, 20-24, 25-29, 30-34, 35-39, ... , 70-74, 75-80, 80+
+     * A total of 17 groups, distribution is cumalitive so the last group should be ~ 1.0
+     */
+    private static HashMap<Integer, ArrayList<Double>> age_dist;
+
+    public static void initializeWorld(EbolaABM sim, String pop_file, String admin_file, String age_dist_file)
     {
         ebolaSim = sim;
-
+        age_dist = new HashMap<Integer, ArrayList<Double>>();
+        setUpAgeDist(age_dist_file);
         addHousesAndResidents(pop_file, admin_file);
+    }
+
+    private static void setUpAgeDist(String age_dist_file)
+    {
+        try
+        {
+            // buffer reader for age distribution data
+            CSVReader csvReader = new CSVReader(new FileReader(new File(age_dist_file)));
+            csvReader.readLine();//skip the headers
+            List<String> line = csvReader.readLine();
+            while(!line.isEmpty())
+            {
+                //read in the county ids
+                int county_id = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(0)).intValue();
+                //relevant info is from 5 - 21
+                ArrayList<Double> list = new ArrayList<Double>();
+                //double sum = 0;
+                for(int i = 5; i <= 21; i++)
+                {
+                    list.add(Double.parseDouble(line.get(i)));
+                    //sum += Double.parseDouble(line.get(i));
+                    //Use cumalitive probability
+                    if(i != 5)
+                        list.set(i-5, list.get(i-5) + list.get(i-5 - 1));
+                    //System.out.print(list.get(i-5));
+                }
+                //System.out.println("sum = " + sum);
+                //System.out.println();
+                //now add it to the hashmap
+                age_dist.put(county_id, list);
+                line = csvReader.readLine();
+            }
+        }
+        catch(FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch(java.text.ParseException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private static void addHousesAndResidents(String pop_file, String admin_file)
@@ -97,7 +154,8 @@ public class EbolaBuilder
 
                             //determine current country
                             int country = determineCountry(Integer.parseInt(admin_tokens[j]));
-
+                            //county id
+                            int county_id = Integer.parseInt(admin_tokens[j]);
                             if(country == Parameters.GUINEA)
                                 ebolaSim.total_guinea_pop += num_people;
                             else if(country == Parameters.LIBERIA)
@@ -152,6 +210,7 @@ public class EbolaBuilder
                                     r.x = x_coord + ran_x;
                                     r.y = y_coord + ran_y;
                                     r.setPop_density(scaled_num_people);
+                                    r.setAge(pick_age(age_dist, county_id));
                                     ebolaSim.world.setObjectLocation(r, new Double2D(x_coord + ran_x, y_coord + ran_y));
                                     h.addMember(r);//add the member to the houshold
                                 }
@@ -290,5 +349,26 @@ public class EbolaBuilder
         double stdv = Parameters.LIB_HOUSEHOLD_STDEV;
         return (int)Stats.normalToLognormal(Stats.calcLognormalMu(average, stdv), Stats.calcLognormalSigma(average, stdv),
                 ebolaSim.random.nextGaussian());
+    }
+
+    /**
+     * Picks an age based on the the age_dist hashmap.  Pick the highest age within the range.
+     * For example if the range is 0-4, it picks 4.
+     */
+    private static int pick_age(HashMap<Integer, ArrayList<Double>> age_dist, int county_id)
+    {
+        double rand = ebolaSim.random.nextDouble();
+        if(county_id == -9999)
+            county_id = Parameters.MIN_LIB_COUNTY_ID;
+        ArrayList<Double> dist = age_dist.get(county_id);
+        int i;
+        for(i = 0; i < dist.size(); i++)
+        {
+            if(rand < dist.get(i))
+                break;
+        }
+        int age = i*5 + 4;
+        System.out.println(age + " years");
+        return age;
     }
 }

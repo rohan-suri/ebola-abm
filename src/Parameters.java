@@ -3,7 +3,7 @@
  */
 public class Parameters
 {
-    public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.001; //percentage of total population that agents will be created.  Maximimum of 1
     public static int WORLD_TO_POP_SCALE = 114; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
 
