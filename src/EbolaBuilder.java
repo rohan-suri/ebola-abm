@@ -88,7 +88,7 @@ public class EbolaBuilder
         // set up the locations and nearest node capability
         long time  = System.currentTimeMillis();
         System.out.println("Starting nearest nodes");
-        //ebolaSim.closestNodes = setupNearestNodes(ebolaSim);
+        ebolaSim.closestNodes = setupNearestNodes(ebolaSim);
         System.out.println("time = " + ((System.currentTimeMillis()-time)/1000/60) + " minutes");
     }
 
@@ -150,7 +150,7 @@ public class EbolaBuilder
                 continue;
 
             // find that node or establish it if it doesn't yet exist
-            Bag ns = ebolaSim.nodes.getObjectsAtLocation(xint*Parameters.WORLD_TO_POP_SCALE, yint*Parameters.WORLD_TO_POP_SCALE);
+            Bag ns = ebolaSim.nodes.getObjectsAtLocation(xint, yint);
             Node n;
             if (ns == null)
             {

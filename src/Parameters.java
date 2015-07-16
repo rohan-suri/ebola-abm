@@ -12,7 +12,7 @@ public class Parameters
     //-------File paths-------//
     public static String POP_PATH = "data/merged_pop.asc"; //Path to liberia population data (LandScan 2013)
     public static String ADMIN_PATH = "data/merged_admin.asc";//Path to file that has administration and county boundaries for all three countries (LandScan 2013)
-    public static String AGE_DIST_PATH = "data/All_Age_distribution.csv";//Path to file that has age distribution for each of the counties and provinces (LandScan 2013)
+    public static String AGE_DIST_PATH = "data/All_Age_Distribution.csv";//Path to file that has age distribution for each of the counties and provinces (LandScan 2013)
     public static String ROADS_SHAPE_PATH = "data/roads_shapefile/all_roads.shp";
 
 

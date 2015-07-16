@@ -91,7 +91,14 @@ public class EbolaWithUI extends GUIState
 
         FieldPortrayal2D roadPortrayal = new SparseGridPortrayal2D();
         roadPortrayal.setField(((EbolaABM)state).nodes);
-        roadPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 51, 253), 1.0, false));
+        roadPortrayal.setPortrayalForAll(new OvalPortrayal2D(new Color(255, 64, 240), 1.0, true)
+        {
+            @Override
+            public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
+            {
+                super.draw(object, graphics, info);
+            }
+        });
         display.attach(roadPortrayal, "Road Node");
 
         //---------------------Adding the road portrayal------------------------------
