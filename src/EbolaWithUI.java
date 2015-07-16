@@ -5,6 +5,8 @@ import sim.display.GUIState;
 import sim.portrayal.DrawInfo2D;
 import sim.portrayal.FieldPortrayal2D;
 import sim.portrayal.continuous.ContinuousPortrayal2D;
+import sim.portrayal.geo.GeomPortrayal;
+import sim.portrayal.geo.GeomVectorFieldPortrayal;
 import sim.portrayal.grid.SparseGridPortrayal2D;
 import sim.portrayal.simple.OvalPortrayal2D;
 import sim.portrayal.simple.RectanglePortrayal2D;
@@ -82,10 +84,21 @@ public class EbolaWithUI extends GUIState
         });
         display.attach(householdortrayal, "Household");
 
-        FieldPortrayal2D urbanPortrayal = new SparseGridPortrayal2D();
-        urbanPortrayal.setField(((EbolaABM)state).urbanAreasGrid);
-        urbanPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
-        display.attach(urbanPortrayal, "Urban Area");
+//        FieldPortrayal2D urbanPortrayal = new SparseGridPortrayal2D();
+//        urbanPortrayal.setField(((EbolaABM)state).urbanAreasGrid);
+//        urbanPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
+//        display.attach(urbanPortrayal, "Urban Area");
+
+        FieldPortrayal2D roadPortrayal = new SparseGridPortrayal2D();
+        roadPortrayal.setField(((EbolaABM)state).nodes);
+        roadPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 51, 253), 1.0, false));
+        display.attach(roadPortrayal, "Road Node");
+
+        //---------------------Adding the road portrayal------------------------------
+        GeomVectorFieldPortrayal roadLinkPortrayal = new GeomVectorFieldPortrayal();
+        roadLinkPortrayal.setField(((EbolaABM)state).roadLinks);
+        roadLinkPortrayal.setPortrayalForAll(new GeomPortrayal(Color.BLACK, 2.0, true));
+        display.attach(roadLinkPortrayal, "Roads");
     }
 
     @Override

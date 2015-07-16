@@ -1,5 +1,6 @@
 import sim.engine.SimState;
 import sim.engine.Steppable;
+import sim.util.Double2D;
 
 /**
  * Created by rohansuri on 7/7/15.
@@ -11,15 +12,17 @@ public class Resident implements Steppable
     public Household household;
     private boolean isUrban;//true - urban, false - rural
 
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
     int age;
+
+    public EbolaBuilder.Node getNearestNode() {
+        return nearestNode;
+    }
+
+    public void setNearestNode(EbolaBuilder.Node nearestNode) {
+        this.nearestNode = nearestNode;
+    }
+
+    public EbolaBuilder.Node nearestNode;
 
     public int getPop_density()
     {
@@ -34,8 +37,12 @@ public class Resident implements Steppable
     private int pop_density;
 
     @Override
-    public void step(SimState state) {
-        //TODO
+    public void step(SimState state)
+    {
+        EbolaABM ebolaSim = (EbolaABM)state;
+        //ebolaSim.world.setObjectLocation(this, new Double2D(this.x+ebolaSim.random.nextDouble(), this.y+ebolaSim.random.nextDouble()));
+        if(nearestNode == null)
+            nearestNode = (EbolaBuilder.Node)ebolaSim.closestNodes.get((int)x,(int)y);
     }
 
     public void setIsUrban(boolean val)
@@ -46,5 +53,13 @@ public class Resident implements Steppable
     public boolean getIsUrban()
     {
         return isUrban;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 }
