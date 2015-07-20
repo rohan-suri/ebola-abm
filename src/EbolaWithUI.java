@@ -56,7 +56,7 @@ public class EbolaWithUI extends GUIState
             public void draw (Object object, Graphics2D graphics, DrawInfo2D info)
             {
                 paint = new Color(20, 4, 255);
-                super.scale = 1;
+                super.scale = 1.0;
                 super.draw(object, graphics, info);
             }
         });

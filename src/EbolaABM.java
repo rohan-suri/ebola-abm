@@ -2,6 +2,8 @@ import com.sun.corba.se.impl.orb.ParserAction;
 import sim.engine.SimState;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomVectorField;
+import sim.field.grid.DoubleGrid2D;
+import sim.field.grid.IntGrid2D;
 import sim.field.grid.ObjectGrid2D;
 import sim.field.grid.SparseGrid2D;
 import sim.field.network.Network;
@@ -25,7 +27,8 @@ public class EbolaABM extends SimState
     public Network roadNetwork = new Network();
     public GeomVectorField roadLinks;
     public SparseGrid2D nodes;
-    public ObjectGrid2D closestNodes; // the road nodes closest to each of the
+    public DoubleGrid2D road_cost; //accumalated cost to get to nearest node on the road network
+
 
     public int pop_width;
     public int pop_height;

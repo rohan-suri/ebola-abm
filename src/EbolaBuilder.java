@@ -5,15 +5,13 @@ import com.vividsolutions.jts.geom.MultiLineString;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomGridField;
 import sim.field.geo.GeomVectorField;
-import sim.field.grid.ObjectGrid2D;
-import sim.field.grid.SparseGrid2D;
+import sim.field.grid.*;
 import sim.field.network.Edge;
 import sim.field.network.Network;
+import sim.io.geo.ArcInfoASCGridExporter;
 import sim.io.geo.ArcInfoASCGridImporter;
 import sim.io.geo.ShapeFileImporter;
-import sim.util.Bag;
-import sim.util.Double2D;
-import sim.util.Int2D;
+import sim.util.*;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -48,12 +46,12 @@ public class EbolaBuilder
         setUpAgeDist(age_dist_file);
         addHousesAndResidents(pop_file, admin_file);
 
-        ebolaSim.closestNodes = new ObjectGrid2D(ebolaSim.world_width, ebolaSim.world_height);
         ebolaSim.nodes = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
         ebolaSim.roadNetwork = new Network();
         ebolaSim.roadLinks = new GeomVectorField(ebolaSim.world_width, ebolaSim.world_height);
         System.out.println("(" + ebolaSim.world_width + ", " + ebolaSim.world_height + ")");
         GeomGridField gridField = new GeomGridField();//just to align mbr
+        GeomGridField roads_grid = null;
         try
         {
             Bag masked = new Bag();
@@ -73,6 +71,18 @@ public class EbolaBuilder
 
             ebolaSim.roadLinks.setMBR(globalMBR);
             gridField.setMBR(globalMBR);
+            long t = System.currentTimeMillis();
+            //Read in the road cost file
+            GeomGridField rcGeom = new GeomGridField();
+            InputStream road_cost_stream = new FileInputStream(Parameters.ROADS_COST_PATH);
+            ArcInfoASCGridImporter.read(road_cost_stream, GeomGridField.GridDataType.DOUBLE, rcGeom);
+            ebolaSim.road_cost = (DoubleGrid2D)rcGeom.getGrid();
+            System.out.println("Time " + ((System.currentTimeMillis()-t)/1000/60) + " minutes");
+
+            //TEMP TODO
+//            roads_grid = new GeomGridField();
+//            InputStream is = new FileInputStream("data/all_roads.asc");
+//            ArcInfoASCGridImporter.read(is, GeomGridField.GridDataType.INTEGER, roads_grid);
         }
         catch(FileNotFoundException e)
         {
@@ -88,8 +98,24 @@ public class EbolaBuilder
         // set up the locations and nearest node capability
         long time  = System.currentTimeMillis();
         System.out.println("Starting nearest nodes");
-        ebolaSim.closestNodes = setupNearestNodes(ebolaSim);
-        System.out.println("time = " + ((System.currentTimeMillis()-time)/1000/60) + " minutes");
+        //ebolaSim.closestNodes = setupNearestNodes(ebolaSim);
+        //TEMP AF
+//        IntGrid2D grid = (IntGrid2D)roads_grid.getGrid();
+//        for(int i = 0; i < grid.getWidth(); i++)
+//            for(int j = 0; j < grid.getHeight(); j++)
+//                if(grid.get(i,j) != -9999)
+//                    grid.set(i,j,0);
+//        roads_grid.setGrid(grid);
+//        //now write it
+//        try {
+//            BufferedWriter writer = new BufferedWriter( new FileWriter("all_roads_zero.asc") );
+//            ArcInfoASCGridExporter.write(roads_grid, writer);
+//            writer.close();
+//        } catch (IOException ex) {
+//        /* handle exception */
+//            ex.printStackTrace();
+//        }
+        System.out.println("time = " + ((System.currentTimeMillis() - time) / 1000 / 60) + " minutes");
     }
 
     static void extractFromRoadLinks(GeomVectorField roadLinks, EbolaABM ebolaSim)
@@ -364,11 +390,11 @@ public class EbolaBuilder
                                     r.household = h;
                                     double ran_y = ebolaSim.random.nextDouble();//Add x jitter
                                     double ran_x = ebolaSim.random.nextDouble();//Add y jitter
-                                    r.x = x_coord + ran_x;
-                                    r.y = y_coord + ran_y;
+                                    r.x = x_coord;
+                                    r.y = y_coord;
                                     r.setPop_density(scaled_num_people);
                                     r.setAge(pick_age(age_dist, county_id));
-                                    ebolaSim.world.setObjectLocation(r, new Double2D(x_coord + ran_x, y_coord + ran_y));
+                                    ebolaSim.world.setObjectLocation(r, new Double2D(x_coord, y_coord));
                                     h.addMember(r);//add the member to the houshold
                                 }
                             }

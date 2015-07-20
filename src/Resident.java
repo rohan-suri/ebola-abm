@@ -1,6 +1,9 @@
 import sim.engine.SimState;
 import sim.engine.Steppable;
+import sim.field.grid.Grid2D;
 import sim.util.Double2D;
+import sim.util.DoubleBag;
+import sim.util.IntBag;
 
 /**
  * Created by rohansuri on 7/7/15.
@@ -14,15 +17,6 @@ public class Resident implements Steppable
 
     int age;
 
-    public EbolaBuilder.Node getNearestNode() {
-        return nearestNode;
-    }
-
-    public void setNearestNode(EbolaBuilder.Node nearestNode) {
-        this.nearestNode = nearestNode;
-    }
-
-    public EbolaBuilder.Node nearestNode;
 
     public int getPop_density()
     {
@@ -39,10 +33,24 @@ public class Resident implements Steppable
     @Override
     public void step(SimState state)
     {
-        EbolaABM ebolaSim = (EbolaABM)state;
-        //ebolaSim.world.setObjectLocation(this, new Double2D(this.x+ebolaSim.random.nextDouble(), this.y+ebolaSim.random.nextDouble()));
-        if(nearestNode == null)
-            nearestNode = (EbolaBuilder.Node)ebolaSim.closestNodes.get((int)x,(int)y);
+        EbolaABM ebolaSim = (EbolaABM) state;
+        DoubleBag val = new DoubleBag();
+        IntBag x = new IntBag();
+        IntBag y = new IntBag();
+
+        ebolaSim.road_cost.getRadialNeighbors((int)this.x, (int)this.y, 1, Grid2D.BOUNDED, true, val, x, y);
+        double min = Double.MAX_VALUE;
+        int index = 0;
+        for (int i = 0; i < val.size(); i++)
+            if (val.get(i) < min)
+            {
+                min = val.get(i);
+                index = i;
+            }
+        this.x = x.get(index);
+        this.y = y.get(index);
+
+        ebolaSim.world.setObjectLocation(this, new Double2D(this.x, this.y));
     }
 
     public void setIsUrban(boolean val)
