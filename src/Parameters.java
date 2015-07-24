@@ -3,7 +3,7 @@
  */
 public class Parameters
 {
-    public static double SCALE = 0.005; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.001; //percentage of total population that agents will be created.  Maximimum of 1
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
     public static double POP_BLOCK_METERS = 926.1;//Height and width of one population block. (http://www.esri.com/news/arcuser/0400/wdside.html)
@@ -13,8 +13,9 @@ public class Parameters
     public static String POP_PATH = "data/merged_pop.asc"; //Path to liberia population data (LandScan 2013)
     public static String ADMIN_PATH = "data/merged_admin.asc";//Path to file that has administration and county boundaries for all three countries (LandScan 2013)
     public static String AGE_DIST_PATH = "data/All_Age_Distribution.csv";//Path to file that has age distribution for each of the counties and provinces (LandScan 2013)
-    public static String ROADS_SHAPE_PATH = "data/roads_shapefile/all_roads.shp";
-    public static String ROADS_COST_PATH = "data/roads_cost.asc";
+    public static String ROADS_SHAPE_PATH = "data/roads_shapefile/all_roads.shp";//Path to vector data for all roads
+    public static String ROADS_COST_PATH = "data/road_cost.asc";//Path to cost distance data for all nodes in the network
+    public static String SCHOOLS_PATH = "data/schools_shapefile/all_schools.shp";//Path to shapefile that has location of all primary schools
 
     public static double MIN_POP_URBAN = 575.45;//Minimum population density per 926 meters or 1000 people per square mile to be urban. Source: http://cber.cba.ua.edu/asdc/urban_rural.html
     public static double MIN_POP_SURROUNDING = 287.73;//Minimum surrounding population density per 926 meters.  An urban district must be surrounded by

@@ -1,3 +1,9 @@
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartFrame;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
 import sim.display.Console;
 import sim.display.Controller;
 import sim.display.Display2D;
@@ -37,6 +43,29 @@ public class EbolaWithUI extends GUIState
         displayFrame = display.createFrame();
         c.registerFrame(displayFrame);
         displayFrame.setVisible(true);
+
+        JFreeChart roadNetworkChart;
+        roadNetworkChart = ChartFactory.createBarChart("Road Network Distribution", "Number of Nodes",
+                "Total Number", ((EbolaABM) this.state).roadNetworkDistribution, PlotOrientation.VERTICAL, false, false,
+                false);
+        roadNetworkChart.setBackgroundPaint(Color.WHITE);
+        roadNetworkChart.getTitle().setPaint(Color.BLACK);
+
+        CategoryPlot p4 = roadNetworkChart.getCategoryPlot();
+        p4.setBackgroundPaint(Color.WHITE);
+        p4.setRangeGridlinePaint(Color.blue);
+
+        // set the range axis to display integers only...
+        NumberAxis rangeAxis4 = (NumberAxis) p4.getRangeAxis();
+        rangeAxis4.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        //rangeAxis4.setRange(0, ((EbolaABM) this.state).nodes.getAllObjects().size());
+
+        ChartFrame frame4 = new ChartFrame("Road Network Distribution", roadNetworkChart);
+        frame4.setVisible(false);
+        frame4.setSize(700, 350);
+
+        frame4.pack();
+        c.registerFrame(frame4);
     }
 
     @Override
@@ -91,15 +120,13 @@ public class EbolaWithUI extends GUIState
 
         FieldPortrayal2D roadPortrayal = new SparseGridPortrayal2D();
         roadPortrayal.setField(((EbolaABM)state).nodes);
-        roadPortrayal.setPortrayalForAll(new OvalPortrayal2D(new Color(255, 64, 240), 1.0, true)
-        {
-            @Override
-            public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
-            {
-                super.draw(object, graphics, info);
-            }
-        });
+        roadPortrayal.setPortrayalForAll(new OvalPortrayal2D(new Color(255, 64, 240), 1.0, true));
         display.attach(roadPortrayal, "Road Node");
+
+        FieldPortrayal2D schoolPortrayal = new SparseGridPortrayal2D();
+        schoolPortrayal.setField(((EbolaABM)state).schoolGrid);
+        schoolPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 0, 22), 10.0, true));
+        display.attach(schoolPortrayal, "Schools");
 
         //---------------------Adding the road portrayal------------------------------
         GeomVectorFieldPortrayal roadLinkPortrayal = new GeomVectorFieldPortrayal();

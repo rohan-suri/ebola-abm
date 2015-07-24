@@ -14,6 +14,7 @@ public class Resident implements Steppable
     public double y;
     public Household household;
     private boolean isUrban;//true - urban, false - rural
+    private School nearestSchool;
 
     int age;
 
@@ -47,6 +48,18 @@ public class Resident implements Steppable
                 min = val.get(i);
                 index = i;
             }
+
+        boolean all_equal_no_value = true;
+
+        for(int i = 0; i < val.size(); i++)
+            if(val.get(i) != -9999)
+                all_equal_no_value = false;
+        if(all_equal_no_value)
+            if(x.get(index) != this.x && y.get(index) != this.y)
+            {
+                System.out.println("NO IDEA WHERE TO GO!!!! BUT MOVING ANWAYS LOL");
+                System.out.println("(" + x.get(index) + ", " + y.get(index) + ") from " + "(" + this.x + ", " + this.y + ")");
+            }
         this.x = x.get(index);
         this.y = y.get(index);
 
@@ -69,5 +82,14 @@ public class Resident implements Steppable
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public School getNearestSchool()
+    {
+        return nearestSchool;
+    }
+    public void setNearestSchool(School school)
+    {
+        this.nearestSchool = school;
     }
 }

@@ -1,4 +1,5 @@
 import com.sun.corba.se.impl.orb.ParserAction;
+import org.jfree.data.category.DefaultCategoryDataset;
 import sim.engine.SimState;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomVectorField;
@@ -24,11 +25,21 @@ public class EbolaABM extends SimState
     public Continuous2D world;
     public SparseGrid2D householdGrid;
     public SparseGrid2D urbanAreasGrid;
+    public SparseGrid2D schoolGrid;
     public Network roadNetwork = new Network();
     public GeomVectorField roadLinks;
     public SparseGrid2D nodes;
     public DoubleGrid2D road_cost; //accumalated cost to get to nearest node on the road network
 
+    DefaultCategoryDataset roadNetworkDistribution = new DefaultCategoryDataset(); //dataset for seeing age groups of infected
+
+
+    public Bag schools = new Bag();
+
+    double max_distance = 0;
+    double distance_sum = 0;
+    int distance_count = 0;
+    int no_school_count = 0;
 
     public int pop_width;
     public int pop_height;
