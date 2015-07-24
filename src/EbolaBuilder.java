@@ -37,6 +37,7 @@ public class EbolaBuilder
     public static LinkedList<HashSet<LineString>> allNetworks;
 
     public static HashSet<Geometry> removeGeometry = new HashSet<Geometry>();
+    public static HashSet<LineString> allLineStrings = new HashSet<LineString>();
 
     public static void initializeWorld(EbolaABM sim, String pop_file, String admin_file, String age_dist_file)
     {
@@ -86,7 +87,7 @@ public class EbolaBuilder
                 else
                     frequency[99]++;
 
-                if(total_nodes > 10000)
+                if(total_nodes > 100)
                 {
                     for(LineString lineString: set)
                     {
@@ -99,7 +100,9 @@ public class EbolaBuilder
                 else
                 {
                     for(LineString lineString: set)
+                    {
                         removeGeometry.add((Geometry)lineString);
+                    }
                 }
 
             }
@@ -321,17 +324,6 @@ public class EbolaBuilder
                     count++;
                     readLineString((LineString) mls.getGeometryN(i), xcols, ycols, xmin, ymin, xmax, ymax, ebolaSim);
                 }
-//                for(int j = 0; j < allNetworks.size(); j++)
-//                {
-//                    if(allNetworks.get(j).contains(mls.getGeometryN(0)))
-//                    {
-//                        for(int i = 1; i < mls.getNumGeometries(); ++i)
-//                        {
-//                            if(!allNetworks.get(j).contains(mls.getGeometryN(j)))
-//                                System.out.println("ERROR ERROR ERROR ERROR");
-//                        }
-//                    }
-//                }
             }
             if(count%10000 == 0)
                 System.out.println("# of linestrings = " + count);
@@ -358,6 +350,8 @@ public class EbolaBuilder
         CoordinateSequence cs = geometry.getCoordinateSequence();
         // iterate over each pair of coordinates and establish a link between
         // them
+        if(!allLineStrings.add(geometry))
+            return;
 
         HashSet<LineString> curSet = new HashSet<LineString>();
         curSet.add(geometry);
