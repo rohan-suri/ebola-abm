@@ -66,67 +66,67 @@ public class EbolaBuilder
             GeoToolsImporter.read(roadLinkUL, ebolaSim.roadLinks, masked);
             //GeoToolsImporter.removeAndExport(removeGeometry);
             extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
-            System.out.println("Done getting information, now analyzing.");
-            int sum = 0;
-            int max = 0;
-            int[] frequency = new int[100];
-            ebolaSim.roadLinks.clear();
-            for(int i = 0; i < allNetworks.size(); i++)
-            {
-                HashSet<LineString> set = allNetworks.get(i);
-                int total_nodes = 0;
-                for(LineString lineString: set)
-                    total_nodes += lineString.getNumPoints();
-
-                sum += total_nodes;
-                if(total_nodes > max)
-                    max = total_nodes;
-
-                if(total_nodes < 500)
-                    frequency[total_nodes/5]++;
-                else
-                    frequency[99]++;
-
-                if(total_nodes > 100)
-                {
-                    for(LineString lineString: set)
-                    {
-                        //removeGeometry.add((Geometry)lineString);
-                        MasonGeometry mg = new MasonGeometry();
-                        mg.geometry = lineString;
-                        ebolaSim.roadLinks.addGeometry(mg);
-                    }
-                }
-                else
-                {
-                    for(LineString lineString: set)
-                    {
-                        removeGeometry.add((Geometry)lineString);
-                    }
-                }
-
-            }
-            System.out.println("Max nodes = " + max);
-            System.out.println("Average nodes = " + sum*1.0/allNetworks.size());
-
-            String[] s = new String[frequency.length];
-            for(int i = 0; i < frequency.length; i++)
-            {
-                s[i] = (i+1)*5 + "";
-            }
-
-            for(int i = 0; i < frequency.length; i++)
-            {
-                System.out.print(frequency[i] + " \t\t\t");
-                ebolaSim.roadNetworkDistribution.addValue(frequency[i],"Number of nodes",s[i]);
-            }
-            System.out.println();
-            for(int i = 0; i < frequency.length; i++)
-            {
-                System.out.print((i+1)*5 + " \t\t\t\t");
-            }
-            System.out.println("\nExporting...");
-            GeoToolsImporter.removeAndExport(removeGeometry);
+//            System.out.println("Done getting information, now analyzing.");
+//            int sum = 0;
+//            int max = 0;
+//            int[] frequency = new int[100];
+//            ebolaSim.roadLinks.clear();
+//            for(int i = 0; i < allNetworks.size(); i++)
+//            {
+//                HashSet<LineString> set = allNetworks.get(i);
+//                int total_nodes = 0;
+//                for(LineString lineString: set)
+//                    total_nodes += lineString.getNumPoints();
+//
+//                sum += total_nodes;
+//                if(total_nodes > max)
+//                    max = total_nodes;
+//
+//                if(total_nodes < 500)
+//                    frequency[total_nodes/5]++;
+//                else
+//                    frequency[99]++;
+//
+//                if(total_nodes > 100)
+//                {
+//                    for(LineString lineString: set)
+//                    {
+//                        //removeGeometry.add((Geometry)lineString);
+//                        MasonGeometry mg = new MasonGeometry();
+//                        mg.geometry = lineString;
+//                        ebolaSim.roadLinks.addGeometry(mg);
+//                    }
+//                }
+//                else
+//                {
+//                    for(LineString lineString: set)
+//                    {
+//                        removeGeometry.add((Geometry)lineString);
+//                    }
+//                }
+//
+//            }
+//            System.out.println("Max nodes = " + max);
+//            System.out.println("Average nodes = " + sum*1.0/allNetworks.size());
+//
+//            String[] s = new String[frequency.length];
+//            for(int i = 0; i < frequency.length; i++)
+//            {
+//                s[i] = (i+1)*5 + "";
+//            }
+//
+//            for(int i = 0; i < frequency.length; i++)
+//            {
+//                System.out.print(frequency[i] + " \t\t\t");
+//                ebolaSim.roadNetworkDistribution.addValue(frequency[i],"Number of nodes",s[i]);
+//            }
+//            System.out.println();
+//            for(int i = 0; i < frequency.length; i++)
+//            {
+//                System.out.print((i+1)*5 + " \t\t\t\t");
+//            }
+//            System.out.println("\nExporting...");
+//            GeoToolsImporter.removeAndExport(removeGeometry);
             //ShapeFileExporter.write("road_links_100", ebolaSim.roadLinks);
             //needed to assure same envelope
             System.out.println("about to read int Ascii grid");
@@ -148,9 +148,9 @@ public class EbolaBuilder
             System.out.println("Time " + ((System.currentTimeMillis()-t)/1000/60) + " minutes");
 
             //TEMP TODO
-//            roads_grid = new GeomGridField();
-//            InputStream is = new FileInputStream("data/admin_constant.asc");
-//            ArcInfoASCGridImporter.read(is, GeomGridField.GridDataType.INTEGER, roads_grid);
+            roads_grid = new GeomGridField();
+            InputStream is = new FileInputStream("data/all_roads_trim_raster.asc");
+            ArcInfoASCGridImporter.read(is, GeomGridField.GridDataType.INTEGER, roads_grid);
         }
         catch(FileNotFoundException e)
         {
@@ -168,20 +168,21 @@ public class EbolaBuilder
         System.out.println("Starting nearest nodes");
         //ebolaSim.closestNodes = setupNearestNodes(ebolaSim);
         //TEMP AF
-//        IntGrid2D grid = (IntGrid2D)roads_grid.getGrid();
-//        for(int i = 0; i < grid.getWidth(); i++)
-//            for(int j = 0; j < grid.getHeight(); j++)
-//                grid.set(i,j,1);
-//        roads_grid.setGrid(grid);
-//        //now write it
-//        try {
-//            BufferedWriter writer = new BufferedWriter( new FileWriter("admin_constant.asc") );
-//            ArcInfoASCGridExporter.write(roads_grid, writer);
-//            writer.close();
-//        } catch (IOException ex) {
-//        /* handle exception */
-//            ex.printStackTrace();
-//        }
+        IntGrid2D grid = (IntGrid2D)roads_grid.getGrid();
+        for(int i = 0; i < grid.getWidth(); i++)
+            for(int j = 0; j < grid.getHeight(); j++)
+                if(grid.get(i,j) != -9999)
+                    grid.set(i,j,0);
+        roads_grid.setGrid(grid);
+        //now write it
+        try {
+            BufferedWriter writer = new BufferedWriter( new FileWriter("roads_trim_zero.asc") );
+            ArcInfoASCGridExporter.write(roads_grid, writer);
+            writer.close();
+        } catch (IOException ex) {
+        /* handle exception */
+            ex.printStackTrace();
+        }
         //assignNearestNode(ebolaSim.schoolGrid);
         assignNearestNode(ebolaSim.householdGrid);
         System.out.println("time = " + ((System.currentTimeMillis() - time) / 1000 / 60) + " minutes");
@@ -230,12 +231,12 @@ public class EbolaBuilder
         Bag objects  = grid.getAllObjects();
         for(Object o: objects)
         {
-            Household h = (Household)o;
-            Node node = getNearestNode(h.x, h.y);
+            Structure structure = (Structure)o;
+            Node node = getNearestNode(structure.getX(), structure.getY());
             //school.setNearestNode(getNearestNode(school.getX(), school.getY()));
             if(node != null)
             {
-                double distance = new Double2D(h.x,h.y).distance(new Double2D(node.location.getX(), node.location.getY()));
+                double distance = new Double2D(structure.getY(), structure.getY()).distance(new Double2D(node.location.getX(), node.location.getY()));
                 distance *= (Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE)/1000.0;
                 if(distance > max_distance)
                     max_distance = distance;
@@ -305,7 +306,7 @@ public class EbolaBuilder
         int xcols = ebolaSim.world_width - 1, ycols = ebolaSim.world_height - 1;
         int count = 0;
 
-        allNetworks = new LinkedList<HashSet<LineString>>();
+        //allNetworks = new LinkedList<HashSet<LineString>>();
 
         // extract each edge
         for (Object o : geoms)
@@ -350,12 +351,13 @@ public class EbolaBuilder
         CoordinateSequence cs = geometry.getCoordinateSequence();
         // iterate over each pair of coordinates and establish a link between
         // them
-        if(!allLineStrings.add(geometry))
-            return;
 
-        HashSet<LineString> curSet = new HashSet<LineString>();
-        curSet.add(geometry);
-        allNetworks.addFirst(curSet);
+//        if(!allLineStrings.add(geometry)) //Uncomment for linestring trimming
+//            return;
+
+        //linestring trimming: HashSet<LineString> curSet = new HashSet<LineString>();
+        //curSet.add(geometry);
+        //allNetworks.addFirst(curSet);
 //        ListIterator<HashSet<LineString>> listIterator = allNetworks.listIterator();
 //        listIterator.next();
         int removeIndex = 0;
@@ -384,43 +386,43 @@ public class EbolaBuilder
             else //this means that we are connected to another linestring or this linestring
             {
                 n = (Node) ns.get(0);
-                if(oldNode == n)
-                    continue;
-                LineString searchFor = n.lineString;
-                ListIterator<HashSet<LineString>> nextIterator = allNetworks.listIterator();
-                //search for the other linestring
-                int temp = -1;
-                while(nextIterator.hasNext())
-                {
-                    HashSet<LineString> next = nextIterator.next();
-                    temp++;
-                    if(next.contains(searchFor))
-                    {
-                        if(next != curSet)
-                        {
-                            //add all from the previous hashset to this one
-                            next.addAll(curSet);
-                            curSet = next;
-
-                            //remove the earlier position
-                            //listIterator.remove();
-                            if(removeIndex != 0) {
-                                int john = 1;
-                                john++;
-                            }
-                            allNetworks.remove(removeIndex);
-                            if(removeIndex < temp)
-                                temp--;
-                            removeIndex = temp;
-                            //now reset the position of the iterator and change locations
-                            //removeIndex = nextIterator.nextIndex();
-
-                            if(removeIndex < 0 || !allNetworks.get(removeIndex).contains(geometry))
-                                System.out.println("ERROR ERROR ERROR ERROR!!!!!!!!!!!!!!!");
-                        }
-                        break;
-                    }
-                }
+//                if(oldNode == n)
+//                    continue;
+//                LineString searchFor = n.lineString;
+//                ListIterator<HashSet<LineString>> nextIterator = allNetworks.listIterator();
+//                //search for the other linestring
+//                int temp = -1;
+//                while(nextIterator.hasNext())
+//                {
+//                    HashSet<LineString> next = nextIterator.next();
+//                    temp++;
+//                    if(next.contains(searchFor))
+//                    {
+//                        if(next != curSet)
+//                        {
+//                            //add all from the previous hashset to this one
+//                            next.addAll(curSet);
+//                            curSet = next;
+//
+//                            //remove the earlier position
+//                            //listIterator.remove();
+//                            if(removeIndex != 0) {
+//                                int john = 1;
+//                                john++;
+//                            }
+//                            allNetworks.remove(removeIndex);
+//                            if(removeIndex < temp)
+//                                temp--;
+//                            removeIndex = temp;
+//                            //now reset the position of the iterator and change locations
+//                            //removeIndex = nextIterator.nextIndex();
+//
+//                            if(removeIndex < 0 || !allNetworks.get(removeIndex).contains(geometry))
+//                                System.out.println("ERROR ERROR ERROR ERROR!!!!!!!!!!!!!!!");
+//                        }
+//                        break;
+//                    }
+//                }
             }
 
             if (oldNode == n) // don't link a node to itself
@@ -600,8 +602,6 @@ public class EbolaBuilder
                         //iterate over each house
                         while(scaled_num_people > 0)
                         {
-                            Household h = new Household();
-
                             int x_coord, y_coord;
                             //randomly pick a space within the sqare kilometer
                             do
@@ -610,12 +610,10 @@ public class EbolaBuilder
                                 x_coord = (j*Parameters.WORLD_TO_POP_SCALE) + (int)(ebolaSim.random.nextDouble() * Parameters.WORLD_TO_POP_SCALE);
 
                             } while (false);//ebolaSim.householdGrid.getObjectsAtLocation(x_coord, y_coord) != null);
-
-                            h.x = x_coord;
-                            h.y = y_coord;
+                            Household h = new Household(x_coord, y_coord);
                             h.setCountry(country);
                             ebolaSim.householdGrid.setObjectLocation(h, new Int2D(x_coord, y_coord));
-                            //System.out.println("House location: " + x_coord + ", " + y_coord);
+
                             int household_size  = pickHouseholdSize(country);//use log distribution to pick correct household size
 
                             //get nearest school
