@@ -223,6 +223,10 @@ public class EbolaBuilder
         catch (IOException e){e.printStackTrace();}
     }
 
+    /**
+     * Function will assign 
+     * @param grid a sparsegrid that contains strctures.
+     */
     static void assignNearestNode(SparseGrid2D grid)
     {
         double max_distance = 0;
