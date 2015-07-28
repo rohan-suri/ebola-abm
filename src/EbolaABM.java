@@ -27,8 +27,10 @@ public class EbolaABM extends SimState
     public SparseGrid2D urbanAreasGrid;
     public SparseGrid2D schoolGrid;
     public Network roadNetwork = new Network();
+    public Network roadNetworkThinned = new Network();
     public GeomVectorField roadLinks;
-    public SparseGrid2D nodes;
+    public SparseGrid2D allRoadNodes;
+    public SparseGrid2D allRoadNodesTrimmed;
     public DoubleGrid2D road_cost; //accumalated cost to get to nearest node on the road network
 
     DefaultCategoryDataset roadNetworkDistribution = new DefaultCategoryDataset(); //dataset for seeing age groups of infected

@@ -14,12 +14,14 @@ import sim.portrayal.continuous.ContinuousPortrayal2D;
 import sim.portrayal.geo.GeomPortrayal;
 import sim.portrayal.geo.GeomVectorFieldPortrayal;
 import sim.portrayal.grid.SparseGridPortrayal2D;
+import sim.portrayal.network.NetworkPortrayal2D;
+import sim.portrayal.network.SimpleEdgePortrayal2D;
+import sim.portrayal.network.SpatialNetwork2D;
 import sim.portrayal.simple.OvalPortrayal2D;
 import sim.portrayal.simple.RectanglePortrayal2D;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 
 /**
  * Created by rohansuri on 7/8/15.
@@ -58,7 +60,7 @@ public class EbolaWithUI extends GUIState
         // set the range axis to display integers only...
         NumberAxis rangeAxis4 = (NumberAxis) p4.getRangeAxis();
         rangeAxis4.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        //rangeAxis4.setRange(0, ((EbolaABM) this.state).nodes.getAllObjects().size());
+        //rangeAxis4.setRange(0, ((EbolaABM) this.state).allRoadNodes.getAllObjects().size());
 
         ChartFrame frame4 = new ChartFrame("Road Network Distribution", roadNetworkChart);
         frame4.setVisible(false);
@@ -93,7 +95,7 @@ public class EbolaWithUI extends GUIState
 
         FieldPortrayal2D householdortrayal = new SparseGridPortrayal2D();
         householdortrayal.setField(((EbolaABM)state).householdGrid);
-        householdortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(0, 128, 255), 1.0, false)
+        householdortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(0, 128, 255), 1.0, true)
         {
             @Override
             public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
@@ -119,13 +121,13 @@ public class EbolaWithUI extends GUIState
 //        display.attach(urbanPortrayal, "Urban Area");
 
         FieldPortrayal2D roadPortrayal = new SparseGridPortrayal2D();
-        roadPortrayal.setField(((EbolaABM)state).nodes);
+        roadPortrayal.setField(((EbolaABM)state).allRoadNodesTrimmed);
         roadPortrayal.setPortrayalForAll(new OvalPortrayal2D(new Color(255, 64, 240), 1.0, true));
-        display.attach(roadPortrayal, "Road Node");
+        display.attach(roadPortrayal, "Road Node Trimmed");
 
         FieldPortrayal2D schoolPortrayal = new SparseGridPortrayal2D();
         schoolPortrayal.setField(((EbolaABM)state).schoolGrid);
-        schoolPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 0, 22), 10.0, true));
+        schoolPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 0, 22), 1.0, true));
         display.attach(schoolPortrayal, "Schools");
 
         //---------------------Adding the road portrayal------------------------------
@@ -133,6 +135,16 @@ public class EbolaWithUI extends GUIState
         roadLinkPortrayal.setField(((EbolaABM)state).roadLinks);
         roadLinkPortrayal.setPortrayalForAll(new GeomPortrayal(Color.BLACK, 2.0, true));
         display.attach(roadLinkPortrayal, "Roads");
+
+        NetworkPortrayal2D roadNetworkPortrayal = new NetworkPortrayal2D();
+        roadNetworkPortrayal.setField(new SpatialNetwork2D(((EbolaABM)state).allRoadNodes, ((EbolaABM)state).roadNetwork));
+        roadNetworkPortrayal.setPortrayalForAll(new SimpleEdgePortrayal2D());
+        display.attach(roadNetworkPortrayal, "Road Network");
+
+        NetworkPortrayal2D roadNetworkTrimmedPortrayal = new NetworkPortrayal2D();
+        roadNetworkTrimmedPortrayal.setField(new SpatialNetwork2D(((EbolaABM)state).allRoadNodesTrimmed, ((EbolaABM)state).roadNetworkThinned));
+        roadNetworkTrimmedPortrayal.setPortrayalForAll(new SimpleEdgePortrayal2D());
+        display.attach(roadNetworkTrimmedPortrayal, "Road Trimmed Network");
     }
 
     @Override

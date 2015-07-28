@@ -47,15 +47,19 @@ public class AStar {
         startNode.hx = heuristic(start, goal);
         startNode.fx = heuristic(start, goal);
 
-        // A* containers: nodes to be investigated, nodes that have been investigated
+        // A* containers: allRoadNodes to be investigated, allRoadNodes that have been investigated
         ArrayList<AStarNodeWrapper> closedSet = new ArrayList<AStarNodeWrapper>(),
                 openSet = new ArrayList<AStarNodeWrapper>();
         openSet.add(startNode);
 
 
-        while(openSet.size() > 0){ // while there are reachable nodes to investigate
+        while(openSet.size() > 0){ // while there are reachable allRoadNodes to investigate
 
             AStarNodeWrapper x = findMin(openSet); // find the shortest path so far
+            if(x == null)
+            {
+                AStarNodeWrapper n = findMin(openSet);
+            }
             if(x.node == goal ){ // we have found the shortest possible path to the goal!
                 // Reconstruct the path and send it back.
                 return reconstructPath(goalNode);
@@ -111,7 +115,7 @@ public class AStar {
      * Takes the information about the given node n and returns the path that
      * found it.
      * @param n the end point of the path
-     * @return an ArrayList of nodes that lead from the
+     * @return an ArrayList of allRoadNodes that lead from the
      * given Node to the Node from which the search began 
      */
     static ArrayList<EbolaBuilder.Location> reconstructPath(AStarNodeWrapper n) {
@@ -127,7 +131,7 @@ public class AStar {
 
     /**
      * Measure of the estimated distance between two Nodes.
-     * @return notional "distance" between the given nodes.
+     * @return notional "distance" between the given allRoadNodes.
      */
     static double heuristic(EbolaBuilder.Node x, EbolaBuilder.Node y) {
         return x.location.distanceTo(y.location);
@@ -140,7 +144,7 @@ public class AStar {
      * @return
      */
     static AStarNodeWrapper findMin(ArrayList<AStarNodeWrapper> set) {
-        double min = 100000;
+        double min = Double.MAX_VALUE;
         AStarNodeWrapper minNode = null;
         for (AStarNodeWrapper n : set) {
             if (n.fx < min) {

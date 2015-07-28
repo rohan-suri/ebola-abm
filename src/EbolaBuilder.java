@@ -1,5 +1,4 @@
 import com.vividsolutions.jts.geom.*;
-import org.opengis.feature.simple.SimpleFeature;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomGridField;
 import sim.field.geo.GeomVectorField;
@@ -16,10 +15,7 @@ import java.text.*;
 import java.util.*;
 
 import net.sf.csv4j.*;
-import sim.util.geo.GeomPlanarGraph;
 import sim.util.geo.MasonGeometry;
-
-import javax.sound.sampled.Line;
 
 /**
  * Created by rohansuri on 7/8/15.
@@ -51,7 +47,8 @@ public class EbolaBuilder
         setUpAgeDist(age_dist_file);
         addHousesAndResidents(pop_file, admin_file);
 
-        ebolaSim.nodes = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
+        ebolaSim.allRoadNodes = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
+        ebolaSim.allRoadNodesTrimmed = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
         ebolaSim.roadNetwork = new Network();
         ebolaSim.roadLinks = new GeomVectorField(ebolaSim.world_width, ebolaSim.world_height);
         System.out.println("(" + ebolaSim.world_width + ", " + ebolaSim.world_height + ")");
@@ -65,7 +62,7 @@ public class EbolaBuilder
             URL roadLinkUL = file2.toURI().toURL();
             GeoToolsImporter.read(roadLinkUL, ebolaSim.roadLinks, masked);
             //GeoToolsImporter.removeAndExport(removeGeometry);
-            extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
+            //extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
 //            System.out.println("Done getting information, now analyzing.");
 //            int sum = 0;
 //            int max = 0;
@@ -106,8 +103,8 @@ public class EbolaBuilder
 //                }
 //
 //            }
-//            System.out.println("Max nodes = " + max);
-//            System.out.println("Average nodes = " + sum*1.0/allNetworks.size());
+//            System.out.println("Max allRoadNodes = " + max);
+//            System.out.println("Average allRoadNodes = " + sum*1.0/allNetworks.size());
 //
 //            String[] s = new String[frequency.length];
 //            for(int i = 0; i < frequency.length; i++)
@@ -118,7 +115,7 @@ public class EbolaBuilder
 //            for(int i = 0; i < frequency.length; i++)
 //            {
 //                System.out.print(frequency[i] + " \t\t\t");
-//                ebolaSim.roadNetworkDistribution.addValue(frequency[i],"Number of nodes",s[i]);
+//                ebolaSim.roadNetworkDistribution.addValue(frequency[i],"Number of allRoadNodes",s[i]);
 //            }
 //            System.out.println();
 //            for(int i = 0; i < frequency.length; i++)
@@ -148,9 +145,9 @@ public class EbolaBuilder
             System.out.println("Time " + ((System.currentTimeMillis()-t)/1000/60) + " minutes");
 
             //TEMP TODO
-            roads_grid = new GeomGridField();
-            InputStream is = new FileInputStream("data/all_roads_trim_raster.asc");
-            ArcInfoASCGridImporter.read(is, GeomGridField.GridDataType.INTEGER, roads_grid);
+//            roads_grid = new GeomGridField();
+//            InputStream is = new FileInputStream("data/all_roads_trim_raster.asc");
+//            ArcInfoASCGridImporter.read(is, GeomGridField.GridDataType.INTEGER, roads_grid);
         }
         catch(FileNotFoundException e)
         {
@@ -161,29 +158,30 @@ public class EbolaBuilder
             e.printStackTrace();
         }
 
-        //extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
-
+        extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
+        System.out.println("Un trimmed network size = " + ebolaSim.allRoadNodes.size());
+        System.out.println("Trimmed network size = " + ebolaSim.allRoadNodesTrimmed.size());
         // set up the locations and nearest node capability
         long time  = System.currentTimeMillis();
         System.out.println("Starting nearest nodes");
         //ebolaSim.closestNodes = setupNearestNodes(ebolaSim);
         //TEMP AF
-        IntGrid2D grid = (IntGrid2D)roads_grid.getGrid();
-        for(int i = 0; i < grid.getWidth(); i++)
-            for(int j = 0; j < grid.getHeight(); j++)
-                if(grid.get(i,j) != -9999)
-                    grid.set(i,j,0);
-        roads_grid.setGrid(grid);
-        //now write it
-        try {
-            BufferedWriter writer = new BufferedWriter( new FileWriter("roads_trim_zero.asc") );
-            ArcInfoASCGridExporter.write(roads_grid, writer);
-            writer.close();
-        } catch (IOException ex) {
-        /* handle exception */
-            ex.printStackTrace();
-        }
-        //assignNearestNode(ebolaSim.schoolGrid);
+//        IntGrid2D grid = (IntGrid2D)roads_grid.getGrid();
+//        for(int i = 0; i < grid.getWidth(); i++)
+//            for(int j = 0; j < grid.getHeight(); j++)
+//                if(grid.get(i,j) != -9999)
+//                    grid.set(i,j,0);
+//        roads_grid.setGrid(grid);
+//        //now write it
+//        try {
+//            BufferedWriter writer = new BufferedWriter( new FileWriter("roads_trim_zero.asc") );
+//            ArcInfoASCGridExporter.write(roads_grid, writer);
+//            writer.close();
+//        } catch (IOException ex) {
+//        /* handle exception */
+//            ex.printStackTrace();
+//        }
+        assignNearestNode(ebolaSim.schoolGrid);
         assignNearestNode(ebolaSim.householdGrid);
         System.out.println("time = " + ((System.currentTimeMillis() - time) / 1000 / 60) + " minutes");
     }
@@ -224,7 +222,7 @@ public class EbolaBuilder
     }
 
     /**
-     * Function will assign 
+     * Function will assign each structure in the SparseGrid a nearest node on the road network found in allRoadNodes at sim state.
      * @param grid a sparsegrid that contains strctures.
      */
     static void assignNearestNode(SparseGrid2D grid)
@@ -237,10 +235,10 @@ public class EbolaBuilder
         {
             Structure structure = (Structure)o;
             Node node = getNearestNode(structure.getX(), structure.getY());
-            //school.setNearestNode(getNearestNode(school.getX(), school.getY()));
             if(node != null)
             {
-                double distance = new Double2D(structure.getY(), structure.getY()).distance(new Double2D(node.location.getX(), node.location.getY()));
+                structure.setNearestNode(node);
+                double distance = new Double2D(structure.getX(), structure.getY()).distance(new Double2D(node.location.getX(), node.location.getY()));
                 distance *= (Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE)/1000.0;
                 if(distance > max_distance)
                     max_distance = distance;
@@ -248,10 +246,14 @@ public class EbolaBuilder
                 count++;
             }
         }
-        System.out.println("Average distance = " + sum/count + " km");
+        for(int i = 0; i < frequency.length; i++)
+        {
+            System.out.print(frequency[i] + "\t\t");
+        }
+        System.out.println("\nAverage distance = " + sum/count + " km");
         System.out.println("Max distance household to node = " + max_distance + " kilometers");
     }
-
+    private static int[] frequency = new int[20];
     /**
      *
      * @param x source x coordinate
@@ -282,20 +284,33 @@ public class EbolaBuilder
             cX = xBag.get(index);
         }
 
-        Bag nodes = ebolaSim.nodes.getObjectsAtLocation(cX, cY);
+        Bag nodes = ebolaSim.allRoadNodes.getObjectsAtLocation(cX, cY);
         Bag val = new Bag();
         IntBag xBag = new IntBag();
         IntBag yBag = new IntBag();
 
-        ebolaSim.nodes.getRadialNeighbors(cX, cY, 1, Grid2D.BOUNDED, true, val, xBag, yBag);
-
         if(nodes == null || nodes.isEmpty())
         {
-            //System.out.println("NO NODE NEARBY!!!!!!!!!!!!!");
-            return new Node(new Location(cX, cY));
+            for(int i = 1; i <= 19; i++)
+            {
+                ebolaSim.allRoadNodes.getRadialNeighbors(cX, cY, i, Grid2D.BOUNDED, true, val, xBag, yBag);
+                if(val != null && !val.isEmpty())
+                {
+                    frequency[i]++;
+                    //System.out.println("Radial neihghbor found!! at " + i);
+                    return (Node)val.get(0);
+                }
+            }
+
+            System.out.println("NO NODE NEARBY!!!!!!!!!!!!!");
+            frequency[9]++;
+            //return new Node(new Location(cX, cY));
         }
-//        else
-//            System.out.println("On a NODE!!");
+        else
+        {
+            frequency[0]++;
+            //System.out.println("On a NODE!!");
+        }
 
         return (Node)nodes.get(0);
 
@@ -338,7 +353,7 @@ public class EbolaBuilder
     }
 
     /**
-     * Converts an individual linestring into a series of links and nodes in the
+     * Converts an individual linestring into a series of links and allRoadNodes in the
      * network
      * int width, int height, Dadaab dadaab
      * @param geometry
@@ -364,11 +379,12 @@ public class EbolaBuilder
         //allNetworks.addFirst(curSet);
 //        ListIterator<HashSet<LineString>> listIterator = allNetworks.listIterator();
 //        listIterator.next();
-        int removeIndex = 0;
+//        int removeIndex = 0;
         Node oldNode = null; // used to keep track of the last node referenced
+        Node oldNodeTrimmed = null; //used to keep track of last trimmed node referenced
+        int trimmed_distance = 0;
         for (int i = 0; i < cs.size(); i++)
         {
-
             // calculate the location of the node in question
             double x = cs.getX(i), y = cs.getY(i);
             int xint = (int) Math.floor(xcols * (x - xmin) / (xmax - xmin)), yint = (int) (ycols - Math.floor(ycols * (y - ymin) / (ymax - ymin))); // REMEMBER TO FLIP THE Y VALUE
@@ -378,20 +394,47 @@ public class EbolaBuilder
             else if (yint >= ebolaSim.world_height)
                 continue;
 
+            //for the thinned network
+            Node trimmedNode = null;
+            if(i == 0 || i == cs.size() - 1)
+            {
+                Bag ns = ebolaSim.allRoadNodesTrimmed.getObjectsAtLocation(xint, yint);
+                if(ns == null)
+                {
+                    trimmedNode = new Node(new Location(xint, yint));
+                    ebolaSim.allRoadNodesTrimmed.setObjectLocation(trimmedNode, xint, yint);
+                }
+                else
+                {
+                    trimmedNode = (Node)ns.get(0);
+                }
+            }
+
             // find that node or establish it if it doesn't yet exist
-            Bag ns = ebolaSim.nodes.getObjectsAtLocation(xint, yint);
+            Bag ns = ebolaSim.allRoadNodes.getObjectsAtLocation(xint, yint);
             Node n;
             if (ns == null)
             {
                 n = new Node(new Location(xint, yint));
                 n.lineString = geometry;
-                ebolaSim.nodes.setObjectLocation(n, xint, yint);
+                ebolaSim.allRoadNodes.setObjectLocation(n, xint, yint);
             }
             else //this means that we are connected to another linestring or this linestring
             {
                 n = (Node) ns.get(0);
-//                if(oldNode == n)
-//                    continue;
+                if(oldNode == n)
+                    continue;
+                //if it is connected to another linestring then we should add that node
+                Bag nodes = ebolaSim.allRoadNodesTrimmed.getObjectsAtLocation(xint, yint);
+                if(nodes == null)
+                {
+                    trimmedNode = new Node(new Location(xint, yint));
+                    ebolaSim.allRoadNodesTrimmed.setObjectLocation(trimmedNode, xint, yint);
+                }
+                else
+                {
+                    trimmedNode = (Node)nodes.get(0);
+                }
 //                LineString searchFor = n.lineString;
 //                ListIterator<HashSet<LineString>> nextIterator = allNetworks.listIterator();
 //                //search for the other linestring
@@ -439,18 +482,29 @@ public class EbolaBuilder
 
             if (i == 0) { // can't connect previous link to anything
                 oldNode = n; // save this node for reference in the next link
+                oldNodeTrimmed = trimmedNode;
                 continue;
             }
 
             int weight = (int) n.location.distanceTo(oldNode.location); // weight is just
             // distance
-
+            trimmed_distance += weight;
+            //add it to the thinned network if it is the first or last in the cs.
+            if(trimmedNode != null)
+            {
+                Edge te = new Edge(oldNodeTrimmed, trimmedNode, trimmed_distance);
+                ebolaSim.roadNetworkThinned.addEdge(te);
+                trimmedNode.links.add(te);
+                oldNodeTrimmed.links.add(te);
+                oldNodeTrimmed = trimmedNode;
+                trimmed_distance = 0;
+            }
             // create the new link and save it
             Edge e = new Edge(oldNode, n, weight);
             ebolaSim.roadNetwork.addEdge(e);
+
             oldNode.links.add(e);
             n.links.add(e);
-
             oldNode = n; // save this node for reference in the next link
         }
 
@@ -640,6 +694,8 @@ public class EbolaBuilder
                                 r.setAge(pick_age(age_dist, county_id));
                                 if(nearest_school != null)
                                     r.setNearestSchool(nearest_school);
+                                else
+                                    System.out.println("SCHOOL IS NULL!!");
                                 if(r.getAge() >= 5 && r.getAge() <= 14 && nearest_school != null)
                                 {
                                     nearest_school.addMember(r);
@@ -692,7 +748,7 @@ public class EbolaBuilder
         //find nearest school
         Bag schools = new Bag();
 
-        for(int i = 3; i <= 12; i += 3)//increment the radius to lookup i in kilometers
+        for(int i = 3; i <= 54; i += 3)//increment the radius to lookup i in kilometers
         {
             int radius = (int)Math.round(i*1000/Parameters.POP_BLOCK_METERS*Parameters.WORLD_TO_POP_SCALE);//convert to grid units
             ebolaSim.schoolGrid.getRadialNeighborsAndLocations(x, y, radius, SparseGrid2D.BOUNDED, false, schools, null, null);
@@ -918,7 +974,7 @@ public class EbolaBuilder
         }
     }
     /**
-     * Calculate the nodes nearest to each location and store the information
+     * Calculate the allRoadNodes nearest to each location and store the information
      *
      * @param closestNodes
      *            - the field to populate
