@@ -111,8 +111,8 @@ public class Resident implements Steppable
 
     public EbolaBuilder.Node getNearestTrimmedNode(EbolaBuilder.Node start)
     {
-        LineString ls = start.lineString;
-        CoordinateSequence cs = ls.getCoordinateSequence();
+//        LineString ls = start.lineString;
+//        CoordinateSequence cs = ls.getCoordinateSequence();
         return null;
     }
 
