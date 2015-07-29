@@ -60,9 +60,9 @@ public class EbolaBuilder
             Bag masked = new Bag();
             File file2 = new File(Parameters.ROADS_SHAPE_PATH);
             URL roadLinkUL = file2.toURI().toURL();
-            GeoToolsImporter.read(roadLinkUL, ebolaSim.roadLinks, masked);
+            ShapeFileImporter.read(roadLinkUL, ebolaSim.roadLinks, masked);
             //GeoToolsImporter.removeAndExport(removeGeometry);
-            extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
+            //extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
 //            System.out.println("Done getting information, now analyzing.");
 //            int sum = 0;
 //            int max = 0;
@@ -158,7 +158,7 @@ public class EbolaBuilder
             e.printStackTrace();
         }
 
-        //extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
+        extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
         System.out.println("Un trimmed network size = " + ebolaSim.allRoadNodes.size());
         System.out.println("Trimmed network size = " + ebolaSim.allRoadNodesTrimmed.size());
         // set up the locations and nearest node capability
@@ -291,25 +291,25 @@ public class EbolaBuilder
 
         if(nodes == null || nodes.isEmpty())
         {
-            for(int i = 1; i <= 19; i++)
+            for(int i = 1; i <= 100; i++)
             {
                 ebolaSim.allRoadNodes.getRadialNeighbors(cX, cY, i, Grid2D.BOUNDED, true, val, xBag, yBag);
                 if(val != null && !val.isEmpty())
                 {
                     frequency[i]++;
-                    //System.out.println("Radial neihghbor found!! at " + i);
+                    System.out.println("Radial neihghbor found!! at " + i);
                     return (Node)val.get(0);
                 }
             }
 
             System.out.println("NO NODE NEARBY!!!!!!!!!!!!!");
             frequency[9]++;
-            //return new Node(new Location(cX, cY));
+            return new Node(new Location(cX, cY));
         }
         else
         {
             frequency[0]++;
-            //System.out.println("On a NODE!!");
+            System.out.println("On a NODE!!");
         }
 
         return (Node)nodes.get(0);
@@ -368,6 +368,8 @@ public class EbolaBuilder
                                double ymin, double xmax, double ymax, EbolaABM ebolaSim) {
 
         CoordinateSequence cs = geometry.getCoordinateSequence();
+        if(cs.size() == 202)
+            System.out.println("Found IT!!!");
         // iterate over each pair of coordinates and establish a link between
         // them
 
@@ -405,6 +407,7 @@ public class EbolaBuilder
                     trimmedNode.index = i;
                     trimmedNode.lineStrings.add(geometry);
                     ebolaSim.allRoadNodesTrimmed.setObjectLocation(trimmedNode, xint, yint);
+                    //System.out.println("Adding trimmed node " + i + " at " + xint + " " + yint + "LineString@" + geometry.hashCode());
                 }
                 else
                 {
@@ -425,69 +428,77 @@ public class EbolaBuilder
             else //this means that we are connected to another linestring or this linestring
             {
                 n = (Node) ns.get(0);
-                if(oldNode == n)
-                    continue;
-                //if it is connected to another linestring then we should add that node
-                Bag nodes = ebolaSim.allRoadNodesTrimmed.getObjectsAtLocation(xint, yint);
-                if(nodes == null)
-                {
-                    //since we need to create a new one we need to add it to the end points.
-                    trimmedNode = new Node(new Location(xint, yint));
-                    trimmedNode.lineStrings.add(geometry);
-                    trimmedNode.index = i;
-                    ebolaSim.allRoadNodesTrimmed.setObjectLocation(trimmedNode, xint, yint);
-                    //now we need to add this trimmedNode to the network
-                    //get the two end points of the other linestring
-                    if(n.lineStrings.size() > 1)
-                        System.out.println(n.lineStrings.size() + " LineStrings");
-                    LineString other = n.lineStrings.iterator().next();
-                    CoordinateSequence oCS = other.getCoordinateSequence();
-                    Node otherNode1 = (Node)ebolaSim.allRoadNodesTrimmed.getObjectsAtLocation((int) Math.floor(xcols * (oCS.getX(0) - xmin) / (xmax - xmin)), (int) Math.floor(ycols * (oCS.getY(0) - ymin) / (ymax - ymin))).get(0);
-                    Node otherNode2 = (Node)ebolaSim.allRoadNodesTrimmed.getObjectsAtLocation((int) Math.floor(xcols * (oCS.getCoordinate(oCS.size()-1).x - xmin) / (xmax - xmin)), (int) Math.floor(ycols * (oCS.getCoordinate(oCS.size()-1).y - ymin) / (ymax - ymin))).get(0);
-                    Bag nodesOnLineString = new Bag();//all the nodes on the other line string we are trying to connect to
-                    findNodesOnLineString(otherNode1, otherNode1, otherNode2, nodesOnLineString, other);
-                    System.out.println(nodesOnLineString.size() + " size of nodes on line string");
-                    //now find the two nodes you need to be inserted between based on index
-                    int target = n.index;
-                    for(int j = 0; j < nodesOnLineString.size(); j++)
-                    {
-                        Node temp = (Node)nodesOnLineString.get(j);
-                        if(temp.index > otherNode1.index && temp.index < target)
-                            otherNode1 = temp;
-                        else if(temp.index < otherNode2.index && temp.index > target)
-                            otherNode2 = temp;
-                    }
-                    //now we know node1 and node2 are the ones we need to insert this node into
-                    //first remove node1 and node2s connnection
-                    Edge temp = ebolaSim.roadNetworkThinned.getEdge(otherNode1, otherNode2);
-                    if(temp != null)
-                    {
-                        ebolaSim.roadNetworkThinned.removeEdge(temp);
-                        otherNode1.links.remove(temp);
-                        otherNode2.links.remove(temp);
-                    }
-                    temp  = ebolaSim.roadNetworkThinned.getEdge(otherNode2, otherNode1);
-                    if(temp != null)
-                    {
-                        ebolaSim.roadNetworkThinned.removeEdge(temp);
-                        otherNode1.links.remove(temp);
-                        otherNode2.links.remove(temp);
-                    }
-                    //now create the new link
-                    Edge newEdge = new Edge(otherNode1, trimmedNode, n.weightOnLineString);
-                    ebolaSim.roadNetworkThinned.addEdge(newEdge);
-                    otherNode1.links.add(newEdge);
-                    trimmedNode.links.add(newEdge);
-
-                    newEdge = new Edge(otherNode2, trimmedNode, n.weightOnLineString);
-                    ebolaSim.roadNetworkThinned.addEdge(newEdge);
-                    otherNode2.links.add(newEdge);
-                    trimmedNode.links.add(newEdge);
-                }
-                else
-                {
-                    trimmedNode = (Node)nodes.get(0);
-                }
+//                if(oldNode == n)
+//                    continue;
+//                //if it is connected to another linestring then we should add that node
+//                Bag nodes = ebolaSim.allRoadNodesTrimmed.getObjectsAtLocation(xint, yint);
+//                if(nodes == null)
+//                {
+//                    //since we need to create a new one we need to add it to the end points.
+//                    trimmedNode = new Node(new Location(xint, yint));
+//                    trimmedNode.lineStrings.add(geometry);
+//                    trimmedNode.index = i;
+//                    ebolaSim.allRoadNodesTrimmed.setObjectLocation(trimmedNode, xint, yint);
+//                    //now we need to add this trimmedNode to the network
+//                    //get the two end points of the other linestring
+//                    if (n.lineStrings.size() > 1)
+//                        System.out.println(n.lineStrings.size() + " LineStrings");
+//                    LineString other = n.lineStrings.iterator().next();
+//                    if (other != geometry)//if we are in the same LineString then no need to do something else
+//                    {
+//                        //System.out.println(other.hashCode());
+//                        CoordinateSequence oCS = other.getCoordinateSequence();
+//                        int xOther = (int) Math.floor(xcols * (oCS.getX(0) - xmin) / (xmax - xmin));
+//                        int yOther = (int) (ycols - Math.floor(ycols * (oCS.getY(0) - ymin) / (ymax - ymin)));
+//                        Bag b = ebolaSim.allRoadNodesTrimmed.getObjectsAtLocation(xOther, yOther);
+//                        Node otherNode1 = (Node) b.get(0);
+//                        xOther = (int) Math.floor(xcols * (oCS.getX(oCS.size() - 1) - xmin) / (xmax - xmin));
+//                        yOther = (int) (ycols - Math.floor(ycols * (oCS.getY(oCS.size() - 1) - ymin) / (ymax - ymin)));
+//                        b = ebolaSim.allRoadNodesTrimmed.getObjectsAtLocation(xOther, yOther);
+//                        Node otherNode2 = (Node) b.get(0);
+//                        HashSet<Node> nodesOnLineString = new HashSet<Node>();//all the nodes on the other line string we are trying to connect to
+//                        findNodesOnLineString(otherNode1, otherNode1, otherNode2, nodesOnLineString, other);
+//                        System.out.println(nodesOnLineString.size() + " size of nodes on line string");
+//                        //now find the two nodes you need to be inserted between based on index
+//                        int target = n.index;
+//                        Iterator it = nodesOnLineString.iterator();
+//                        while (it.hasNext()) {
+//                            Node temp = (Node) it.next();
+//                            if (temp.index > otherNode1.index && temp.index < target)
+//                                otherNode1 = temp;
+//                            else if (temp.index < otherNode2.index && temp.index > target)
+//                                otherNode2 = temp;
+//                        }
+//                        //now we know node1 and node2 are the ones we need to insert this node into
+//                        //first remove node1 and node2s connnection
+//                        Edge temp = ebolaSim.roadNetworkThinned.getEdge(otherNode1, otherNode2);
+//                        if (temp != null) {
+//                            ebolaSim.roadNetworkThinned.removeEdge(temp);
+//                            otherNode1.links.remove(temp);
+//                            otherNode2.links.remove(temp);
+//                        }
+//                        temp = ebolaSim.roadNetworkThinned.getEdge(otherNode2, otherNode1);
+//                        if (temp != null) {
+//                            ebolaSim.roadNetworkThinned.removeEdge(temp);
+//                            otherNode1.links.remove(temp);
+//                            otherNode2.links.remove(temp);
+//                        }
+//                        //now create the new link
+//                        Edge newEdge = new Edge(otherNode1, trimmedNode, n.weightOnLineString);
+//                        ebolaSim.roadNetworkThinned.addEdge(newEdge);
+//                        otherNode1.links.add(newEdge);
+//                        trimmedNode.links.add(newEdge);
+//
+//                        newEdge = new Edge(otherNode2, trimmedNode, n.weightOnLineString);
+//                        ebolaSim.roadNetworkThinned.addEdge(newEdge);
+//                        otherNode2.links.add(newEdge);
+//                        trimmedNode.links.add(newEdge);
+//                    }
+//                }
+//                else//already exists just add it
+//                {
+//                    trimmedNode = (Node)nodes.get(0);
+//                }
 //                LineString searchFor = n.lineString;
 //                ListIterator<HashSet<LineString>> nextIterator = allNetworks.listIterator();
 //                //search for the other linestring
@@ -566,19 +577,23 @@ public class EbolaBuilder
 
     }
 
-    private static void findNodesOnLineString(Node cameFrom, Node node, Node end, Bag bag, LineString lineString)
+    private static void findNodesOnLineString(Node cameFrom, Node node, Node end, HashSet<Node> nodes, LineString lineString)
     {
         for(Edge e: node.links)
         {
             Node temp = (Node)e.getTo();
+            if(temp == node)
+                temp = (Node)e.getFrom();
             if(temp == cameFrom)
                 continue;
             if(temp == end)
                 return;
-            if(temp.lineStrings.contains(lineString))
+            if(temp.lineStrings.contains(lineString) && !nodes.contains(temp))
             {
-                bag.add(temp);
-                findNodesOnLineString(node, temp, end, bag, lineString);
+                nodes.add(temp);
+                if(nodes.size() > 10)
+                    System.out.println("Bag Size = " + nodes.size());
+                findNodesOnLineString(node, temp, end, nodes, lineString);
             }
         }
     }
