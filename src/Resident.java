@@ -38,48 +38,48 @@ public class Resident implements Steppable
     @Override
     public void step(SimState state)
     {
-        EbolaABM ebolaSim = (EbolaABM) state;
-
-        if(pathToSchool != null)
-        {
-            EbolaBuilder.Location loc = pathToSchool.remove(0);
-            this.x = loc.getX();
-            this.y = loc.getY();
-            if(pathToSchool.isEmpty())
-                pathToSchool = null;
-            return;
-        }
-
-        //if we are already at a source no need to move closer, now check if you can go to school
-        if(ebolaSim.road_cost.get((int)this.x, (int)this.y) == 0)
-        {
-            EbolaBuilder.Node closestNode = EbolaBuilder.getNearestNode((int)this.x, (int)this.y);
-            this.x = closestNode.location.getX();//teleport to nearest node, most likely only a couple cells away
-            this.y = closestNode.location.getY();
-            //get path to school
-//            pathToSchool = AStar.astarPath(ebolaSim, closestNode, nearestSchool.getNearestNode());
-//            if(pathToSchool == null)
-//                System.out.println("CANNOT Reach SCHOOL! ! ! ! ! ! !");
-            return;
-        }
-        //this code moves guy closer to each
-        DoubleBag val = new DoubleBag();
-        IntBag x = new IntBag();
-        IntBag y = new IntBag();
-        ebolaSim.road_cost.getRadialNeighbors((int)this.x, (int)this.y, 1, Grid2D.BOUNDED, true, val, x, y);
-        double min = Double.MAX_VALUE;
-        int index = 0;
-        for (int i = 0; i < val.size(); i++)
-            if (val.get(i) < min)
-            {
-                min = val.get(i);
-                index = i;
-            }
-
-        this.x = x.get(index);
-        this.y = y.get(index);
-
-        ebolaSim.world.setObjectLocation(this, new Double2D(this.x, this.y));
+//        EbolaABM ebolaSim = (EbolaABM) state;
+//
+//        if(pathToSchool != null)
+//        {
+//            EbolaBuilder.Location loc = pathToSchool.remove(0);
+//            this.x = loc.getX();
+//            this.y = loc.getY();
+//            if(pathToSchool.isEmpty())
+//                pathToSchool = null;
+//            return;
+//        }
+//
+//        //if we are already at a source no need to move closer, now check if you can go to school
+//        if(ebolaSim.road_cost.get((int)this.x, (int)this.y) == 0)
+//        {
+//            EbolaBuilder.Node closestNode = EbolaBuilder.getNearestNode((int)this.x, (int)this.y);
+//            this.x = closestNode.location.getX();//teleport to nearest node, most likely only a couple cells away
+//            this.y = closestNode.location.getY();
+//            //get path to school
+////            pathToSchool = AStar.astarPath(ebolaSim, closestNode, nearestSchool.getNearestNode());
+////            if(pathToSchool == null)
+////                System.out.println("CANNOT Reach SCHOOL! ! ! ! ! ! !");
+//            return;
+//        }
+//        //this code moves guy closer to each
+//        DoubleBag val = new DoubleBag();
+//        IntBag x = new IntBag();
+//        IntBag y = new IntBag();
+//        ebolaSim.road_cost.getRadialNeighbors((int)this.x, (int)this.y, 1, Grid2D.BOUNDED, true, val, x, y);
+//        double min = Double.MAX_VALUE;
+//        int index = 0;
+//        for (int i = 0; i < val.size(); i++)
+//            if (val.get(i) < min)
+//            {
+//                min = val.get(i);
+//                index = i;
+//            }
+//
+//        this.x = x.get(index);
+//        this.y = y.get(index);
+//
+//        ebolaSim.world.setObjectLocation(this, new Double2D(this.x, this.y));
     }
 
     public void setIsUrban(boolean val)
