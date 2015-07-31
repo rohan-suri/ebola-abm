@@ -72,7 +72,7 @@ public class Resident implements Steppable
 //                System.out.println("distance between school and household = " + distance);
 //            }
             long t = System.currentTimeMillis();
-            pathToSchool = AStar.astarPath(ebolaSim, closestNode, nearestSchool.getNearestNode());
+            //pathToSchool = AStar.astarPath(ebolaSim, closestNode, nearestSchool.getNearestNode());
             if((System.currentTimeMillis()-t)/1000 > 1)
                 System.out.println("time = " + (System.currentTimeMillis()-t)/1000 + " seconds");
             if(pathToSchool == null)

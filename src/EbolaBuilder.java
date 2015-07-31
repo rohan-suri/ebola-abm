@@ -34,9 +34,8 @@ public class EbolaBuilder
 
     public static HashSet<Geometry> removeGeometry = new HashSet<Geometry>();
     public static HashSet<LineString> allLineStrings = new HashSet<LineString>();
-
-    public static HashMap<LineString, List<Node>> lineStringToNodes = new HashMap<LineString, List<Node>>();
-
+    public static HashMap<Node, HashSet<Node>> nodeToSet = new HashMap<>(1000000, 0.75f);
+    public static List<HashSet<Node>> allSets = new LinkedList<>();
     public static void initializeWorld(EbolaABM sim, String pop_file, String admin_file, String age_dist_file)
     {
         ebolaSim = sim;
@@ -61,14 +60,39 @@ public class EbolaBuilder
             Bag masked = new Bag();
             File file2 = new File(Parameters.ROADS_SHAPE_PATH);
             URL roadLinkUL = file2.toURI().toURL();
-            ShapeFileImporter.read(roadLinkUL, ebolaSim.roadLinks, masked);
+            GeoToolsImporter.read(roadLinkUL, ebolaSim.roadLinks, masked);
             //GeoToolsImporter.removeAndExport(removeGeometry);
-            //extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
-//            System.out.println("Done getting information, now analyzing.");
-//            int sum = 0;
-//            int max = 0;
-//            int[] frequency = new int[100];
-//            ebolaSim.roadLinks.clear();
+            extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
+            System.out.println("Done getting information, now analyzing.");
+            int sum = 0;
+            int max = 0;
+            int[] frequency = new int[100];
+            ebolaSim.roadLinks.clear();
+            Bag allNodes = ebolaSim.roadNetwork.getAllNodes();
+            for(int i = 0; i < allNodes.size(); i++)
+            {
+                if(!nodeToSet.containsKey(allNodes.get(i)))
+                {
+                    HashSet<Node> hs = AStar.astarPath(ebolaSim, (Node) allNodes.get(i), new Node(new Location(0, 0)));
+                    int total_nodes = hs.size();
+                    sum += total_nodes;
+                    if(total_nodes > max)
+                        max = total_nodes;
+
+                    if(total_nodes < 500)
+                        frequency[total_nodes/5]++;
+                    else
+                        frequency[99]++;
+                    if(hs.size() < 10000)
+                    {
+                        for(Node n: hs)
+                        {
+                            removeGeometry.add(n.lineStrings.iterator().next());
+                        }
+                    }
+                }
+            }
+
 //            for(int i = 0; i < allNetworks.size(); i++)
 //            {
 //                HashSet<LineString> set = allNetworks.get(i);
@@ -104,27 +128,27 @@ public class EbolaBuilder
 //                }
 //
 //            }
-//            System.out.println("Max allRoadNodes = " + max);
-//            System.out.println("Average allRoadNodes = " + sum*1.0/allNetworks.size());
-//
-//            String[] s = new String[frequency.length];
-//            for(int i = 0; i < frequency.length; i++)
-//            {
-//                s[i] = (i+1)*5 + "";
-//            }
-//
-//            for(int i = 0; i < frequency.length; i++)
-//            {
-//                System.out.print(frequency[i] + " \t\t\t");
-//                ebolaSim.roadNetworkDistribution.addValue(frequency[i],"Number of allRoadNodes",s[i]);
-//            }
-//            System.out.println();
-//            for(int i = 0; i < frequency.length; i++)
-//            {
-//                System.out.print((i+1)*5 + " \t\t\t\t");
-//            }
-//            System.out.println("\nExporting...");
-//            GeoToolsImporter.removeAndExport(removeGeometry);
+            System.out.println("Max allRoadNodes = " + max);
+            //System.out.println("Average allRoadNodes = " + sum*1.0/allNetworks.size());
+
+            String[] s = new String[frequency.length];
+            for(int i = 0; i < frequency.length; i++)
+            {
+                s[i] = (i+1)*5 + "";
+            }
+
+            for(int i = 0; i < frequency.length; i++)
+            {
+                System.out.print(frequency[i] + " \t\t\t");
+                ebolaSim.roadNetworkDistribution.addValue(frequency[i],"Number of allRoadNodes",s[i]);
+            }
+            System.out.println();
+            for(int i = 0; i < frequency.length; i++)
+            {
+                System.out.print((i+1)*5 + " \t\t\t\t");
+            }
+            System.out.println("\nExporting...");
+            GeoToolsImporter.removeAndExport(removeGeometry);
             //ShapeFileExporter.write("road_links_100", ebolaSim.roadLinks);
             //needed to assure same envelope
             System.out.println("about to read int Ascii grid");
