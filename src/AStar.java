@@ -24,7 +24,7 @@ public class AStar {
      * @param goal
      * @return
      */
-    static public HashSet<EbolaBuilder.Node> astarPath(EbolaABM ebolaSim, EbolaBuilder.Node start, EbolaBuilder.Node goal) {
+    static public ArrayList<EbolaBuilder.Location> astarPath(EbolaABM ebolaSim, EbolaBuilder.Node start, EbolaBuilder.Node goal) {
 //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
 //            return cache.get(cacheKey);
@@ -53,7 +53,6 @@ public class AStar {
         // A* containers: allRoadNodes to be investigated, allRoadNodes that have been investigated
         HashSet<AStarNodeWrapper> closedSet = new HashSet<>(),
                 openSet = new HashSet<>();
-        HashSet<EbolaBuilder.Node> returnVal = new HashSet<>();
         openSet.add(startNode);
 
 
@@ -66,13 +65,10 @@ public class AStar {
             }
             if(x.node == goal ){ // we have found the shortest possible path to the goal!
                 // Reconstruct the path and send it back.
-                //return reconstructPath(goalNode);
-                return null;
+                return reconstructPath(goalNode);
             }
             openSet.remove(x); // maintain the lists
             closedSet.add(x);
-            returnVal.add(x.node);
-            EbolaBuilder.nodeToSet.put(x.node, returnVal);
 
             // check all the neighbors of this location
             for(Edge l: x.node.links){
@@ -118,7 +114,7 @@ public class AStar {
 //                System.out.println("Time = " + System.currentTimeMillis());
         }
         System.out.println("Searched " + foundNodes.size() + " nodes but could not find it");
-        return returnVal;
+        return null;
     }
 
     /**
