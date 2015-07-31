@@ -129,6 +129,7 @@ public class EbolaBuilder
             //ShapeFileExporter.write("road_links_100", ebolaSim.roadLinks);
             //needed to assure same envelope
             System.out.println("about to read int Ascii grid");
+            long t = System.currentTimeMillis();
             InputStream inputStream = new FileInputStream(Parameters.POP_PATH);
             ArcInfoASCGridImporter.read(inputStream, GeomGridField.GridDataType.INTEGER, gridField);
             //align mbr
@@ -138,12 +139,9 @@ public class EbolaBuilder
 
             ebolaSim.roadLinks.setMBR(globalMBR);
             gridField.setMBR(globalMBR);
-            long t = System.currentTimeMillis();
             //Read in the road cost file
-            GeomGridField rcGeom = new GeomGridField();
-            InputStream road_cost_stream = new FileInputStream(Parameters.ROADS_COST_PATH);
-            //ArcInfoASCGridImporter.read(road_cost_stream, GeomGridField.GridDataType.DOUBLE, rcGeom);
-            ebolaSim.road_cost = (DoubleGrid2D)rcGeom.getGrid();
+            readInRoadCost();
+
             System.out.println("Time " + ((System.currentTimeMillis()-t)/1000/60) + " minutes");
 
             //TEMP
@@ -187,6 +185,31 @@ public class EbolaBuilder
         //assignNearestNode(ebolaSim.householdGrid);
         System.out.println("time = " + ((System.currentTimeMillis() - time) / 1000 / 60) + " minutes");
     }
+
+    static void readInRoadCost()
+    {
+        try
+        {
+            ebolaSim.road_cost = new DoubleGrid2D(ebolaSim.world_width, ebolaSim.world_height);
+
+            FileInputStream fileInputStream = new FileInputStream(new File(Parameters.ROADS_COST_PATH));
+            DataInputStream dataInputStream = new DataInputStream(fileInputStream);
+
+            for(int i = 0; i < ebolaSim.world_width; i++)
+                for(int j = 0; j < ebolaSim.world_height; j++)
+                    ebolaSim.road_cost.set(i, j, dataInputStream.readDouble());
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
 
     /**
      * Reads in the schools and add them to the grid
