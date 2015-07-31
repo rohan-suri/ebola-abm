@@ -5,7 +5,9 @@
 
 // Haiti project  - searching the nearest road
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import sim.field.network.Edge;
 import sim.util.Bag;
@@ -28,6 +30,7 @@ public class AStar {
 //            return cache.get(cacheKey);
 //        
         // initial check
+        long startTime = System.currentTimeMillis();
         if (start == null || goal == null) {
             System.out.println("Error: invalid node provided to AStar");
         }
@@ -48,8 +51,8 @@ public class AStar {
         startNode.fx = heuristic(start, goal);
 
         // A* containers: allRoadNodes to be investigated, allRoadNodes that have been investigated
-        ArrayList<AStarNodeWrapper> closedSet = new ArrayList<AStarNodeWrapper>(),
-                openSet = new ArrayList<AStarNodeWrapper>();
+        HashSet<AStarNodeWrapper> closedSet = new HashSet<>(),
+                openSet = new HashSet<>();
         openSet.add(startNode);
 
 
@@ -106,8 +109,11 @@ public class AStar {
                     nextNode.fx = nextNode.gx + nextNode.hx;
                 }
             }
-        }
 
+//            if(foundNodes.size()%10000 == 0)
+//                System.out.println("Time = " + System.currentTimeMillis());
+        }
+        System.out.println("Searched " + foundNodes.size() + " nodes but could not find it");
         return null;
     }
 
@@ -143,7 +149,7 @@ public class AStar {
      * @param set list of open Nodes
      * @return
      */
-    static AStarNodeWrapper findMin(ArrayList<AStarNodeWrapper> set) {
+    static AStarNodeWrapper findMin(Collection<AStarNodeWrapper> set) {
         double min = Double.MAX_VALUE;
         AStarNodeWrapper minNode = null;
         for (AStarNodeWrapper n : set) {
