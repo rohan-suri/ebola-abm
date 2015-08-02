@@ -230,7 +230,7 @@ public class EbolaBuilder
                 Point point = schools_vector.getGeometryLocation(school);
                 double x = point.getX(), y = point.getY();
                 int xint = (int) Math.floor(xcols * (x - xmin) / (xmax - xmin)), yint = (int) (ycols - Math.floor(ycols * (y - ymin) / (ymax - ymin))); // REMEMBER TO FLIP THE Y VALUE
-                School s = new School(xint, yint);
+                School s = new School(new Int2D(xint, yint));
                 ebolaSim.schools.add(s);
                 //System.out.println("(" + xint + ", " + yint + ")");
                 ebolaSim.schoolGrid.setObjectLocation(s, xint, yint);
@@ -252,11 +252,11 @@ public class EbolaBuilder
         for(Object o: objects)
         {
             Structure structure = (Structure)o;
-            Node node = getNearestNode(structure.getX(), structure.getY());
+            Node node = getNearestNode(structure.getLocation().getX(), structure.getLocation().getY());
             if(node != null)
             {
                 structure.setNearestNode(node);
-                double distance = new Double2D(structure.getX(), structure.getY()).distance(new Double2D(node.location.getX(), node.location.getY()));
+                double distance = structure.getLocation().distance(node.location);
                 distance *= (Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE)/1000.0;
                 if(distance > max_distance)
                     max_distance = distance;
@@ -271,7 +271,7 @@ public class EbolaBuilder
         System.out.println("\nAverage distance = " + sum/count + " km");
         System.out.println("Max distance household to node = " + max_distance + " kilometers");
     }
-    private static int[] frequency = new int[100];
+    private static int[] frequency = new int[300];
     /**
      *
      * @param x source x coordinate
@@ -309,7 +309,7 @@ public class EbolaBuilder
 
         if(nodes == null || nodes.isEmpty())
         {
-            for(int i = 1; i <= 100; i++)
+            for(int i = 1; i < 300; i++)
             {
                 ebolaSim.allRoadNodes.getRadialNeighbors(cX, cY, i, Grid2D.BOUNDED, true, val, xBag, yBag);
                 if(val != null && !val.isEmpty())
@@ -320,9 +320,9 @@ public class EbolaBuilder
                 }
             }
 
-            //System.out.println("NO NODE NEARBY!!!!!!!!!!!!!");
+            System.out.println("NO NODE NEARBY!!!!!!!!!!!!!");
             frequency[9]++;
-            return new Node(new Location(cX, cY));
+            return new Node(new Int2D(cX, cY));
         }
         else
         {
@@ -485,7 +485,7 @@ public class EbolaBuilder
             Node n;
             if (ns == null)
             {
-                n = new Node(new Location(xint, yint));
+                n = new Node(new Int2D(xint, yint));
                 n.lineStrings.add(geometry);
                 n.index = i;
                 ebolaSim.allRoadNodes.setObjectLocation(n, xint, yint);
@@ -539,7 +539,7 @@ public class EbolaBuilder
                 continue;
             }
 
-            int weight = (int) n.location.distanceTo(oldNode.location); // weight is just
+            int weight = (int) n.location.distance(oldNode.location); // weight is just
             // distance
             //add it to the thinned network if it is the first or last in the cs.
 
@@ -561,27 +561,6 @@ public class EbolaBuilder
         //if we haven't found any links the network should be null
 
     }
-
-//    private static void findNodesOnLineString(Node cameFrom, Node node, Node end, HashSet<Node> nodes, LineString lineString)
-//    {
-//        for(Edge e: node.links)
-//        {
-//            Node temp = (Node)e.getTo();
-//            if(temp == node)
-//                temp = (Node)e.getFrom();
-//            if(temp == cameFrom)
-//                continue;
-//            if(temp == end)
-//                return;
-//            if(temp.lineStrings.contains(lineString) && !nodes.contains(temp))
-//            {
-//                nodes.add(temp);
-//                if(nodes.size() > 10)
-//                    System.out.println("Bag Size = " + nodes.size());
-//                findNodesOnLineString(node, temp, end, nodes, lineString);
-//            }
-//        }
-//    }
 
     private static void setUpAgeDist(String age_dist_file)
     {
@@ -739,14 +718,14 @@ public class EbolaBuilder
                                 x_coord = (j*Parameters.WORLD_TO_POP_SCALE) + (int)(ebolaSim.random.nextDouble() * Parameters.WORLD_TO_POP_SCALE);
 
                             } while (false);//ebolaSim.householdGrid.getObjectsAtLocation(x_coord, y_coord) != null);
-                            Household h = new Household(x_coord, y_coord);
+                            Household h = new Household(new Int2D(x_coord, y_coord));
                             h.setCountry(country);
                             ebolaSim.householdGrid.setObjectLocation(h, new Int2D(x_coord, y_coord));
 
                             int household_size  = pickHouseholdSize(country);//use log distribution to pick correct household size
 
                             //get nearest school
-                            School nearest_school = getNearestSchool(h.x, h.y);
+                            School nearest_school = getNearestSchool(h.getLocation().getX(), h.getLocation().getY());
 
                             //add members to the household
                             for(int m = 0; m < household_size; m++)
@@ -754,13 +733,9 @@ public class EbolaBuilder
                                 if(num_people == 0)
                                     break;
                                 scaled_num_people--;
-                                Resident r = new Resident();
+                                Resident r = new Resident(new Int2D(x_coord, y_coord));
                                 ebolaSim.schedule.scheduleRepeating(r);
-                                r.household = h;
-                                double ran_y = ebolaSim.random.nextDouble();//Add x jitter
-                                double ran_x = ebolaSim.random.nextDouble();//Add y jitter
-                                r.x = x_coord;
-                                r.y = y_coord;
+                                r.setHousehold(h);
                                 r.setPop_density(scaled_num_people);
                                 r.setAge(pick_age(age_dist, county_id));
                                 if(nearest_school != null)
@@ -832,7 +807,7 @@ public class EbolaBuilder
         for(Object o: schools)
         {
             School school = (School)o;
-            double distance = new Double2D(school.getX(), school.getY()).distance(new Double2D(x, y));
+            double distance = school.getLocation().distance(new Double2D(x, y));
             if(distance < min_distance)
             {
                 min_distance = distance;
@@ -993,14 +968,16 @@ public class EbolaBuilder
         return age;
     }
 
-    public static class Node {
+    public static class Node
+    {
+        public Int2D location;
 
-        Location location;
         ArrayList<Edge> links;
         double weightOnLineString;//measures the weight on the line string from 0
         public HashSet<LineString> lineStrings = new HashSet<LineString>();
         public int index;
-        public Node(Location l) {
+        public Node(Int2D l)
+        {
             location = l;
             links = new ArrayList<Edge>();
         }
@@ -1015,113 +992,4 @@ public class EbolaBuilder
         }
     }
 
-    public static class Location
-    {
-        private int x, y;
-        public Location(int x, int y)
-        {
-            this.x = x;
-            this.y = y;
-        }
-        public int getX(){return x;}
-        public int getY(){return y;}
-        public double distanceTo(Location o)
-        {
-            return Math.sqrt(Math.pow(o.x - x, 2) + Math.pow(o.y - y, 2)*1.0);
-        }
-    }
-
-    /**
-     * Used to find the nearest node for each space
-     *
-     */
-    public static class Crawler {
-
-        Node node;
-        Location location;
-
-        public Crawler(Node n, Location l) {
-            node = n;
-            location = l;
-        }
-    }
-    /**
-     * Calculate the allRoadNodes nearest to each location and store the information
-     *
-     * @param closestNodes
-     *            - the field to populate
-     */
-    static ObjectGrid2D setupNearestNodes(EbolaABM ebolaSim) {
-
-        ObjectGrid2D closestNodes = new ObjectGrid2D(ebolaSim.world_width, ebolaSim.world_height);
-        ArrayList<Crawler> crawlers = new ArrayList<Crawler>();
-
-        for (Object o : ebolaSim.roadNetwork.allNodes) {
-            Node n = (Node) o;
-            Crawler c = new Crawler(n, n.location);
-            crawlers.add(c);
-        }
-
-        // while there is unexplored space, continue!
-        while (crawlers.size() > 0) {
-            ArrayList<Crawler> nextGeneration = new ArrayList<Crawler>();
-
-            // randomize the order in which cralwers are considered
-            int size = crawlers.size();
-
-            for (int i = 0; i < size; i++) {
-
-                // randomly pick a remaining crawler
-                int index = ebolaSim.random.nextInt(crawlers.size());
-                Crawler c = crawlers.remove(index);
-
-                // check if the location has already been claimed
-                Node n = (Node) closestNodes.get(c.location.getX(), c.location.getY());
-
-
-                if (n == null) { // found something new! Mark it and reproduce
-
-                    // set it
-                    closestNodes.set(c.location.getX(), c.location.getY(), c.node);
-
-                    // reproduce
-                    Bag neighbors = new Bag();
-
-                    getAllNeighborLocations(neighbors, c.location.getX(), c.location.getY());
-
-                    for (Object o : neighbors) {
-                        Location l = (Location) o;
-                        //Location l = (Location) o;
-                        if (l == c.location) {
-                            continue;
-                        }
-                        Crawler newc = new Crawler(c.node, l);
-                        nextGeneration.add(newc);
-                    }
-                }
-                // otherwise just die
-            }
-            crawlers = nextGeneration;
-        }
-        return closestNodes;
-    }
-
-    /**
-     * adds locations to neighbors that represent up, down, left and right
-     *     *
-     *   * C *
-     *     *
-     * @param neighbors
-     */
-    private static void getAllNeighborLocations(Bag neighbors, int x, int y)
-    {
-        if(x > 0)
-            neighbors.add(new Location(x-1, y));
-        if(x < ebolaSim.world_width-1)
-            neighbors.add(new Location(x + 1, y));
-        if(y > 0)
-            neighbors.add(new Location(x, y-1));
-        if(y < ebolaSim.world_height-1)
-            neighbors.add(new Location(x, y+1));
-    }
 }

@@ -53,6 +53,7 @@ public class EbolaABM extends SimState
     int total_lib_pop = 0;
     int total_sl_pop = 0;
     int total_guinea_pop = 0;
+    int total_no_school_count = 0;
 
     public Bag residents;
 

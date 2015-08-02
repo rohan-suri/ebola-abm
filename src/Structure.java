@@ -1,40 +1,29 @@
 import sim.util.Bag;
+import sim.util.Int2D;
 
 /**
  * Created by rohansuri on 7/24/15.
  */
 public abstract class Structure
 {
-    protected int x;
-    protected int y;
+    protected Int2D location;
     protected EbolaBuilder.Node nearestNode;
     protected Bag members;//all people that go to this structure on the daily.  Could be students, household members, hospital staff, etc
 
-    public Structure(int x, int y)
+    public Structure(Int2D location)
     {
-        this.x = x;
-        this.y = y;
+        this.location = location;
         members = new Bag();
     }
 
-    public int getX()
+    public Int2D getLocation()
     {
-        return x;
+        return location;
     }
 
-    public void setX(int x)
+    public void setLocation(Int2D location)
     {
-        this.x = x;
-    }
-
-    public int getY()
-    {
-        return y;
-    }
-
-    public void setY(int y)
-    {
-        this.y = y;
+        this.location = location;
     }
 
     public void setNearestNode(EbolaBuilder.Node node)

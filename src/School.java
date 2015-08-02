@@ -1,4 +1,5 @@
 import sim.util.Bag;
+import sim.util.Int2D;
 
 /**
  * Created by rohansuri on 7/20/15.
@@ -6,8 +7,8 @@ import sim.util.Bag;
 public class School extends Structure {
     private int size;
 
-    public School(int x, int y) {
-        super(x, y);
+    public School(Int2D location) {
+        super(location);
 
         members = new Bag();
     }

@@ -4,10 +4,7 @@
  */
 
 // Haiti project  - searching the nearest road
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 import sim.field.network.Edge;
 import sim.util.Bag;
@@ -24,7 +21,7 @@ public class AStar {
      * @param goal
      * @return
      */
-    static public ArrayList<EbolaBuilder.Location> astarPath(EbolaABM ebolaSim, EbolaBuilder.Node start, EbolaBuilder.Node goal) {
+    static public LinkedList<Int2D> astarPath(EbolaABM ebolaSim, EbolaBuilder.Node start, EbolaBuilder.Node goal) {
 //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
 //            return cache.get(cacheKey);
@@ -124,8 +121,8 @@ public class AStar {
      * @return an ArrayList of allRoadNodes that lead from the
      * given Node to the Node from which the search began 
      */
-    static ArrayList<EbolaBuilder.Location> reconstructPath(AStarNodeWrapper n) {
-        ArrayList<EbolaBuilder.Location> result = new ArrayList<EbolaBuilder.Location>();
+    static LinkedList<Int2D> reconstructPath(AStarNodeWrapper n) {
+        LinkedList<Int2D> result = new LinkedList<>();
         AStarNodeWrapper x = n;
         while (x.cameFrom != null) {
             result.add(0, x.node.location); // add this edge to the front of the list
@@ -140,7 +137,7 @@ public class AStar {
      * @return notional "distance" between the given allRoadNodes.
      */
     static double heuristic(EbolaBuilder.Node x, EbolaBuilder.Node y) {
-        return x.location.distanceTo(y.location);
+        return x.location.distance(y.location);
     }
 
     /**
