@@ -16,6 +16,10 @@ public class Resident implements Steppable
     private boolean isUrban;//true - urban, false - rural
     private School nearestSchool;
     private LinkedList<Int2D> pathToDestination;
+    private LinkedList<Int2D> pathToSchool;
+    private LinkedList<Int2D> pathToHome;
+    boolean cannotMove = false;
+
     private int age;
     private int pop_density;
     private boolean goToSchool = true;
@@ -31,45 +35,57 @@ public class Resident implements Steppable
     {
         EbolaABM ebolaSim = (EbolaABM) state;
         long cStep = ebolaSim.schedule.getSteps();
-        if(pathToDestination == null && goToSchool)
+        if(pathToDestination == null && goToSchool && !cannotMove)
         {
             //if we are already at a source no need to move closer, now check if you can go to school
             location = new Int2D(household.getNearestNode().location.getX(), household.getNearestNode().location.getY());//teleport to nearest node, most likely only a couple cells away
             //get path to school
             long t = System.currentTimeMillis();
-            if(!household.cachedPaths.containsKey(nearestSchool))
+            if(pathToSchool == null)//!household.cachedPaths.containsKey(nearestSchool))
             {
                 pathToDestination = AStar.astarPath(ebolaSim, household.getNearestNode(), nearestSchool.getNearestNode());
                 household.addPath(nearestSchool, pathToDestination);
+                if(pathToDestination == null)
+                {
+                    cannotMove = true;
+                    System.out.println((ebolaSim.roadLinks.getMBR().getMinX() + (household.location.getX()*0.000833333333)) + "," + (ebolaSim.roadLinks.getMBR().getMinY() + (((ebolaSim.world_height-household.location.getY())*0.000833333333))));
+                    System.out.println(cStep + " CANNOT Reach SCHOOL no_school_count =  " + ebolaSim.no_school_count++);
+                }
+                else
+                {
+                    pathToSchool = (LinkedList)pathToDestination.clone();
+                    System.out.println("Found path with size " + pathToDestination.size());
+                }
             }
             else
             {
-                pathToDestination = household.cachedPaths.get(nearestSchool);
+                pathToDestination = (LinkedList)pathToSchool.clone();//household.cachedPaths.get(nearestSchool);
             }
             goToSchool = false;
-//            if(pathToDestination == null)
-//            {
-//                System.out.println((ebolaSim.roadLinks.getMBR().getMinX() + (household.location.getX()*0.000833333333)) + "," + (ebolaSim.roadLinks.getMBR().getMinY() + (((ebolaSim.world_height-household.location.getY())*0.000833333333))));
-//                System.out.println(cStep + " CANNOT Reach SCHOOL no_school_count =  " + ebolaSim.no_school_count++);
-//            }
             updatePositionOnMap(ebolaSim);
             return;
 
         }
-        else if(pathToDestination == null && !goToSchool)
+        else if(pathToDestination == null && !goToSchool && !cannotMove)
         {
             //if we found it go back to home
             //get path to school
             long t = System.currentTimeMillis();
-            pathToDestination = nearestSchool.getPath(household);
-            if(!nearestSchool.cachedPaths.containsKey(household))
+            if(pathToHome == null)//!nearestSchool.cachedPaths.containsKey(household))
             {
                 pathToDestination = AStar.astarPath(ebolaSim, nearestSchool.getNearestNode(), household.getNearestNode());
                 nearestSchool.addPath(household, pathToDestination);
+                if(pathToDestination == null)
+                {
+                    cannotMove = true;
+                }
+                else
+                    pathToHome = (LinkedList)pathToDestination.clone();
+
             }
             else
             {
-                pathToDestination = nearestSchool.cachedPaths.get(nearestSchool);
+                pathToDestination = (LinkedList)pathToHome.clone();//nearestSchool.cachedPaths.get(nearestSchool);
             }
 
 //                if(pathToDestination == null)
@@ -81,7 +97,8 @@ public class Resident implements Steppable
             updatePositionOnMap(ebolaSim);
             return;
         }
-        else if(pathToDestination.isEmpty()) {
+        else if(pathToDestination != null && pathToDestination.isEmpty())
+        {
             pathToDestination = null;
         }
         else if(pathToDestination != null)

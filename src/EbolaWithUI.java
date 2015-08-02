@@ -120,10 +120,10 @@ public class EbolaWithUI extends GUIState
 //        urbanPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
 //        display.attach(urbanPortrayal, "Urban Area");
 
-        FieldPortrayal2D roadPortrayal = new SparseGridPortrayal2D();
-        roadPortrayal.setField(((EbolaABM)state).allRoadNodes);
-        roadPortrayal.setPortrayalForAll(new OvalPortrayal2D(new Color(255, 64, 240), 1.0, true));
-        display.attach(roadPortrayal, "Road Node Trimmed");
+//        FieldPortrayal2D roadPortrayal = new SparseGridPortrayal2D();
+//        roadPortrayal.setField(((EbolaABM)state).allRoadNodes);
+//        roadPortrayal.setPortrayalForAll(new OvalPortrayal2D(new Color(255, 64, 240), 1.0, true));
+//        display.attach(roadPortrayal, "Road Node");
 
         FieldPortrayal2D schoolPortrayal = new SparseGridPortrayal2D();
         schoolPortrayal.setField(((EbolaABM)state).schoolGrid);
@@ -136,10 +136,10 @@ public class EbolaWithUI extends GUIState
         roadLinkPortrayal.setPortrayalForAll(new GeomPortrayal(Color.BLACK, 2.0, true));
         display.attach(roadLinkPortrayal, "Roads");
 
-        NetworkPortrayal2D roadNetworkPortrayal = new NetworkPortrayal2D();
-        roadNetworkPortrayal.setField(new SpatialNetwork2D(((EbolaABM)state).allRoadNodes, ((EbolaABM)state).roadNetwork));
-        roadNetworkPortrayal.setPortrayalForAll(new SimpleEdgePortrayal2D());
-        display.attach(roadNetworkPortrayal, "Road Network");
+//        NetworkPortrayal2D roadNetworkPortrayal = new NetworkPortrayal2D();
+//        roadNetworkPortrayal.setField(new SpatialNetwork2D(((EbolaABM)state).allRoadNodes, ((EbolaABM)state).roadNetwork));
+//        roadNetworkPortrayal.setPortrayalForAll(new SimpleEdgePortrayal2D());
+//        display.attach(roadNetworkPortrayal, "Road Network");
 
     }
 
