@@ -30,7 +30,6 @@ public class EbolaBuilder
      * A total of 17 groups, distribution is cumalitive so the last group should be ~ 1.0
      */
     private static HashMap<Integer, ArrayList<Double>> age_dist;
-    public static LinkedList<HashSet<LineString>> allNetworks;
 
     public static HashSet<Geometry> removeGeometry = new HashSet<Geometry>();
     public static HashSet<LineString> allLineStrings = new HashSet<LineString>();
@@ -38,30 +37,138 @@ public class EbolaBuilder
     {
         ebolaSim = sim;
         age_dist = new HashMap<Integer, ArrayList<Double>>();
-        //TODO TEMP AF
+        //TODO Hardcoded right now
         ebolaSim.world_height = 9990;
         ebolaSim.world_width = 9390;
-
-        readInSchools(Parameters.SCHOOLS_PATH);
-        setUpAgeDist(age_dist_file);
-        addHousesAndResidents(pop_file, admin_file);
 
         ebolaSim.allRoadNodes = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
         ebolaSim.roadNetwork = new Network();
         ebolaSim.roadLinks = new GeomVectorField(ebolaSim.world_width, ebolaSim.world_height);
         System.out.println("(" + ebolaSim.world_width + ", " + ebolaSim.world_height + ")");
-
-        GeomGridField gridField = new GeomGridField();//just to align mbr
-        GeomGridField roads_grid = null;
+        GeomVectorField schools_vector = null;
         try
         {
+            //read in roads shapefile
             Bag masked = new Bag();
             File file2 = new File(Parameters.ROADS_SHAPE_PATH);
             URL roadLinkUL = file2.toURI().toURL();
             ShapeFileImporter.read(roadLinkUL, ebolaSim.roadLinks, masked);
-            //extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
+
+            //read in schools shapefile
+            schools_vector = new GeomVectorField();
+            Bag schools_masked = new Bag();
+            File schools_file = new File(Parameters.SCHOOLS_PATH);
+            URL shapeURI = schools_file.toURI().toURL();
+            ShapeFileImporter.read(shapeURI, schools_vector, schools_masked);
+
             System.out.println("Done getting information, now analyzing.");
-//            int sum = 0;
+
+            //needed to assure same envelope
+            System.out.println("about to read int Ascii grid");
+            long t = System.currentTimeMillis();
+            GeomGridField gridField = new GeomGridField();//just to align mbr
+            InputStream inputStream = new FileInputStream(Parameters.POP_PATH);
+            ArcInfoASCGridImporter.read(inputStream, GeomGridField.GridDataType.INTEGER, gridField);
+
+            //align mbr for all vector files read
+            System.out.println("Algining");
+
+            Envelope globalMBR = ebolaSim.roadLinks.getMBR();
+
+            globalMBR.expandToInclude(gridField.getMBR());
+            globalMBR.expandToInclude(schools_vector.getMBR());
+
+            ebolaSim.roadLinks.setMBR(globalMBR);
+            gridField.setMBR(globalMBR);
+            schools_vector.setMBR(globalMBR);
+
+            //Read in the road cost file
+            readInRoadCost();
+
+            System.out.println("Time " + ((System.currentTimeMillis()-t)/1000/60) + " minutes");
+
+        }
+        catch(FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (MalformedURLException e)
+        {
+            e.printStackTrace();
+        }
+
+        //construct network of roads from roadLinks
+        extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim);
+        System.out.println("Un trimmed network size = " + ebolaSim.allRoadNodes.size());
+
+        //add schools from vectorfield
+        readInSchools(schools_vector);
+
+        //read in csv that gives the distribution of ages for the three countries from landscan data
+        setUpAgeDist(age_dist_file);
+
+        //Create the population - note, this call assumes all structures have been read in
+        addHousesAndResidents(pop_file, admin_file);
+
+        // set up the locations and nearest node capability
+        long time  = System.currentTimeMillis();
+        System.out.println("Assigning nearestNodes...");
+        assignNearestNode(ebolaSim.schoolGrid);
+        assignNearestNode(ebolaSim.householdGrid);
+        System.out.println("time = " + ((System.currentTimeMillis() - time) / 1000 / 60) + " minutes");
+    }
+
+    static void readInRoadCost()
+    {
+        try
+        {
+            ebolaSim.road_cost = new DoubleGrid2D(ebolaSim.world_width, ebolaSim.world_height);
+
+            FileInputStream fileInputStream = new FileInputStream(new File(Parameters.ROADS_COST_PATH));
+            DataInputStream dataInputStream = new DataInputStream(fileInputStream);
+
+            for(int i = 0; i < ebolaSim.world_width; i++)
+                for(int j = 0; j < ebolaSim.world_height; j++)
+                    ebolaSim.road_cost.set(i, j, dataInputStream.readDouble());
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void editAndWriteRaster()
+    {
+        //TEMP
+//            roads_grid = new GeomGridField();
+//            InputStream is = new FileInputStream("data/all_roads_trim_raster.asc");
+//            ArcInfoASCGridImporter.read(is, GeomGridField.GridDataType.INTEGER, roads_grid);
+        //TEMP AF
+//        IntGrid2D grid = (IntGrid2D)roads_grid.getGrid();
+//        for(int i = 0; i < grid.getWidth(); i++)
+//            for(int j = 0; j < grid.getHeight(); j++)
+//                if(grid.get(i,j) != -9999)
+//                    grid.set(i,j,0);
+//        roads_grid.setGrid(grid);
+//        //now write it
+//        try {
+//            BufferedWriter writer = new BufferedWriter( new FileWriter("roads_trim_zero.asc") );
+//            ArcInfoASCGridExporter.write(roads_grid, writer);
+//            writer.close();
+//        } catch (IOException ex) {
+//        /* handle exception */
+//            ex.printStackTrace();
+//        }
+    }
+
+    private static void remove()
+    {
+        //            int sum = 0;
 //            int max = 0;
 //            int[] frequency = new int[100];
 //            for(int i = 0; i < allNetworks.size(); i++)
@@ -120,123 +227,32 @@ public class EbolaBuilder
 //            }
 //            System.out.println("\nExporting...");
 //            GeoToolsImporter.removeAndExport(removeGeometry);
-            //ShapeFileExporter.write("road_links_100", ebolaSim.roadLinks);
-            //needed to assure same envelope
-            System.out.println("about to read int Ascii grid");
-            long t = System.currentTimeMillis();
-            InputStream inputStream = new FileInputStream(Parameters.POP_PATH);
-            ArcInfoASCGridImporter.read(inputStream, GeomGridField.GridDataType.INTEGER, gridField);
-            //align mbr
-            System.out.println("Algining");
-            Envelope globalMBR = ebolaSim.roadLinks.getMBR();
-            globalMBR.expandToInclude(gridField.getMBR());
-
-            ebolaSim.roadLinks.setMBR(globalMBR);
-            gridField.setMBR(globalMBR);
-            //Read in the road cost file
-            readInRoadCost();
-
-            System.out.println("Time " + ((System.currentTimeMillis()-t)/1000/60) + " minutes");
-
-            //TEMP
-//            roads_grid = new GeomGridField();
-//            InputStream is = new FileInputStream("data/all_roads_trim_raster.asc");
-//            ArcInfoASCGridImporter.read(is, GeomGridField.GridDataType.INTEGER, roads_grid);
-        }
-        catch(FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (MalformedURLException e)
-        {
-            e.printStackTrace();
-        }
-
-        extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim); // construct a network of roads
-        System.out.println("Un trimmed network size = " + ebolaSim.allRoadNodes.size());
-        // set up the locations and nearest node capability
-        long time  = System.currentTimeMillis();
-        System.out.println("Starting nearest nodes");
-        //ebolaSim.closestNodes = setupNearestNodes(ebolaSim);
-        //TEMP AF
-//        IntGrid2D grid = (IntGrid2D)roads_grid.getGrid();
-//        for(int i = 0; i < grid.getWidth(); i++)
-//            for(int j = 0; j < grid.getHeight(); j++)
-//                if(grid.get(i,j) != -9999)
-//                    grid.set(i,j,0);
-//        roads_grid.setGrid(grid);
-//        //now write it
-//        try {
-//            BufferedWriter writer = new BufferedWriter( new FileWriter("roads_trim_zero.asc") );
-//            ArcInfoASCGridExporter.write(roads_grid, writer);
-//            writer.close();
-//        } catch (IOException ex) {
-//        /* handle exception */
-//            ex.printStackTrace();
-//        }
-        assignNearestNode(ebolaSim.schoolGrid);
-        assignNearestNode(ebolaSim.householdGrid);
-        System.out.println("time = " + ((System.currentTimeMillis() - time) / 1000 / 60) + " minutes");
     }
-
-    static void readInRoadCost()
-    {
-        try
-        {
-            ebolaSim.road_cost = new DoubleGrid2D(ebolaSim.world_width, ebolaSim.world_height);
-
-            FileInputStream fileInputStream = new FileInputStream(new File(Parameters.ROADS_COST_PATH));
-            DataInputStream dataInputStream = new DataInputStream(fileInputStream);
-
-            for(int i = 0; i < ebolaSim.world_width; i++)
-                for(int j = 0; j < ebolaSim.world_height; j++)
-                    ebolaSim.road_cost.set(i, j, dataInputStream.readDouble());
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-    }
-
 
     /**
      * Reads in the schools and add them to the grid
      * @param school_file path to shapefile of schools
      */
-    static void readInSchools(String school_file)
+    static void readInSchools(GeomVectorField schools_vector)
     {
         ebolaSim.schoolGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
-        try
-        {
-            GeomVectorField schools_vector = new GeomVectorField();
-            Bag masked = new Bag();
-            File file2 = new File(Parameters.SCHOOLS_PATH);
-            URL shapeURI = file2.toURI().toURL();
-            ShapeFileImporter.read(shapeURI, schools_vector, masked);
-            Bag school_geom = schools_vector.getGeometries();
+        Bag school_geom = schools_vector.getGeometries();
 
-            Envelope e = schools_vector.getMBR();
-            double xmin = e.getMinX(), ymin = e.getMinY(), xmax = e.getMaxX(), ymax = e.getMaxY();
-            int xcols = ebolaSim.world_width - 1, ycols = ebolaSim.world_height - 1;
-            //System.out.println("Number of schools = " + school_geom.size());
-            for(Object o: school_geom)
-            {
-                MasonGeometry school = (MasonGeometry)o;
-                Point point = schools_vector.getGeometryLocation(school);
-                double x = point.getX(), y = point.getY();
-                int xint = (int) Math.floor(xcols * (x - xmin) / (xmax - xmin)), yint = (int) (ycols - Math.floor(ycols * (y - ymin) / (ymax - ymin))); // REMEMBER TO FLIP THE Y VALUE
-                School s = new School(new Int2D(xint, yint));
-                ebolaSim.schools.add(s);
-                //System.out.println("(" + xint + ", " + yint + ")");
-                ebolaSim.schoolGrid.setObjectLocation(s, xint, yint);
-            }
+        Envelope e = schools_vector.getMBR();
+        double xmin = e.getMinX(), ymin = e.getMinY(), xmax = e.getMaxX(), ymax = e.getMaxY();
+        int xcols = ebolaSim.world_width - 1, ycols = ebolaSim.world_height - 1;
+        //System.out.println("Number of schools = " + school_geom.size());
+        for(Object o: school_geom)
+        {
+            MasonGeometry school = (MasonGeometry)o;
+            Point point = schools_vector.getGeometryLocation(school);
+            double x = point.getX(), y = point.getY();
+            int xint = (int) Math.floor(xcols * (x - xmin) / (xmax - xmin)), yint = (int) (ycols - Math.floor(ycols * (y - ymin) / (ymax - ymin))); // REMEMBER TO FLIP THE Y VALUE
+            School s = new School(new Int2D(xint, yint));
+            ebolaSim.schools.add(s);
+            //System.out.println("(" + xint + ", " + yint + ")");
+            ebolaSim.schoolGrid.setObjectLocation(s, xint, yint);
         }
-        catch (IOException e){e.printStackTrace();}
     }
 
     /**

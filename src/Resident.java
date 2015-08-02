@@ -1,14 +1,8 @@
-import com.vividsolutions.jts.geom.CoordinateSequence;
-import com.vividsolutions.jts.geom.LineString;
 import sim.engine.SimState;
 import sim.engine.Steppable;
-import sim.field.grid.Grid2D;
 import sim.util.Double2D;
-import sim.util.DoubleBag;
 import sim.util.Int2D;
-import sim.util.IntBag;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -21,9 +15,11 @@ public class Resident implements Steppable
     private Household household;
     private boolean isUrban;//true - urban, false - rural
     private School nearestSchool;
-    private LinkedList<Int2D> pathToSchool;
+    private LinkedList<Int2D> pathToDestination;
     private int age;
     private int pop_density;
+    private boolean goToSchool = true;
+    private Structure workDayDestination;//destination that the individual goes to every work
 
     public Resident(Int2D location)
     {
@@ -35,52 +31,69 @@ public class Resident implements Steppable
     {
         EbolaABM ebolaSim = (EbolaABM) state;
         long cStep = ebolaSim.schedule.getSteps();
-        if(cStep == 0)
+        if(pathToDestination == null && goToSchool)
         {
             //if we are already at a source no need to move closer, now check if you can go to school
-            EbolaBuilder.Node closestNode = household.getNearestNode();
-            location = new Int2D(closestNode.location.getX(), closestNode.location.getY());//teleport to nearest node, most likely only a couple cells away
+            location = new Int2D(household.getNearestNode().location.getX(), household.getNearestNode().location.getY());//teleport to nearest node, most likely only a couple cells away
             //get path to school
             long t = System.currentTimeMillis();
-            pathToSchool = AStar.astarPath(ebolaSim, closestNode, nearestSchool.getNearestNode());
-
-            if(pathToSchool == null)
+            if(!household.cachedPaths.containsKey(nearestSchool))
             {
-                System.out.println((ebolaSim.roadLinks.getMBR().getMinX() + (closestNode.location.getX()*0.000833333333)) + "," + (ebolaSim.roadLinks.getMBR().getMinY() + (((ebolaSim.world_height-closestNode.location.getY())*0.000833333333))));
-                System.out.println(cStep + " CANNOT Reach SCHOOL no_school_count =  " + ebolaSim.no_school_count++);
+                pathToDestination = AStar.astarPath(ebolaSim, household.getNearestNode(), nearestSchool.getNearestNode());
+                household.addPath(nearestSchool, pathToDestination);
             }
+            else
+            {
+                pathToDestination = household.cachedPaths.get(nearestSchool);
+            }
+            goToSchool = false;
+//            if(pathToDestination == null)
+//            {
+//                System.out.println((ebolaSim.roadLinks.getMBR().getMinX() + (household.location.getX()*0.000833333333)) + "," + (ebolaSim.roadLinks.getMBR().getMinY() + (((ebolaSim.world_height-household.location.getY())*0.000833333333))));
+//                System.out.println(cStep + " CANNOT Reach SCHOOL no_school_count =  " + ebolaSim.no_school_count++);
+//            }
             updatePositionOnMap(ebolaSim);
             return;
 
         }
-        else
+        else if(pathToDestination == null && !goToSchool)
         {
-            if(location.getX() == this.nearestSchool.getNearestNode().location.getX() && location.getY() == this.nearestSchool.getNearestNode().location.getY())
+            //if we found it go back to home
+            //get path to school
+            long t = System.currentTimeMillis();
+            pathToDestination = nearestSchool.getPath(household);
+            if(!nearestSchool.cachedPaths.containsKey(household))
             {
-                //if we found it go back to home
-                //get path to school
-                long t = System.currentTimeMillis();
-                pathToSchool = AStar.astarPath(ebolaSim, nearestSchool.getNearestNode(), household.getNearestNode());
+                pathToDestination = AStar.astarPath(ebolaSim, nearestSchool.getNearestNode(), household.getNearestNode());
+                nearestSchool.addPath(household, pathToDestination);
+            }
+            else
+            {
+                pathToDestination = nearestSchool.cachedPaths.get(nearestSchool);
+            }
 
-//                if(pathToSchool == null)
+//                if(pathToDestination == null)
 //                {
-//                    System.out.println((ebolaSim.roadLinks.getMBR().getMinX() + (closestNode.location.getX()*0.000833333333)) + "," + (ebolaSim.roadLinks.getMBR().getMinY() + (((ebolaSim.world_height-closestNode.location.getY())*0.000833333333))));
+//                    System.out.println((ebolaSim.roadLinks.getMBR().getMinX() + (nearestSchool.location.getX()*0.000833333333)) + "," + (ebolaSim.roadLinks.getMBR().getMinY() + (((ebolaSim.world_height-nearestSchool.location.getY())*0.000833333333))));
 //                    System.out.println(cStep + " CANNOT Reach SCHOOL no_school_count =  " + ebolaSim.no_school_count++);
 //                }
-                updatePositionOnMap(ebolaSim);
-                return;
-            }
-            if(pathToSchool != null)
-            {
-                Int2D loc = pathToSchool.remove(0);
-                location = loc;
-                if(pathToSchool.isEmpty())
-                    pathToSchool = null;
-                updatePositionOnMap(ebolaSim);
-                return;
-            }
+            goToSchool = true;
+            updatePositionOnMap(ebolaSim);
             return;
         }
+        else if(pathToDestination.isEmpty()) {
+            pathToDestination = null;
+        }
+        else if(pathToDestination != null)
+        {
+            Int2D loc = pathToDestination.remove(0);
+            location = loc;
+            if(pathToDestination.isEmpty())
+                pathToDestination = null;
+            updatePositionOnMap(ebolaSim);
+            return;
+        }
+        return;
 
         //this code moves guy closer to each
 //        DoubleBag val = new DoubleBag();

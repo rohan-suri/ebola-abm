@@ -16,6 +16,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * Created by rohansuri on 7/7/15.
@@ -82,5 +84,4 @@ public class EbolaABM extends SimState
         doLoop(EbolaABM.class, args);
         System.exit(0);
     }
-
 }
