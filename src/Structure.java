@@ -3,6 +3,7 @@ import sim.util.Int2D;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by rohansuri on 7/24/15.
@@ -12,7 +13,7 @@ public abstract class Structure
     protected Int2D location;
     protected EbolaBuilder.Node nearestNode;
     protected Bag members;//all people that go to this structure on the daily.  Could be students, household members, hospital staff, etc
-    protected HashMap<Structure, LinkedList<Int2D>> cachedPaths;
+    protected HashMap<Structure, List<Int2D>> cachedPaths;
 
     public Structure(Int2D location)
     {
@@ -56,17 +57,26 @@ public abstract class Structure
         return members;
     }
 
-    public void addPath(Structure dest, LinkedList<Int2D> path)
-    {
-        cachedPaths.put(dest, path);
-    }
-
-    /**
-     * @param dest Destination Structure
-     * @return @null if not cached otherwise returns paths from this Structure to destination
+    /** Uses Astar to find shortest path and keeps caches of all previously found paths.
+     * @param destination Destination Structure
+     * @return null if no path exist, otherwise uses AStar to find shortest path to destination
      */
-    public LinkedList<Int2D> getPath(Structure dest)
+    public Route getRoute(Structure destination)
     {
-        return cachedPaths.get(dest);
+        if(cachedPaths.containsKey(destination))//means we have this path cached
+        {
+            List<Int2D> path = cachedPaths.get(destination);
+            if(path == null)
+                return null;
+            return new Route(cachedPaths.get(destination));
+        }
+        else
+        {
+            List<Int2D> path = AStar.astarPath(this.getNearestNode(), destination.getNearestNode());
+            cachedPaths.put(destination, path);
+            if(path != null)
+                return new Route(path);
+            return null;
+        }
     }
 }

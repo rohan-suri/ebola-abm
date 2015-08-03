@@ -16,12 +16,11 @@ public class AStar {
 
     /**
      * Assumes that both the start and end location are NODES as opposed to LOCATIONS
-     * @param ebolaSim
      * @param start
      * @param goal
      * @return
      */
-    static public LinkedList<Int2D> astarPath(EbolaABM ebolaSim, EbolaBuilder.Node start, EbolaBuilder.Node goal) {
+    static public List<Int2D> astarPath(EbolaBuilder.Node start, EbolaBuilder.Node goal) {
 //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
 //            return cache.get(cacheKey);
@@ -121,8 +120,8 @@ public class AStar {
      * @return an ArrayList of allRoadNodes that lead from the
      * given Node to the Node from which the search began 
      */
-    static LinkedList<Int2D> reconstructPath(AStarNodeWrapper n) {
-        LinkedList<Int2D> result = new LinkedList<>();
+    static List<Int2D> reconstructPath(AStarNodeWrapper n) {
+        List<Int2D> result = new ArrayList<>(20);
         AStarNodeWrapper x = n;
         while (x.cameFrom != null) {
             result.add(0, x.node.location); // add this edge to the front of the list
