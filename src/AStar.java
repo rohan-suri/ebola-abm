@@ -7,7 +7,6 @@
 import java.util.*;
 
 import sim.field.network.Edge;
-import sim.util.Bag;
 import sim.util.Int2D;
 
 @SuppressWarnings("restriction")
@@ -20,7 +19,7 @@ public class AStar {
      * @param goal
      * @return
      */
-    static public List<Int2D> astarPath(EbolaBuilder.Node start, EbolaBuilder.Node goal) {
+    static public Route astarPath(EbolaBuilder.Node start, EbolaBuilder.Node goal) {
 //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
 //            return cache.get(cacheKey);
@@ -61,7 +60,7 @@ public class AStar {
             }
             if(x.node == goal ){ // we have found the shortest possible path to the goal!
                 // Reconstruct the path and send it back.
-                return reconstructPath(goalNode);
+                return reconstructRoute(goalNode);
             }
             openSet.remove(x); // maintain the lists
             closedSet.add(x);
@@ -117,18 +116,20 @@ public class AStar {
      * Takes the information about the given node n and returns the path that
      * found it.
      * @param n the end point of the path
-     * @return an ArrayList of allRoadNodes that lead from the
-     * given Node to the Node from which the search began 
+     * @return an Route from start to goal
      */
-    static List<Int2D> reconstructPath(AStarNodeWrapper n) {
+    static Route reconstructRoute(AStarNodeWrapper n) {
         List<Int2D> result = new ArrayList<>(20);
+        double totalDistance = 0;
         AStarNodeWrapper x = n;
         while (x.cameFrom != null) {
             result.add(0, x.node.location); // add this edge to the front of the list
             x = x.cameFrom;
+            if(x.cameFrom != null)
+                totalDistance += x.node.location.distance(x.cameFrom.node.location);
         }
 
-        return result;
+        return new Route(result, totalDistance);
     }
 
     /**

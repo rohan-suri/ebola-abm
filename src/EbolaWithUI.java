@@ -47,8 +47,8 @@ public class EbolaWithUI extends GUIState
         displayFrame.setVisible(true);
 
         JFreeChart roadNetworkChart;
-        roadNetworkChart = ChartFactory.createBarChart("Road Network Distribution", "Number of Nodes",
-                "Total Number", ((EbolaABM) this.state).roadNetworkDistribution, PlotOrientation.VERTICAL, false, false,
+        roadNetworkChart = ChartFactory.createBarChart("Distribution Chart", "Distance",
+                "Frequency", ((EbolaABM) this.state).distribution, PlotOrientation.VERTICAL, false, false,
                 false);
         roadNetworkChart.setBackgroundPaint(Color.WHITE);
         roadNetworkChart.getTitle().setPaint(Color.BLACK);

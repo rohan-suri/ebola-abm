@@ -33,7 +33,7 @@ public class EbolaABM extends SimState
     public SparseGrid2D allRoadNodes;
     public DoubleGrid2D road_cost; //accumalated cost to get to nearest node on the road network
 
-    DefaultCategoryDataset roadNetworkDistribution = new DefaultCategoryDataset(); //dataset for seeing age groups of infected
+    DefaultCategoryDataset distribution = new DefaultCategoryDataset(); //dataset for seeing age groups of infected
 
     public Bag schools = new Bag();
 
@@ -56,6 +56,11 @@ public class EbolaABM extends SimState
     int total_sl_pop = 0;
     int total_guinea_pop = 0;
     int total_no_school_count = 0;
+//    double route_distance_count;
+//    double route_distance_sum;
+//    double max_route_distance;
+//    int[] roadDistanceHistogram = new int[50];
+//    boolean updatedChart = false;
 
     public Bag residents;
 

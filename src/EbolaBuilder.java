@@ -727,7 +727,7 @@ public class EbolaBuilder
                         while(scaled_num_people > 0)
                         {
                             int x_coord, y_coord;
-                            //randomly pick a space within the sqare kilometer
+                            //randomly pick a space within the square kilometer
                             do
                             {
                                 y_coord = (i*Parameters.WORLD_TO_POP_SCALE) + (int)(ebolaSim.random.nextDouble() * Parameters.WORLD_TO_POP_SCALE);

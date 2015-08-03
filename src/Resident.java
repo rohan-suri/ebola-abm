@@ -16,6 +16,7 @@ public class Resident implements Steppable
     private boolean isUrban;//true - urban, false - rural
     private School nearestSchool;
     private Route route;
+    private int routePosition;
     boolean cannotMove = false;
 
     private int age;
@@ -33,10 +34,28 @@ public class Resident implements Steppable
     {
         EbolaABM ebolaSim = (EbolaABM) state;
         long cStep = ebolaSim.schedule.getSteps();
+//        if(cStep == 2 && !ebolaSim.updatedChart)
+//        {
+//            for(int i = 0; i < ebolaSim.roadDistanceHistogram.length; i++)
+//                ebolaSim.distribution.addValue((Number)ebolaSim.roadDistanceHistogram[i], "All distances", i);
+//            ebolaSim.updatedChart = true;
+//            System.out.println("Max route distance = " + ebolaSim.max_route_distance);
+//        }
         if(route == null && goToSchool && !cannotMove)
         {
             route = household.getRoute(this.nearestSchool);
-
+            routePosition = 0;
+//            if(cStep == 0 && route != null)
+//            {
+//                ebolaSim.route_distance_sum += route.getTotalDistance();
+//                if((int)Math.round(Parameters.convertToKilometers(route.getTotalDistance())) < ebolaSim.roadDistanceHistogram.length)
+//                    ebolaSim.roadDistanceHistogram[(int)Math.round(Parameters.convertToKilometers(route.getTotalDistance()))]++;
+//                else
+//                    ebolaSim.roadDistanceHistogram[49]++;
+//                if(ebolaSim.max_route_distance < Parameters.convertToKilometers(route.getTotalDistance()))
+//                    ebolaSim.max_route_distance = Parameters.convertToKilometers(route.getTotalDistance());
+//                System.out.println("Average distance = " + Parameters.convertToKilometers(ebolaSim.route_distance_sum / ++ebolaSim.route_distance_count));
+//            }
             //get path to school
             long t = System.currentTimeMillis();
 //            if(!household.cachedPaths.containsKey(nearestSchool))
@@ -69,6 +88,7 @@ public class Resident implements Steppable
         else if(route == null && !goToSchool && !cannotMove)
         {
             route = nearestSchool.getRoute(this.household);
+            routePosition = 0;
             //if we found it go back to home
             //get path to school
 //            long t = System.currentTimeMillis();
@@ -101,15 +121,15 @@ public class Resident implements Steppable
             updatePositionOnMap(ebolaSim);
             return;
         }
-        else if(route != null && route.isEmpty())
+        else if(route != null && route.getNumSteps() == routePosition)
         {
             route = null;
         }
         else if(route != null)
         {
-            Int2D loc = route.getNext();
+            Int2D loc = route.getLocation(routePosition++);
             location = loc;
-            if(route.isEmpty())
+            if(route.getNumSteps() == routePosition)
                 route = null;
             updatePositionOnMap(ebolaSim);
             return;

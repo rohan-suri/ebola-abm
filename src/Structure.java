@@ -13,7 +13,7 @@ public abstract class Structure
     protected Int2D location;
     protected EbolaBuilder.Node nearestNode;
     protected Bag members;//all people that go to this structure on the daily.  Could be students, household members, hospital staff, etc
-    protected HashMap<Structure, List<Int2D>> cachedPaths;
+    protected HashMap<Structure, Route> cachedPaths;
 
     public Structure(Int2D location)
     {
@@ -65,18 +65,14 @@ public abstract class Structure
     {
         if(cachedPaths.containsKey(destination))//means we have this path cached
         {
-            List<Int2D> path = cachedPaths.get(destination);
-            if(path == null)
-                return null;
-            return new Route(cachedPaths.get(destination));
+            Route route = cachedPaths.get(destination);
+            return route;
         }
         else
         {
-            List<Int2D> path = AStar.astarPath(this.getNearestNode(), destination.getNearestNode());
-            cachedPaths.put(destination, path);
-            if(path != null)
-                return new Route(path);
-            return null;
+            Route route = AStar.astarPath(this.getNearestNode(), destination.getNearestNode());
+            cachedPaths.put(destination, route);
+            return route;
         }
     }
 }

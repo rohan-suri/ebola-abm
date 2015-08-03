@@ -3,32 +3,35 @@ import sim.util.Int2D;
 import java.util.List;
 
 /**
- * This class is a wrapper class for an ArrayList that manages a path. and keeps place of next item.
+ * This class is a wrapper class for an ArrayList that manages a path and other information
  */
 public class Route
 {
-    int currentPosition;
-    List<Int2D> path;//list of places this person needs to go
-    public Route(List<Int2D> path)
+    private List<Int2D> path;//list of places this person needs to go
+    private double distance;
+
+    public Route(List<Int2D> path, double distance)
     {
         this.path = path;
-        currentPosition = 0;
+        this.distance = distance;
     }
 
     /**
      * @return next location to move, null if no more moves
      */
-    public Int2D getNext()
+    public Int2D getLocation(int index)
     {
-        if(currentPosition >= path.size())
-            return null;
-        Int2D location = path.get(currentPosition);
-        currentPosition++;
+        Int2D location = path.get(index);
         return location;
     }
 
-    public boolean isEmpty()
+    public double getTotalDistance()
     {
-        return currentPosition >= path.size();
+        return distance;
+    }
+
+    public int getNumSteps()
+    {
+        return path.size();
     }
 }
