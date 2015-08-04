@@ -60,7 +60,7 @@ public class AStar {
             }
             if(x.node == goal ){ // we have found the shortest possible path to the goal!
                 // Reconstruct the path and send it back.
-                return reconstructRoute(goalNode);
+                return reconstructRoute(goalNode, startNode, goalNode);
             }
             openSet.remove(x); // maintain the lists
             closedSet.add(x);
@@ -118,7 +118,7 @@ public class AStar {
      * @param endNodes
      * @return
      */
-    public static EbolaBuilder.Node getNearestNode(EbolaBuilder.Node start, Map<EbolaBuilder.Node, Structure> endNodes)
+    public static Route getNearestNode(EbolaBuilder.Node start, Map<EbolaBuilder.Node, Structure> endNodes)
     {
         //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
@@ -160,7 +160,7 @@ public class AStar {
             }
             if(endNodes.containsKey(x.node)){ // we have found the shortest possible path to the goal!
                 // Reconstruct the path and send it back.
-                return x.node;
+                return reconstructRoute(x, startNode, x);
             }
             openSet.remove(x); // maintain the lists
             closedSet.add(x);
@@ -218,7 +218,8 @@ public class AStar {
      * @param n the end point of the path
      * @return an Route from start to goal
      */
-    static Route reconstructRoute(AStarNodeWrapper n) {
+    static Route reconstructRoute(AStarNodeWrapper n, AStarNodeWrapper start, AStarNodeWrapper end)
+    {
         List<Int2D> result = new ArrayList<>(20);
         double totalDistance = 0;
         AStarNodeWrapper x = n;
@@ -229,7 +230,7 @@ public class AStar {
                 totalDistance += x.node.location.distance(x.cameFrom.node.location);
         }
 
-        return new Route(result, totalDistance);
+        return new Route(result, totalDistance, start.node, end.node);
     }
 
     /**

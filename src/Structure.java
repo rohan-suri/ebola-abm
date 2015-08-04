@@ -75,4 +75,10 @@ public abstract class Structure
             return route;
         }
     }
+
+    public void cacheRoute(Route route, Structure destination)
+    {
+        cachedPaths.put(destination, route);
+    }
+
 }

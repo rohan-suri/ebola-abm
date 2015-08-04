@@ -764,7 +764,7 @@ public class EbolaBuilder
                             int household_size  = pickHouseholdSize(country);//use log distribution to pick correct household size
 
                             //get nearest school
-                            School nearest_school = (School)getNearestStructureByRoute(h.getNearestNode(), ebolaSim.schoolNodes);//getNearestSchool(h.getLocation().getX(), h.getLocation().getY());
+                            School nearest_school = (School)getNearestStructureByRoute(h, ebolaSim.schoolNodes);//getNearestSchool(h.getLocation().getX(), h.getLocation().getY());
 
                             //add members to the household
                             for(int m = 0; m < household_size; m++)
@@ -828,9 +828,18 @@ public class EbolaBuilder
         }
     }
 
-    private static Structure getNearestStructureByRoute(Node start, Map<Node, Structure> endNodes)
+    private static Structure getNearestStructureByRoute(Structure start, Map<Node, Structure> endNodes)
     {
-        return endNodes.get(AStar.getNearestNode(start, endNodes));
+        Route route = AStar.getNearestNode(start.getNearestNode(), endNodes);
+
+        if(route == null)
+            return null;
+
+        //cache the path with the end structure
+        Structure destination = endNodes.get(route.getEnd());
+        start.cacheRoute(route, destination);
+
+        return destination;
     }
 
     private static School getNearestSchool(int x, int y)
