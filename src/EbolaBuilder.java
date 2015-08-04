@@ -873,6 +873,18 @@ public class EbolaBuilder
                     else
                         resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
                 }
+                else//resident is a part of the labour force
+                {
+                    //decide if employed or not
+                    if(resident.getAge() < 15)//different statistics for 15+ and <15
+                    {
+
+                    }
+                    else
+                    {
+
+                    }
+                }
             }
             else//female
             {

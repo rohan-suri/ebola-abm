@@ -67,6 +67,18 @@ public class Parameters
     //Rural Female
     public static double[] RURAL_FEMALE_INACTIVE_SCHOOL = {0.652, 0.544, 0.249, 0.223, 0.161, 0.108};
 
+    //Parameters for employment of labour force
+    //  0      1       2       3       4
+    //  5-14   15-24   25-34   35-54   65+
+    //Urban Male
+    public static double[] URBAN_MALE_EMPLOYMENT = {0.149, 0.27, 0.466, 0.072, 0.043};
+    //Urban Female
+    public static double[] URBAN_FEMALE_EMPLOYMENT = {0.155, 0.336, 0.43, 0.054, 0.024};
+    //Rural Male
+    public static double[] RURAL_MALE_EMPLOYMENT = {0.18, 0.249, 0.419, 0.079, 0.072};
+    //Rural Female
+    public static double[] RURAL_FEMALE_EMPLOYMENT = {0.192, 0.303, 0.399, 0.066, 0.041};
+
     public static double convertToKilometers(double val)
     {
         return val * (Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE)/1000.0;
