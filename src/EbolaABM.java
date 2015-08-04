@@ -16,8 +16,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Created by rohansuri on 7/7/15.
@@ -36,6 +35,8 @@ public class EbolaABM extends SimState
     DefaultCategoryDataset distribution = new DefaultCategoryDataset(); //dataset for seeing age groups of infected
 
     public Bag schools = new Bag();
+    public Map<EbolaBuilder.Node, Structure> schoolNodes = new HashMap<>(10000);
+    public Map<EbolaBuilder.Node, Structure> householdNodes = new HashMap<>(10000);
 
     double max_distance = 0;
     double distance_sum = 0;
@@ -56,11 +57,11 @@ public class EbolaABM extends SimState
     int total_sl_pop = 0;
     int total_guinea_pop = 0;
     int total_no_school_count = 0;
-//    double route_distance_count;
-//    double route_distance_sum;
-//    double max_route_distance;
-//    int[] roadDistanceHistogram = new int[50];
-//    boolean updatedChart = false;
+    double route_distance_count;
+    double route_distance_sum;
+    double max_route_distance;
+    int[] roadDistanceHistogram = new int[50];
+    boolean updatedChart = false;
 
     public Bag residents;
 

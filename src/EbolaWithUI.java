@@ -41,7 +41,7 @@ public class EbolaWithUI extends GUIState
     public void init(Controller c)
     {
         super.init(c);
-        display = new Display2D(625, 625, this); //creates the display
+        display = new Display2D(1000, 1000, this); //creates the display
         displayFrame = display.createFrame();
         c.registerFrame(displayFrame);
         displayFrame.setVisible(true);

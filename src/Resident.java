@@ -32,30 +32,32 @@ public class Resident implements Steppable
     @Override
     public void step(SimState state)
     {
+        if(nearestSchool == null)
+            return;
         EbolaABM ebolaSim = (EbolaABM) state;
         long cStep = ebolaSim.schedule.getSteps();
-//        if(cStep == 2 && !ebolaSim.updatedChart)
-//        {
-//            for(int i = 0; i < ebolaSim.roadDistanceHistogram.length; i++)
-//                ebolaSim.distribution.addValue((Number)ebolaSim.roadDistanceHistogram[i], "All distances", i);
-//            ebolaSim.updatedChart = true;
-//            System.out.println("Max route distance = " + ebolaSim.max_route_distance);
-//        }
+        if(cStep == 2 && !ebolaSim.updatedChart)
+        {
+            for(int i = 0; i < ebolaSim.roadDistanceHistogram.length; i++)
+                ebolaSim.distribution.addValue((Number)ebolaSim.roadDistanceHistogram[i], "All distances", i);
+            ebolaSim.updatedChart = true;
+            System.out.println("Max route distance = " + ebolaSim.max_route_distance);
+        }
         if(route == null && goToSchool && !cannotMove)
         {
             route = household.getRoute(this.nearestSchool);
             routePosition = 0;
-//            if(cStep == 0 && route != null)
-//            {
-//                ebolaSim.route_distance_sum += route.getTotalDistance();
-//                if((int)Math.round(Parameters.convertToKilometers(route.getTotalDistance())) < ebolaSim.roadDistanceHistogram.length)
-//                    ebolaSim.roadDistanceHistogram[(int)Math.round(Parameters.convertToKilometers(route.getTotalDistance()))]++;
-//                else
-//                    ebolaSim.roadDistanceHistogram[49]++;
-//                if(ebolaSim.max_route_distance < Parameters.convertToKilometers(route.getTotalDistance()))
-//                    ebolaSim.max_route_distance = Parameters.convertToKilometers(route.getTotalDistance());
-//                System.out.println("Average distance = " + Parameters.convertToKilometers(ebolaSim.route_distance_sum / ++ebolaSim.route_distance_count));
-//            }
+            if(cStep == 0 && route != null)
+            {
+                ebolaSim.route_distance_sum += route.getTotalDistance();
+                if((int)Math.round(Parameters.convertToKilometers(route.getTotalDistance())) < ebolaSim.roadDistanceHistogram.length)
+                    ebolaSim.roadDistanceHistogram[(int)Math.round(Parameters.convertToKilometers(route.getTotalDistance()))]++;
+                else
+                    ebolaSim.roadDistanceHistogram[49]++;
+                if(ebolaSim.max_route_distance < Parameters.convertToKilometers(route.getTotalDistance()))
+                    ebolaSim.max_route_distance = Parameters.convertToKilometers(route.getTotalDistance());
+                System.out.println("Average distance = " + Parameters.convertToKilometers(ebolaSim.route_distance_sum / ++ebolaSim.route_distance_count));
+            }
             //get path to school
             long t = System.currentTimeMillis();
 //            if(!household.cachedPaths.containsKey(nearestSchool))

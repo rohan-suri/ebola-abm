@@ -1,3 +1,4 @@
+import com.sun.org.apache.bcel.internal.generic.ASTORE;
 import com.vividsolutions.jts.geom.*;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomGridField;
@@ -104,6 +105,9 @@ public class EbolaBuilder
         //add schools from vectorfield
         readInSchools(schools_vector);
 
+        //assignNearest Nodes to all facilities except households
+        assignNearestNode(ebolaSim.schoolGrid, ebolaSim.schoolNodes);
+
         //read in csv that gives the distribution of ages for the three countries from landscan data
         setUpAgeDist(age_dist_file);
 
@@ -111,10 +115,9 @@ public class EbolaBuilder
         addHousesAndResidents(pop_file, admin_file);
 
         // set up the locations and nearest node capability
-        long time  = System.currentTimeMillis();
+        long time = System.currentTimeMillis();
         System.out.println("Assigning nearestNodes...");
-        assignNearestNode(ebolaSim.schoolGrid);
-        assignNearestNode(ebolaSim.householdGrid);
+        //assignNearestNode(ebolaSim.householdGrid, ebolaSim.householdNodes);
         System.out.println("time = " + ((System.currentTimeMillis() - time) / 1000 / 60) + " minutes");
     }
 
@@ -259,7 +262,7 @@ public class EbolaBuilder
      * Function will assign each structure in the SparseGrid a nearest node on the road network found in allRoadNodes at sim state.
      * @param grid a sparsegrid that contains strctures.
      */
-    static void assignNearestNode(SparseGrid2D grid)
+    static void assignNearestNode(SparseGrid2D grid, Map<Node, Structure> nodeStructureMap)
     {
         double max_distance = 0;
         int count = 0;
@@ -272,6 +275,17 @@ public class EbolaBuilder
             if(node != null)
             {
                 structure.setNearestNode(node);
+                nodeStructureMap.put(node, structure);
+
+                //create a node on the road network that connects this structure to the road network
+                Node newNode = new Node(structure.location);
+                Edge e = new Edge(newNode, node, (int)newNode.location.distance(node.location));
+                newNode.links.add(e);
+                node.links.add(e);
+                structure.setNearestNode(newNode);
+                nodeStructureMap.remove(node);
+                nodeStructureMap.put(newNode, structure);
+
                 double distance = structure.getLocation().distance(node.location);
                 distance *= (Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE)/1000.0;
                 if(distance > max_distance)
@@ -736,12 +750,21 @@ public class EbolaBuilder
                             } while (false);//ebolaSim.householdGrid.getObjectsAtLocation(x_coord, y_coord) != null);
                             Household h = new Household(new Int2D(x_coord, y_coord));
                             h.setCountry(country);
+                            h.setNearestNode(getNearestNode(h.getLocation().getX(), h.getLocation().getY()));//give it a nearest node
+
+                            //addNearestNode to the network
+                            Node newNode = new Node(h.location);
+                            Edge e = new Edge(newNode, h.getNearestNode(), (int)newNode.location.distance(h.getNearestNode().location));
+                            newNode.links.add(e);
+                            h.getNearestNode().links.add(e);
+                            h.setNearestNode(newNode);
+
                             ebolaSim.householdGrid.setObjectLocation(h, new Int2D(x_coord, y_coord));
 
                             int household_size  = pickHouseholdSize(country);//use log distribution to pick correct household size
 
                             //get nearest school
-                            School nearest_school = getNearestSchool(h.getLocation().getX(), h.getLocation().getY());
+                            School nearest_school = (School)getNearestStructureByRoute(h.getNearestNode(), ebolaSim.schoolNodes);//getNearestSchool(h.getLocation().getX(), h.getLocation().getY());
 
                             //add members to the household
                             for(int m = 0; m < household_size; m++)
@@ -803,6 +826,11 @@ public class EbolaBuilder
         {
             e.printStackTrace();
         }
+    }
+
+    private static Structure getNearestStructureByRoute(Node start, Map<Node, Structure> endNodes)
+    {
+        return endNodes.get(AStar.getNearestNode(start, endNodes));
     }
 
     private static School getNearestSchool(int x, int y)
