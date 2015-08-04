@@ -1,5 +1,6 @@
 import sim.engine.SimState;
 import sim.engine.Steppable;
+import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.Int2D;
 
@@ -11,6 +12,7 @@ import java.util.LinkedList;
 public class Resident implements Steppable
 {
     private Int2D location;
+    private boolean inactive;
 
     private Household household;
     private boolean isUrban;//true - urban, false - rural
@@ -20,19 +22,24 @@ public class Resident implements Steppable
     boolean cannotMove = false;
 
     private int age;
+    private int sex;//male or female male = 0, female = 1
     private int pop_density;
     private boolean goToSchool = true;
     private Structure workDayDestination;//destination that the individual goes to every work
 
-    public Resident(Int2D location)
+    public Resident(Int2D location, Household household, int sex, int age, boolean isUrban)
     {
         this.location = location;
+        this.household = household;
+        this.age = age;
+        this.sex = sex;
+        this.isUrban = isUrban;
     }
 
     @Override
     public void step(SimState state)
     {
-        if(nearestSchool == null)
+        if(workDayDestination == null)
             return;
         EbolaABM ebolaSim = (EbolaABM) state;
         long cStep = ebolaSim.schedule.getSteps();
@@ -45,7 +52,7 @@ public class Resident implements Steppable
         }
         if(route == null && goToSchool && !cannotMove)
         {
-            route = household.getRoute(this.nearestSchool);
+            route = household.getRoute(this.workDayDestination);
             routePosition = 0;
             if(cStep == 0 && route != null)
             {
@@ -56,7 +63,7 @@ public class Resident implements Steppable
                     ebolaSim.roadDistanceHistogram[49]++;
                 if(ebolaSim.max_route_distance < Parameters.convertToKilometers(route.getTotalDistance()))
                     ebolaSim.max_route_distance = Parameters.convertToKilometers(route.getTotalDistance());
-                System.out.println("Average distance = " + Parameters.convertToKilometers(ebolaSim.route_distance_sum / ++ebolaSim.route_distance_count));
+                //System.out.println("Average distance = " + Parameters.convertToKilometers(ebolaSim.route_distance_sum / ++ebolaSim.route_distance_count));
             }
             //get path to school
             long t = System.currentTimeMillis();
@@ -89,7 +96,7 @@ public class Resident implements Steppable
         }
         else if(route == null && !goToSchool && !cannotMove)
         {
-            route = nearestSchool.getRoute(this.household);
+            route = workDayDestination.getRoute(this.household);
             routePosition = 0;
             //if we found it go back to home
             //get path to school
@@ -221,5 +228,29 @@ public class Resident implements Steppable
     public void setPop_density(int pop_density)
     {
         this.pop_density = pop_density;
+    }
+
+    public boolean isInactive() {
+        return inactive;
+    }
+
+    public void setInactive(boolean inactive) {
+        this.inactive = inactive;
+    }
+
+    public int getSex() {
+        return sex;
+    }
+
+    public void setSex(int sex) {
+        this.sex = sex;
+    }
+
+    public Structure getWorkDayDestination() {
+        return workDayDestination;
+    }
+
+    public void setWorkDayDestination(Structure workDayDestination) {
+        this.workDayDestination = workDayDestination;
     }
 }

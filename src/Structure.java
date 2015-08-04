@@ -4,6 +4,7 @@ import sim.util.Int2D;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by rohansuri on 7/24/15.
@@ -79,6 +80,11 @@ public abstract class Structure
     public void cacheRoute(Route route, Structure destination)
     {
         cachedPaths.put(destination, route);
+    }
+
+    public Map<Structure, Route> getCachedRoutes()
+    {
+        return cachedPaths;
     }
 
 }

@@ -724,11 +724,12 @@ public class EbolaBuilder
                         else
                             ebolaSim.total_sl_pop += num_people;
 
+                        boolean isUrban = false;
                         if(num_people > Parameters.MIN_POP_URBAN || nearbyUrban(prev_tokens, curr_tokens, next_tokens, i, j))//determine if location is urban
                         {
                             ebolaSim.urbanAreasGrid.setObjectLocation(new Object(), j, i);
                             ebolaSim.total_urban_pop += num_people;
-
+                            isUrban = true;
                             if(country == Parameters.GUINEA)
                                 ebolaSim.guinea_urban_pop += num_people;
                             else if(country == Parameters.LIBERIA)
@@ -761,10 +762,10 @@ public class EbolaBuilder
 
                             ebolaSim.householdGrid.setObjectLocation(h, new Int2D(x_coord, y_coord));
 
-                            int household_size  = pickHouseholdSize(country);//use log distribution to pick correct household size
+                            int household_size  = pickHouseholdSize(country);//use log normal distribution to pick correct household size
 
                             //get nearest school
-                            School nearest_school = (School)getNearestStructureByRoute(h, ebolaSim.schoolNodes);//getNearestSchool(h.getLocation().getX(), h.getLocation().getY());
+                            //School nearest_school = (School)getNearestStructureByRoute(h, ebolaSim.schoolNodes);//getNearestSchool(h.getLocation().getX(), h.getLocation().getY());
 
                             //add members to the household
                             for(int m = 0; m < household_size; m++)
@@ -772,19 +773,17 @@ public class EbolaBuilder
                                 if(num_people == 0)
                                     break;
                                 scaled_num_people--;
-                                Resident r = new Resident(new Int2D(x_coord, y_coord));
+                                Resident r = createResident(new Int2D(x_coord, y_coord), h, isUrban, county_id);
                                 ebolaSim.schedule.scheduleRepeating(r);
-                                r.setHousehold(h);
                                 r.setPop_density(scaled_num_people);
-                                r.setAge(pick_age(age_dist, county_id));
-                                if(nearest_school != null)
-                                    r.setNearestSchool(nearest_school);
-                                else
-                                    System.out.println("SCHOOL IS NULL!!");
-                                if(r.getAge() >= 5 && r.getAge() <= 14 && nearest_school != null)
-                                {
-                                    nearest_school.addMember(r);
-                                }
+//                                if(nearest_school != null)
+//                                    r.setNearestSchool(nearest_school);
+//                                else
+//                                    System.out.println("SCHOOL IS NULL!!");
+//                                if(r.getAge() >= 5 && r.getAge() <= 14 && nearest_school != null)
+//                                {
+//                                    nearest_school.addMember(r);
+//                                }
                                 ebolaSim.world.setObjectLocation(r, new Double2D(x_coord, y_coord));
                                 h.addMember(r);//add the member to the houshold
                             }
@@ -828,8 +827,145 @@ public class EbolaBuilder
         }
     }
 
+    private static Resident createResident(Int2D location, Household household, boolean isUrban, int county_id)
+    {
+        //first pick sex
+        int sex;
+        if(ebolaSim.random.nextBoolean())
+            sex = Constants.MALE;
+        else
+            sex = Constants.FEMALE;
+
+        //now get age
+        int age = pick_age(age_dist, county_id);
+
+        Resident resident = new Resident(location, household, sex, age, isUrban);
+
+        //now decide whether inactive or not
+        boolean inactive;
+        int age_index = (age-5)/5;//subtract five because first age group (0-4) is not included
+        double rand = ebolaSim.random.nextDouble();
+        double inactive_chance = 0;
+        if(age < 5)//if so young must be inactive and just stay home
+            inactive = true;
+        else if(isUrban)//Urban
+        {
+            if(sex == Constants.MALE)
+            {
+                inactive_chance = 1-Parameters.URBAN_MALE_LF_BY_AGE[age_index];//invert because inactivity and being in the labour force are mutually exclusive
+                inactive = rand < inactive_chance;
+                resident.setInactive(inactive);
+
+                if(resident.isInactive())
+                {
+                    //now determine if he stays at school or not
+                    rand = ebolaSim.random.nextDouble();
+                    int index = (resident.getAge()-5)/10;
+                    if(index >= 5)//it combines one group for 20 years
+                        index = 4;
+                    else if(index == 4)
+                        index = 3;
+                    if(rand < Parameters.URBAN_MALE_INACTIVE_SCHOOL[index])
+                    {
+                        School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes);
+                        resident.setWorkDayDestination(nearestSchool);//add school as workday destination
+                    }
+                    else
+                        resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
+                }
+            }
+            else//female
+            {
+                inactive_chance = 1-Parameters.URBAN_FEMALE_LF_BY_AGE[age_index];
+                inactive = rand < inactive_chance;
+                resident.setInactive(inactive);
+
+                if(resident.isInactive())
+                {
+                    //now determine if he stays at school or not
+                    rand = ebolaSim.random.nextDouble();
+                    int index = (resident.getAge()-5)/10;
+                    if(index >= 5)//it combines one group for 20 years
+                        index = 4;
+                    else if(index == 4)
+                        index = 3;
+                    if(rand < Parameters.URBAN_FEMALE_INACTIVE_SCHOOL[index])
+                    {
+                        School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes);
+                        resident.setWorkDayDestination(nearestSchool);//add school as workday destination
+                    }
+                    else
+                        resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
+                }
+            }
+        }
+        else//rural
+        {
+            if(sex == Constants.MALE)
+            {
+                inactive_chance = 1-Parameters.RURAL_MALE_LF_BY_AGE[age_index];
+                inactive = rand < inactive_chance;
+                resident.setInactive(inactive);
+
+                if(resident.isInactive())
+                {
+                    //now determine if he stays at school or not
+                    rand = ebolaSim.random.nextDouble();
+                    int index = (resident.getAge()-5)/10;
+                    if(index >= 5)//it combines one group for 20 years
+                        index = 4;
+                    else if(index == 4)
+                        index = 3;
+                    if(rand < Parameters.RURAL_MALE_INACTIVE_SCHOOL[index])
+                    {
+                        School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes);
+                        resident.setWorkDayDestination(nearestSchool);//add school as workday destination
+                    }
+                    else
+                        resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
+                }
+            }
+            else//female
+            {
+                inactive_chance = 1-Parameters.RURAL_FEMALE_LF_BY_AGE[age_index];
+                inactive = rand < inactive_chance;
+                resident.setInactive(inactive);
+
+                if(resident.isInactive())
+                {
+                    //now determine if he stays at school or not
+                    rand = ebolaSim.random.nextDouble();
+                    int index = (resident.getAge()-5)/10;
+                    if(index >= 5)//it combines one group for 20 years
+                        index = 4;
+                    else if(index == 4)
+                        index = 3;
+                    if(rand < Parameters.RURAL_FEMALE_INACTIVE_SCHOOL[index])
+                    {
+                        School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes);
+                        resident.setWorkDayDestination(nearestSchool);//add school as workday destination
+                    }
+                    else
+                        resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
+                }
+            }
+        }
+
+        return resident;
+    }
+
+
     private static Structure getNearestStructureByRoute(Structure start, Map<Node, Structure> endNodes)
     {
+        //first check if route is cached TODO: Assumes that all cached paths are closest to the structure
+        Iterator<Structure> it = start.getCachedRoutes().keySet().iterator();
+        while(it.hasNext())
+        {
+            Structure st = it.next();
+            if(endNodes.containsKey(st.getNearestNode()))
+                return st;
+        }
+
         Route route = AStar.getNearestNode(start.getNearestNode(), endNodes);
 
         if(route == null)

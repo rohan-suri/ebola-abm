@@ -57,6 +57,7 @@ public class EbolaABM extends SimState
     int total_sl_pop = 0;
     int total_guinea_pop = 0;
     int total_no_school_count = 0;
+
     double route_distance_count;
     double route_distance_sum;
     double max_route_distance;

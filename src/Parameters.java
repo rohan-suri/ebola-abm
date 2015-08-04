@@ -3,7 +3,7 @@
  */
 public class Parameters
 {
-    public static double SCALE = 0.0001; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
     public static double POP_BLOCK_METERS = 926.1;//Height and width of one population block. (http://www.esri.com/news/arcuser/0400/wdside.html)
@@ -42,6 +42,30 @@ public class Parameters
     //-------Guinea---------//
     public static int GUINEA = 0;//ID for Guinea
     public static double GUINEA_AVG_HOUSEHOLD_SIZE = 8.75; //Sierra Leone's average household size (2014, http://www.euromonitor.com/medialibrary/PDF/Book_WEF_2014.pdf)
+
+
+    //Parameters for inactive vs labour force. Taken from: http://www.ilo.org/wcmsp5/groups/public/---dgreports/---stat/documents/presentation/wcms_156366.pdf
+    //ages index 0 = ages 5-9,  1 = ages 10-14, 2 = ages 15-20, ... 75+
+    //Urban Male
+    public static double[] URBAN_MALE_LF_BY_AGE = {.054, .097, .144, .356, .574, .821, .826, .899, .878, .835, .760, .610, .733, .578, .363, .421, .576, .578};
+    //Urban Female
+    public static double[] URBAN_FEMALE_LF_BY_AGE = {.040, .078, .142, .390, .598, .701, .755, .798, .763, .736, .605, .517, 471, .429, .156, .384, .526, .533};
+    //Rural Male
+    public static double[] RURAL_MALE_LF_BY_AGE = {.220, .391, .434, .612, .750, .880, .889, .892, .944, .896, .829, .807, .843, .643, .484, .591, .749, .758};
+    //Rural Female
+    public static double[] RURAL_FEMALE_LF_BY_AGE = {.201, .307, .418, .570, .754, .770, .796, .800, .820, .747, .774, .664, .491, .512, .294, .553, .678, .695};
+
+    //Parameters for reason of inactivity, either school or home
+    //  0      1       2       3       4
+    //  5-14   15-24   25-34   35-54   65+
+    //Urban Male
+    public static double[] URBAN_MALE_INACTIVE_SCHOOL = {0.788, 0.785, 0.548, 0.17, 0.196, 0.077};
+    //Urban Female
+    public static double[] URBAN_FEMALE_INACTIVE_SCHOOL = {0.795, 0.67, 0.313, 0.232, 0.182, 0.171};
+    //Rural Male
+    public static double[] RURAL_MALE_INACTIVE_SCHOOL = {0.655, 0.699, 0.372, 0.302, 0.233, 0.124};
+    //Rural Female
+    public static double[] RURAL_FEMALE_INACTIVE_SCHOOL = {0.652, 0.544, 0.249, 0.223, 0.161, 0.108};
 
     public static double convertToKilometers(double val)
     {
