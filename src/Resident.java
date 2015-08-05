@@ -26,7 +26,9 @@ public class Resident implements Steppable
     private int pop_density;
     private boolean goToSchool = true;
     private Structure workDayDestination;//destination that the individual goes to every work
+
     private int sector_id;//sector works in as defined in Constants, -1 for no sector (not working)
+
     private boolean employed;
 
     public Resident(Int2D location, Household household, int sex, int age, boolean isUrban)
@@ -256,5 +258,21 @@ public class Resident implements Steppable
 
     public void setWorkDayDestination(Structure workDayDestination) {
         this.workDayDestination = workDayDestination;
+    }
+
+    public int getSector_id() {
+        return sector_id;
+    }
+
+    public void setSector_id(int sector_id) {
+        this.sector_id = sector_id;
+    }
+
+    public boolean isEmployed() {
+        return employed;
+    }
+
+    public void setEmployed(boolean employed) {
+        this.employed = employed;
     }
 }

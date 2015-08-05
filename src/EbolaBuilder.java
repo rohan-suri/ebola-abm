@@ -841,229 +841,106 @@ public class EbolaBuilder
 
         Resident resident = new Resident(location, household, sex, age, isUrban);
 
-        //now decide whether inactive or not
-        boolean inactive;
-        int age_index = (age-5)/5;//subtract five because first age group (0-4) is not included
-        double rand = ebolaSim.random.nextDouble();
-        double inactive_chance = 0;
         if(age < 5)//if so young must be inactive and just stay home
-            inactive = true;
+            resident.setInactive(true);
         else if(isUrban)//Urban
         {
-            if(sex == Constants.MALE)
+            if(sex == Constants.MALE)//urban male
             {
-                inactive_chance = 1-Parameters.URBAN_MALE_LF_BY_AGE[age_index];//invert because inactivity and being in the labour force are mutually exclusive
-                inactive = rand < inactive_chance;
-                resident.setInactive(inactive);
-
-                if(resident.isInactive())
-                {
-                    //now determine if he stays at school or not
-                    rand = ebolaSim.random.nextDouble();
-                    int index = (resident.getAge()-5)/10;
-                    if(index >= 5)//it combines one group for 20 years
-                        index = 4;
-                    else if(index == 4)
-                        index = 3;
-                    if(rand < Parameters.URBAN_MALE_INACTIVE_SCHOOL[index])
-                    {
-                        School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes);
-                        resident.setWorkDayDestination(nearestSchool);//add school as workday destination
-                    }
-                    else
-                        resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
-                }
-                else//resident is a part of the labour force
-                {
-                    //decide if employed or not
-                    if(resident.getAge() < 15)//different statistics for 15+ and <15
-                    {
-
-                    }
-                    else
-                    {
-                        rand = ebolaSim.random.nextDouble();
-                        int index = (resident.getAge()-5)/10;
-                        if(index >= 5)//it combines one group for 20 years
-                            index = 4;
-                        else if(index == 4)
-                            index = 3;
-                        if(rand < Parameters.URBAN_MALE_UNEMPLOYMENT[index])//unemployed
-                        {
-
-                        }
-                        else//employment
-                        {
-
-                        }
-                    }
-                }
+               setWorkDemographics(resident, Parameters.URBAN_MALE_LF_BY_AGE, Parameters.URBAN_MALE_INACTIVE_SCHOOL, Parameters.URBAN_MALE_UNEMPLOYMENT, Parameters.URBAN_MALE_SECTORS);
             }
-            else//female
+            else//urban female
             {
-                inactive_chance = 1-Parameters.URBAN_FEMALE_LF_BY_AGE[age_index];
-                inactive = rand < inactive_chance;
-                resident.setInactive(inactive);
-
-                if(resident.isInactive())
-                {
-                    //now determine if he stays at school or not
-                    rand = ebolaSim.random.nextDouble();
-                    int index = (resident.getAge()-5)/10;
-                    if(index >= 5)//it combines one group for 20 years
-                        index = 4;
-                    else if(index == 4)
-                        index = 3;
-                    if(rand < Parameters.URBAN_FEMALE_INACTIVE_SCHOOL[index])
-                    {
-                        School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes);
-                        resident.setWorkDayDestination(nearestSchool);//add school as workday destination
-                    }
-                    else
-                        resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
-                }
-                else//resident is a part of the labour force
-                {
-                    //decide if employed or not
-                    if(resident.getAge() < 15)//different statistics for 15+ and <15
-                    {
-
-                    }
-                    else
-                    {
-                        rand = ebolaSim.random.nextDouble();
-                        int index = (resident.getAge()-5)/10;
-                        if(index >= 5)//it combines one group for 20 years
-                            index = 4;
-                        else if(index == 4)
-                            index = 3;
-                        if(rand < Parameters.URBAN_FEMALE_UNEMPLOYMENT[index])//unemployed
-                        {
-
-                        }
-                        else//employed
-                        {
-                            //now decide whate economic sector
-                            rand = ebolaSim.random.nextDouble();
-                            double sum = 0;
-                            for(int i = 0; i < Parameters.URBAN_MALE_SECTORS.length; i++)
-                            {
-                                sum += Parameters.URBAN_MALE_SECTORS[i];
-                                if(rand < sum)//set the sector
-                                {
-
-                                }
-                            }
-                        }
-                    }
-                }
+                setWorkDemographics(resident, Parameters.URBAN_FEMALE_LF_BY_AGE, Parameters.URBAN_FEMALE_INACTIVE_SCHOOL, Parameters.URBAN_FEMALE_UNEMPLOYMENT, Parameters.URBAN_FEMALE_SECTORS);
             }
         }
         else//rural
         {
-            if(sex == Constants.MALE)
+            if(sex == Constants.MALE)//rural male
             {
-                inactive_chance = 1-Parameters.RURAL_MALE_LF_BY_AGE[age_index];
-                inactive = rand < inactive_chance;
-                resident.setInactive(inactive);
-
-                if(resident.isInactive())
-                {
-                    //now determine if he stays at school or not
-                    rand = ebolaSim.random.nextDouble();
-                    int index = (resident.getAge()-5)/10;
-                    if(index >= 5)//it combines one group for 20 years
-                        index = 4;
-                    else if(index == 4)
-                        index = 3;
-                    if(rand < Parameters.RURAL_FEMALE_INACTIVE_SCHOOL[index])
-                    {
-                        School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes);
-                        resident.setWorkDayDestination(nearestSchool);//add school as workday destination
-                    }
-                    else
-                        resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
-                }
-                else//resident is a part of the labour force
-                {
-                    //decide if employed or not
-                    if(resident.getAge() < 15)//different statistics for 15+ and <15
-                    {
-
-                    }
-                    else
-                    {
-                        rand = ebolaSim.random.nextDouble();
-                        int index = (resident.getAge()-5)/10;
-                        if(index >= 5)//it combines one group for 20 years
-                            index = 4;
-                        else if(index == 4)
-                            index = 3;
-                        if(rand < Parameters.RURAL_MALE_UNEMPLOYMENT[index])//unemployed
-                        {
-
-                        }
-                        else//employment
-                        {
-
-                        }
-                    }
-                }
+                setWorkDemographics(resident, Parameters.RURAL_MALE_LF_BY_AGE, Parameters.RURAL_MALE_INACTIVE_SCHOOL, Parameters.RURAL_MALE_UNEMPLOYMENT, Parameters.RURAL_MALE_SECTORS);
             }
-            else//female
+            else//rural female
             {
-                inactive_chance = 1-Parameters.RURAL_FEMALE_LF_BY_AGE[age_index];
-                inactive = rand < inactive_chance;
-                resident.setInactive(inactive);
-
-                if(resident.isInactive())
-                {
-                    //now determine if he stays at school or not
-                    rand = ebolaSim.random.nextDouble();
-                    int index = (resident.getAge()-5)/10;
-                    if(index >= 5)//it combines one group for 20 years
-                        index = 4;
-                    else if(index == 4)
-                        index = 3;
-                    if(rand < Parameters.RURAL_FEMALE_INACTIVE_SCHOOL[index])
-                    {
-                        School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes);
-                        resident.setWorkDayDestination(nearestSchool);//add school as workday destination
-                    }
-                    else
-                        resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
-                }
-                else//resident is a part of the labour force
-                {
-                    //decide if employed or not
-                    if(resident.getAge() < 15)//different statistics for 15+ and <15
-                    {
-
-                    }
-                    else
-                    {
-                        rand = ebolaSim.random.nextDouble();
-                        int index = (resident.getAge()-5)/10;
-                        if(index >= 5)//it combines one group for 20 years
-                            index = 4;
-                        else if(index == 4)
-                            index = 3;
-                        if(rand < Parameters.RURAL_FEMALE_UNEMPLOYMENT[index])//unemployed
-                        {
-
-                        }
-                        else//employment
-                        {
-
-                        }
-                    }
-                }
+                setWorkDemographics(resident, Parameters.RURAL_FEMALE_LF_BY_AGE, Parameters.RURAL_FEMALE_INACTIVE_SCHOOL, Parameters.RURAL_FEMALE_UNEMPLOYMENT, Parameters.RURAL_FEMALE_SECTORS);
             }
         }
 
         return resident;
     }
 
+    /**
+     * Modifies the resident to set inactivity, unemployment, and economic sector.
+     * @param resident Resident to be modified
+     * @param labour_force_by_age Percent participating in labour force by age.  All not in the labour force are considered inactive.
+     * @param inactive_school Percent that are inactive because they go to school.
+     * @param unemployment Percent unemployed by age
+     * @param economic_sectors Distribution in each economic sector by age.
+     */
+    private static void setWorkDemographics(Resident resident, double[] labour_force_by_age, double[] inactive_school, double[] unemployment, double[] economic_sectors)
+    {
+        boolean inactive;
+        int age_index = (resident.getAge()-5)/5;//subtract five because first age group (0-4) is not included
+        double rand = ebolaSim.random.nextDouble();
+
+        double inactive_chance = 1-labour_force_by_age[age_index];
+        inactive = rand < inactive_chance;
+        resident.setInactive(inactive);
+
+        if(resident.isInactive())
+        {
+            //now determine if he stays at school or not
+            rand = ebolaSim.random.nextDouble();
+            int index = (resident.getAge()-5)/10;
+            if(index >= 5)//it combines one group for 20 years
+                index = 4;
+            else if(index == 4)
+                index = 3;
+            if(rand < inactive_school[index])
+            {
+                School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes);
+                resident.setWorkDayDestination(nearestSchool);//add school as workday destination
+            }
+            else
+                resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
+        }
+        else//resident is a part of the labour force
+        {
+            //decide if employed or not
+            if(resident.getAge() < 15)//different statistics for 15+ and <15
+            {
+
+            }
+            else
+            {
+                rand = ebolaSim.random.nextDouble();
+                int index = (resident.getAge()-5)/10;
+                if(index >= 5)//it combines one group for 20 years
+                    index = 4;
+                else if(index == 4)
+                    index = 3;
+                if(rand < unemployment[index])//unemployed
+                {
+
+                }
+                else//employment
+                {
+                    //now decide whate economic sector
+                    rand = ebolaSim.random.nextDouble();
+                    double sum = 0;
+                    for(int i = 0; i < economic_sectors.length; i++)
+                    {
+                        sum += economic_sectors[i];
+                        if(rand < sum)//set the sector
+                        {
+                            resident.setSector_id(i);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     private static Structure getNearestStructureByRoute(Structure start, Map<Node, Structure> endNodes)
     {
