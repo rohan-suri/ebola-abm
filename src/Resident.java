@@ -26,6 +26,8 @@ public class Resident implements Steppable
     private int pop_density;
     private boolean goToSchool = true;
     private Structure workDayDestination;//destination that the individual goes to every work
+    private int sector_id;//sector works in as defined in Constants, -1 for no sector (not working)
+    private boolean employed;
 
     public Resident(Int2D location, Household household, int sex, int age, boolean isUrban)
     {
@@ -34,6 +36,8 @@ public class Resident implements Steppable
         this.age = age;
         this.sex = sex;
         this.isUrban = isUrban;
+        this.sector_id = -1;//set default to no sector
+        this.employed = false;//default isfalse
     }
 
     @Override

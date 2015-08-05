@@ -55,7 +55,7 @@ public class Parameters
     //Rural Female
     public static double[] RURAL_FEMALE_LF_BY_AGE = {.201, .307, .418, .570, .754, .770, .796, .800, .820, .747, .774, .664, .491, .512, .294, .553, .678, .695};
 
-    //Parameters for reason of inactivity, either school or home
+    //Parameters for reason of inactivity, either school or household work
     //  0      1       2       3       4
     //  5-14   15-24   25-34   35-54   65+
     //Urban Male
@@ -67,17 +67,27 @@ public class Parameters
     //Rural Female
     public static double[] RURAL_FEMALE_INACTIVE_SCHOOL = {0.652, 0.544, 0.249, 0.223, 0.161, 0.108};
 
-    //Parameters for employment of labour force
+    //Parameters for unemployment of labour force
     //  0      1       2       3       4
     //  5-14   15-24   25-34   35-54   65+
     //Urban Male
-    public static double[] URBAN_MALE_EMPLOYMENT = {0.149, 0.27, 0.466, 0.072, 0.043};
+    public static double[] URBAN_MALE_UNEMPLOYMENT = {0.068, 0.056, 0.038, 0.023, 0.029, 0.046};
     //Urban Female
-    public static double[] URBAN_FEMALE_EMPLOYMENT = {0.155, 0.336, 0.43, 0.054, 0.024};
+    public static double[] URBAN_FEMALE_UNEMPLOYMENT = {0.146, 0.061, 0.04, 0.008, 0.002, 0.063};
     //Rural Male
-    public static double[] RURAL_MALE_EMPLOYMENT = {0.18, 0.249, 0.419, 0.079, 0.072};
+    public static double[] RURAL_MALE_UNEMPLOYMENT = {0.021, 0.034, 0.021, 0.01, 0.023, 0.024};
     //Rural Female
-    public static double[] RURAL_FEMALE_EMPLOYMENT = {0.192, 0.303, 0.399, 0.066, 0.041};
+    public static double[] RURAL_FEMALE_UNEMPLOYMENT = {0.032, 0.021, 0.021, 0.013, 0.006, 0.022};
+
+    //Parameters for distribution of economic sector based on Urban/rural and male/female
+    //Urban Male
+    public static double[] URBAN_MALE_SECTORS = {0.242, 0.017, 0.128, 0.006, 0.003, 0.075, 0.161, 0.063, 0.023, 0.008, 0.015, 0, 0.008, 0.035, 0.011, 0.116, 0.049, 0.01, 0.025, 0.004, 0.002};
+    //Urban Female
+    public static double[] URBAN_FEMALE_SECTORS = {0.225, 0.006, 0.034, 0, 0, 0.022, 0.532, 0.004, 0.057, 0.002, 0.004, 0, 0, 0.005, 0.006, 0.056, 0.016, 0.007, 0.012, 0.012, 0};
+    //Rural Male
+    public static double[] RURAL_MALE_SECTORS = {0.647, 0.012, 0.149, 0, 0, 0.01, 0.079, 0.017, 0.013, 0, 0, 0, 0.003, 0.013, 0.004, 0.037, 0.006, 0, 0.009, 0.001, 0};
+    //Rural Female
+    public static double[] RURAL_FEMALE_SECTORS = {0.561, 0.01, 0.056, 0, 0, 0, 0.32, 0.003, 0.024, 0, 0.002, 0, 0, 0.005, 0, 0.007, 0.009, 0, 0.002, 0.003, 0};
 
     public static double convertToKilometers(double val)
     {

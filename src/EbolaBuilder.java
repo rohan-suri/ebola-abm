@@ -882,7 +882,20 @@ public class EbolaBuilder
                     }
                     else
                     {
+                        rand = ebolaSim.random.nextDouble();
+                        int index = (resident.getAge()-5)/10;
+                        if(index >= 5)//it combines one group for 20 years
+                            index = 4;
+                        else if(index == 4)
+                            index = 3;
+                        if(rand < Parameters.URBAN_MALE_UNEMPLOYMENT[index])//unemployed
+                        {
 
+                        }
+                        else//employment
+                        {
+
+                        }
                     }
                 }
             }
@@ -909,6 +922,41 @@ public class EbolaBuilder
                     else
                         resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
                 }
+                else//resident is a part of the labour force
+                {
+                    //decide if employed or not
+                    if(resident.getAge() < 15)//different statistics for 15+ and <15
+                    {
+
+                    }
+                    else
+                    {
+                        rand = ebolaSim.random.nextDouble();
+                        int index = (resident.getAge()-5)/10;
+                        if(index >= 5)//it combines one group for 20 years
+                            index = 4;
+                        else if(index == 4)
+                            index = 3;
+                        if(rand < Parameters.URBAN_FEMALE_UNEMPLOYMENT[index])//unemployed
+                        {
+
+                        }
+                        else//employed
+                        {
+                            //now decide whate economic sector
+                            rand = ebolaSim.random.nextDouble();
+                            double sum = 0;
+                            for(int i = 0; i < Parameters.URBAN_MALE_SECTORS.length; i++)
+                            {
+                                sum += Parameters.URBAN_MALE_SECTORS[i];
+                                if(rand < sum)//set the sector
+                                {
+
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         else//rural
@@ -928,13 +976,38 @@ public class EbolaBuilder
                         index = 4;
                     else if(index == 4)
                         index = 3;
-                    if(rand < Parameters.RURAL_MALE_INACTIVE_SCHOOL[index])
+                    if(rand < Parameters.RURAL_FEMALE_INACTIVE_SCHOOL[index])
                     {
                         School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes);
                         resident.setWorkDayDestination(nearestSchool);//add school as workday destination
                     }
                     else
                         resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
+                }
+                else//resident is a part of the labour force
+                {
+                    //decide if employed or not
+                    if(resident.getAge() < 15)//different statistics for 15+ and <15
+                    {
+
+                    }
+                    else
+                    {
+                        rand = ebolaSim.random.nextDouble();
+                        int index = (resident.getAge()-5)/10;
+                        if(index >= 5)//it combines one group for 20 years
+                            index = 4;
+                        else if(index == 4)
+                            index = 3;
+                        if(rand < Parameters.RURAL_MALE_UNEMPLOYMENT[index])//unemployed
+                        {
+
+                        }
+                        else//employment
+                        {
+
+                        }
+                    }
                 }
             }
             else//female
@@ -959,6 +1032,31 @@ public class EbolaBuilder
                     }
                     else
                         resident.setWorkDayDestination(resident.getHousehold());//if you don't go to school you pretty much just stay home doing nothing (retired or something)
+                }
+                else//resident is a part of the labour force
+                {
+                    //decide if employed or not
+                    if(resident.getAge() < 15)//different statistics for 15+ and <15
+                    {
+
+                    }
+                    else
+                    {
+                        rand = ebolaSim.random.nextDouble();
+                        int index = (resident.getAge()-5)/10;
+                        if(index >= 5)//it combines one group for 20 years
+                            index = 4;
+                        else if(index == 4)
+                            index = 3;
+                        if(rand < Parameters.RURAL_FEMALE_UNEMPLOYMENT[index])//unemployed
+                        {
+
+                        }
+                        else//employment
+                        {
+
+                        }
+                    }
                 }
             }
         }
