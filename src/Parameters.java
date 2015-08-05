@@ -3,7 +3,7 @@
  */
 public class Parameters
 {
-    public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.001; //percentage of total population that agents will be created.  Maximimum of 1
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
     public static double POP_BLOCK_METERS = 926.1;//Height and width of one population block. (http://www.esri.com/news/arcuser/0400/wdside.html)
@@ -88,6 +88,55 @@ public class Parameters
     public static double[] RURAL_MALE_SECTORS = {0.647, 0.012, 0.149, 0, 0, 0.01, 0.079, 0.017, 0.013, 0, 0, 0, 0.003, 0.013, 0.004, 0.037, 0.006, 0, 0.009, 0.001, 0};
     //Rural Female
     public static double[] RURAL_FEMALE_SECTORS = {0.561, 0.01, 0.056, 0, 0, 0, 0.32, 0.003, 0.024, 0, 0.002, 0, 0, 0.005, 0, 0.007, 0.009, 0, 0.002, 0.003, 0};
+
+    //Parameters for weekly hours by sector.  Columns are work hours and rows are economic sectors
+    //              <25   25-35   35-39   40-48   59-59   60+
+    //Agriculture
+    //...
+    //Trade
+    public static double[][] MALE_WEEKLY_HOURS_BY_SECTOR = {{0.186, 0.115, 0.084, 0.298, 0.13,	0.188},
+                                                        {0.088,	0.059, 0.047, 0.41, 0.186, 0.211},
+                                                        {0.094,	0.065, 0.047, 0.235, 0.26, 0.298},
+                                                        {0, 0, 0, 1, 0, 0},
+                                                        {0, 0, 0, 1, 0, 0},
+                                                        {0.059,	0.061, 0.052, 0.251, 0.243, 0.333},
+                                                        {0.13, 0.056, 0.044, 0.145, 0.137, 0.488},
+                                                        {0.023,	0.001, 0.032, 0.203, 0.102, 0.638},
+                                                        {0.11, 0.08, 0.063, 0.145, 0.181, 0.422},
+                                                        {0.167,	0.011, 0.005, 0.307, 0.249, 0.262},
+                                                        {0,	0, 0.127, 0.375, 0.177, 0.32},
+                                                        {0, 0, 0, 1, 0, 0},
+                                                        {0.014,	0.075, 0.035, 0.28, 0.197, 0.399},
+                                                        {0.027,	0.029, 0.013, 0.283, 0.195, 0.453},
+                                                        {0.028,	0.003, 0.082, 0.376, 0.21, 0.3},
+                                                        {0.069,	0.306, 0.07, 0.301, 0.12, 0.133},
+                                                        {0.071,	0.045, 0.09, 0.389, 0.205, 0.2},
+                                                        {0.182,	0.065, 0.024, 0.094, 0.351, 0.284},
+                                                        {0.117,	0.111, 0.15, 0.222, 0.139, 0.261},
+                                                        {0.149, 0.203, 0.011, 0.459, 0, 0.177},
+                                                        {0, 0, 0, 1, 0, 0}};
+    public static double[][] FEMALE_WEEKLY_HOURS_BY_SECTOR = {{0.208, 0.126, 0.091, 0.289, 0.105, 0.181},
+                                                        {0.139, 0.126, 0.072, 0.443, 0.01, 0.21},
+                                                        {0.219, 0.084, 0.058, 0.179, 0.126, 0.333},
+                                                        {0, 0, 0, 1, 0, 0},
+                                                        {0, 0, 0, 1, 0, 0},
+                                                        {0.121, 0, 0.07, 0.124, 0.25, 0.435},
+                                                        {0.126, 0.088, 0.065, 0.164, 0.132, 0.426},
+                                                        {0.072, 0.002, 0, 0.116, 0.199, 0.611},
+                                                        {0.201, 0.169, 0.087, 0.137, 0.072, 0.335},
+                                                        {0, 0.03, 0, 0.523, 0.117, 0.331},
+                                                        {0, 0.006, 0, 0.136, 0.729, 0.13},
+                                                        {0, 0, 0, 1, 0, 0},
+                                                        {0.074, 0, 0.288, 0.215, 0.03, 0.392},
+                                                        {0.054, 0.018, 0.009, 0.574, 0.183, 0.161},
+                                                        {0, 0, 0, 0.688, 0.168, 0.144},
+                                                        {0.052, 0.28, 0.092, 0.195, 0.114, 0.267},
+                                                        {0.066, 0.025, 0.012, 0.369, 0.174, 0.355},
+                                                        {0.219, 0.2, 0, 0.167, 0.194, 0.219},
+                                                        {0.238, 0.105, 0.116, 0.182, 0.1, 0.258},
+                                                        {0.167, 0.006, 0, 0.381, 0.159, 0.287},
+                                                        {0, 0, 0, 1, 0, 0}};
+    public static int STUDENT_DAILY_HOURS = 7;
 
     public static double convertToKilometers(double val)
     {

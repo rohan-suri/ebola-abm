@@ -31,6 +31,8 @@ public class Resident implements Steppable
 
     private boolean employed;
 
+    private int dailyWorkHours;
+
     public Resident(Int2D location, Household household, int sex, int age, boolean isUrban)
     {
         this.location = location;
@@ -274,5 +276,13 @@ public class Resident implements Steppable
 
     public void setEmployed(boolean employed) {
         this.employed = employed;
+    }
+
+    public int getDailyWorkHours() {
+        return dailyWorkHours;
+    }
+
+    public void setDailyWorkHours(int dailyWorkHours) {
+        this.dailyWorkHours = dailyWorkHours;
     }
 }

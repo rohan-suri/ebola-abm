@@ -10,7 +10,7 @@ public class Constants
     public static int AGRICULTURE = 0;
     public static int MINING = 1;
     public static int MANUFACTURING = 2;
-    public static int UTILITIES = 3;
+    public static int ELECTRICITY = 3;
     public static int WATER_SUPPLY = 4;
     public static int CONSTRUCTION = 5;
     public static int TRADE = 6;
@@ -27,5 +27,5 @@ public class Constants
     public static int ARTS = 17;
     public static int OTHER_SERVICE = 18;
     public static int ACTIVITIES_OF_EMPLOYER = 19;
-    public static int INTERNATION_ORGANIZATIONS = 20;
+    public static int INTERNATIONAL_ORGANIZATIONS = 20;
 }

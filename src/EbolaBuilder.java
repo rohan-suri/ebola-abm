@@ -847,11 +847,13 @@ public class EbolaBuilder
         {
             if(sex == Constants.MALE)//urban male
             {
-               setWorkDemographics(resident, Parameters.URBAN_MALE_LF_BY_AGE, Parameters.URBAN_MALE_INACTIVE_SCHOOL, Parameters.URBAN_MALE_UNEMPLOYMENT, Parameters.URBAN_MALE_SECTORS);
+                setWorkDemographics(resident, Parameters.URBAN_MALE_LF_BY_AGE, Parameters.URBAN_MALE_INACTIVE_SCHOOL, Parameters.URBAN_MALE_UNEMPLOYMENT, Parameters.URBAN_MALE_SECTORS);
+                setDailyWorkHours(resident, Parameters.MALE_WEEKLY_HOURS_BY_SECTOR);
             }
             else//urban female
             {
                 setWorkDemographics(resident, Parameters.URBAN_FEMALE_LF_BY_AGE, Parameters.URBAN_FEMALE_INACTIVE_SCHOOL, Parameters.URBAN_FEMALE_UNEMPLOYMENT, Parameters.URBAN_FEMALE_SECTORS);
+                setDailyWorkHours(resident, Parameters.FEMALE_WEEKLY_HOURS_BY_SECTOR);
             }
         }
         else//rural
@@ -859,10 +861,13 @@ public class EbolaBuilder
             if(sex == Constants.MALE)//rural male
             {
                 setWorkDemographics(resident, Parameters.RURAL_MALE_LF_BY_AGE, Parameters.RURAL_MALE_INACTIVE_SCHOOL, Parameters.RURAL_MALE_UNEMPLOYMENT, Parameters.RURAL_MALE_SECTORS);
+                setDailyWorkHours(resident, Parameters.MALE_WEEKLY_HOURS_BY_SECTOR);
+
             }
             else//rural female
             {
                 setWorkDemographics(resident, Parameters.RURAL_FEMALE_LF_BY_AGE, Parameters.RURAL_FEMALE_INACTIVE_SCHOOL, Parameters.RURAL_FEMALE_UNEMPLOYMENT, Parameters.RURAL_FEMALE_SECTORS);
+                setDailyWorkHours(resident, Parameters.FEMALE_WEEKLY_HOURS_BY_SECTOR);
             }
         }
 
@@ -921,10 +926,11 @@ public class EbolaBuilder
                     index = 3;
                 if(rand < unemployment[index])//unemployed
                 {
-
+                    resident.setEmployed(false);
                 }
                 else//employment
                 {
+                    resident.setEmployed(true);
                     //now decide whate economic sector
                     rand = ebolaSim.random.nextDouble();
                     double sum = 0;
@@ -942,6 +948,44 @@ public class EbolaBuilder
         }
     }
 
+    private static void setDailyWorkHours(Resident resident, double[][] weekly_hours_by_sector)
+    {
+        if(resident.isInactive())
+        {
+            resident.setDailyWorkHours(Parameters.STUDENT_DAILY_HOURS);
+            return;
+        }
+        if(!resident.isEmployed())
+            return;
+        int sector = resident.getSector_id();
+        double rand = ebolaSim.random.nextDouble();
+        double sum = 0;
+        for(int i = 0; i < weekly_hours_by_sector[sector].length; i++)
+        {
+            sum += weekly_hours_by_sector[sector][i];
+            if(rand < sum)
+            {
+                //found the right hours, now convert the index to hours
+                //TODO use guassian distribution
+                double hours;
+                if(i == 0)// < 25 hours
+                    hours = 20;
+                else if(i == 1)
+                    hours = ebolaSim.random.nextInt(10) + 25;
+                else if(i == 2)
+                    hours = ebolaSim.random.nextInt(5) + 35;
+                else if(i == 3)
+                    hours = ebolaSim.random.nextInt(9) + 40;
+                else if(i == 4)
+                    hours = ebolaSim.random.nextInt(11) + 49;
+                else
+                    hours = 65;
+                //change hours to daily
+                hours /= 7.0;
+                resident.setDailyWorkHours((int)Math.round(hours));
+            }
+        }
+    }
     private static Structure getNearestStructureByRoute(Structure start, Map<Node, Structure> endNodes)
     {
         //first check if route is cached TODO: Assumes that all cached paths are closest to the structure
