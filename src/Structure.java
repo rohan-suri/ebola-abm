@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by rohansuri on 7/24/15.
  */
-public abstract class Structure
+public class Structure
 {
     protected Int2D location;
     protected EbolaBuilder.Node nearestNode;
@@ -71,9 +71,19 @@ public abstract class Structure
         }
         else
         {
-            Route route = AStar.astarPath(this.getNearestNode(), destination.getNearestNode());
-            cachedPaths.put(destination, route);
-            return route;
+            //check if the route has already been cached for the other way (destination -> here)
+            if(destination.getCachedRoutes().containsKey(this))
+            {
+                Route route = destination.getRoute(this).reverse();//be sure to reverse the route
+                cachedPaths.put(destination, route);
+                return route;
+            }
+            else
+            {
+                Route route = AStar.astarPath(this.getNearestNode(), destination.getNearestNode());
+                cachedPaths.put(destination, route);
+                return route;
+            }
         }
     }
 

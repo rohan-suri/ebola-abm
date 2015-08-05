@@ -130,6 +130,12 @@ public class EbolaWithUI extends GUIState
         schoolPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 0, 22), 1.0, true));
         display.attach(schoolPortrayal, "Schools");
 
+        //Farms
+        FieldPortrayal2D farmPortrayal = new SparseGridPortrayal2D();
+        farmPortrayal.setField(((EbolaABM)state).farmGrid);
+        farmPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(17, 202, 255), 1.0, true));
+        display.attach(farmPortrayal, "Farms");
+
         //---------------------Adding the road portrayal------------------------------
         GeomVectorFieldPortrayal roadLinkPortrayal = new GeomVectorFieldPortrayal();
         roadLinkPortrayal.setField(((EbolaABM)state).roadLinks);

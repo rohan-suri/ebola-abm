@@ -3,7 +3,7 @@
  */
 public class Parameters
 {
-    public static double SCALE = 0.001; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
     public static double POP_BLOCK_METERS = 926.1;//Height and width of one population block. (http://www.esri.com/news/arcuser/0400/wdside.html)
@@ -16,6 +16,7 @@ public class Parameters
     public static String ROADS_SHAPE_PATH = "data/roads_shapefile/all_roads_trim7.shp";//Path to vector data for all roads
     public static String ROADS_COST_PATH = "data/road_cost.dat";//Path to cost distance data for all allRoadNodes in the network
     public static String SCHOOLS_PATH = "data/schools_shapefile/all_schools.shp";//Path to shapefile that has location of all primary schools
+    public static String FARMS_PATH = "data/farms_shapefile/all_farms.shp";
 
     public static double MIN_POP_URBAN = 575.45;//Minimum population density per 926 meters or 1000 people per square mile to be urban. Source: http://cber.cba.ua.edu/asdc/urban_rural.html
     public static double MIN_POP_SURROUNDING = 287.73;//Minimum surrounding population density per 926 meters.  An urban district must be surrounded by
@@ -136,6 +137,33 @@ public class Parameters
                                                         {0.238, 0.105, 0.116, 0.182, 0.1, 0.258},
                                                         {0.167, 0.006, 0, 0.381, 0.159, 0.287},
                                                         {0, 0, 0, 1, 0, 0}};
+
+    //Parameters for work size by economic sector
+    //              1   2-4   5-9   10-19   20-49   50+
+    //Agriculture
+    //...
+    //Trade
+    public static double[][] WORK_SIZE_BY_SECTOR = {{0.119,0.606,0.201,0.049,0.016,0.01},
+                                                    {0.083,0.489,0.225,0.067,0.069,0.067},
+                                                    {0.23,0.324,0.182,0.106,0.064,0.096},
+                                                    {0.085,0.425,0.142,0.142,0,0.206},
+                                                    {0.085,0.425,0.142,0.142,0,0.206},
+                                                    {0.113,0.334,0.238,0.077,0.135,0.102},
+                                                    {0.603,0.302,0.04,0.019,0.015,0.02},
+                                                    {0.6,0.128,0.047,0.047,0.075,0.103},
+                                                    {0.437,0.35,0.142,0.008,0.035,0.028},
+                                                    {0.09,0.207,0.095,0.23,0.174,0.204},
+                                                    {0.134,0.063,0.095,0.13,0.234,0.343},
+                                                    {0.75,0.25,0,0,0,0},
+                                                    {0.12,0.369,0.115,0.064,0.059,0.274},
+                                                    {0.048,0.147,0.138,0.113,0.156,0.397},
+                                                    {0.007,0.154,0.388,0.065,0.142,0.244},
+                                                    {0.016,0.084,0.297,0.255,0.268,0.079},
+                                                    {0.156,0.168,0.199,0.094,0.129,0.254},
+                                                    {0.197,0.492,0.172,0.046,0.093,0},
+                                                    {0.216,0.236,0.214,0.142,0.147,0.046},
+                                                    {0.477,0.08,0.164,0.006,0.066,0.206},
+                                                    {0.156,0.168,0.199,0.094,0.129,0.254}};
     public static int STUDENT_DAILY_HOURS = 7;
 
     public static double convertToKilometers(double val)

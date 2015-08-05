@@ -53,8 +53,8 @@ public class Resident implements Steppable
         long cStep = ebolaSim.schedule.getSteps();
         if(cStep == 2 && !ebolaSim.updatedChart)
         {
-            for(int i = 0; i < ebolaSim.roadDistanceHistogram.length; i++)
-                ebolaSim.distribution.addValue((Number)ebolaSim.roadDistanceHistogram[i], "All distances", i);
+//            for(int i = 0; i < ebolaSim.roadDistanceHistogram.length; i++)
+//                ebolaSim.distribution.addValue((Number)ebolaSim.roadDistanceHistogram[i], "All distances", i);
             ebolaSim.updatedChart = true;
             System.out.println("Max route distance = " + ebolaSim.max_route_distance);
         }

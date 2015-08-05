@@ -1,5 +1,6 @@
 import sim.util.Int2D;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,5 +48,13 @@ public class Route
     public EbolaBuilder.Node getEnd()
     {
         return end;
+    }
+
+    public Route reverse()
+    {
+        List<Int2D> reversedPath = new ArrayList<Int2D>(path.size());
+        for(int i = path.size()-1; i >= 0; i--)
+            reversedPath.add(path.get(i));
+        return new Route(reversedPath, this.distance, this.end, this.start);
     }
 }

@@ -38,7 +38,6 @@ public class EbolaBuilder
     {
         ebolaSim = sim;
         age_dist = new HashMap<Integer, ArrayList<Double>>();
-        //TODO Hardcoded right now
         ebolaSim.world_height = 9990;
         ebolaSim.world_width = 9390;
 
@@ -46,54 +45,33 @@ public class EbolaBuilder
         ebolaSim.roadNetwork = new Network();
         ebolaSim.roadLinks = new GeomVectorField(ebolaSim.world_width, ebolaSim.world_height);
         System.out.println("(" + ebolaSim.world_width + ", " + ebolaSim.world_height + ")");
-        GeomVectorField schools_vector = null;
+        GeomVectorField schools_vector = new GeomVectorField();
+        GeomVectorField farms_vector = new GeomVectorField();
+        ebolaSim.schoolGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
+        ebolaSim.farmGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
+
         try
         {
-            //read in roads shapefile
-            Bag masked = new Bag();
-            File file2 = new File(Parameters.ROADS_SHAPE_PATH);
-            URL roadLinkUL = file2.toURI().toURL();
-            ShapeFileImporter.read(roadLinkUL, ebolaSim.roadLinks, masked);
-
-            //read in schools shapefile
-            schools_vector = new GeomVectorField();
-            Bag schools_masked = new Bag();
-            File schools_file = new File(Parameters.SCHOOLS_PATH);
-            URL shapeURI = schools_file.toURI().toURL();
-            ShapeFileImporter.read(shapeURI, schools_vector, schools_masked);
+            String[] files = {Parameters.ROADS_SHAPE_PATH, Parameters.SCHOOLS_PATH, Parameters.FARMS_PATH};//all the files we want to read in
+            GeomVectorField[] vectorFields = {ebolaSim.roadLinks, schools_vector, farms_vector};//all the vector fields we want to fill
+            readInShapefile(files, vectorFields);
 
             System.out.println("Done getting information, now analyzing.");
 
-            //needed to assure same envelope
-            System.out.println("about to read int Ascii grid");
-            long t = System.currentTimeMillis();
+            //get a grid as a base for the mbr
             GeomGridField gridField = new GeomGridField();//just to align mbr
             InputStream inputStream = new FileInputStream(Parameters.POP_PATH);
             ArcInfoASCGridImporter.read(inputStream, GeomGridField.GridDataType.INTEGER, gridField);
 
             //align mbr for all vector files read
             System.out.println("Algining");
-
-            Envelope globalMBR = ebolaSim.roadLinks.getMBR();
-
-            globalMBR.expandToInclude(gridField.getMBR());
-            globalMBR.expandToInclude(schools_vector.getMBR());
-
-            ebolaSim.roadLinks.setMBR(globalMBR);
-            gridField.setMBR(globalMBR);
-            schools_vector.setMBR(globalMBR);
+            alignVectorFields(gridField, vectorFields);
 
             //Read in the road cost file
             readInRoadCost();
 
-            System.out.println("Time " + ((System.currentTimeMillis()-t)/1000/60) + " minutes");
-
         }
         catch(FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (MalformedURLException e)
         {
             e.printStackTrace();
         }
@@ -103,10 +81,14 @@ public class EbolaBuilder
         System.out.println("Un trimmed network size = " + ebolaSim.allRoadNodes.size());
 
         //add schools from vectorfield
-        readInSchools(schools_vector);
+        readInStructures(schools_vector, ebolaSim.schoolGrid, ebolaSim.schools, new School(null));
+
+        //add farms from vectorfield
+        readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, null);
 
         //assignNearest Nodes to all facilities except households
         assignNearestNode(ebolaSim.schoolGrid, ebolaSim.schoolNodes);
+        assignNearestNode(ebolaSim.farmGrid, ebolaSim.farmNodes);
 
         //read in csv that gives the distribution of ages for the three countries from landscan data
         setUpAgeDist(age_dist_file);
@@ -119,6 +101,35 @@ public class EbolaBuilder
         System.out.println("Assigning nearestNodes...");
         //assignNearestNode(ebolaSim.householdGrid, ebolaSim.householdNodes);
         System.out.println("time = " + ((System.currentTimeMillis() - time) / 1000 / 60) + " minutes");
+    }
+
+    static void alignVectorFields(GeomGridField base, GeomVectorField[] others)
+    {
+        Envelope globalMBR = base.getMBR();
+
+        for(GeomVectorField vf: others)
+            globalMBR.expandToInclude(vf.getMBR());
+        for(GeomVectorField vf: others)
+            vf.setMBR(globalMBR);
+    }
+
+    static void readInShapefile(String[] files, GeomVectorField[] vectorFields)
+    {
+        try
+        {
+            for(int i = 0; i < files.length; i++)
+            {
+                String filePath = files[i];
+                Bag schools_masked = new Bag();
+                File schools_file = new File(filePath);
+                URL shapeURI = schools_file.toURI().toURL();
+                ShapeFileImporter.read(shapeURI, vectorFields[i], schools_masked);
+            }
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     static void readInRoadCost()
@@ -233,28 +244,34 @@ public class EbolaBuilder
     }
 
     /**
-     * Reads in the schools and add them to the grid
-     * @param school_file path to shapefile of schools
+     * Reads in from a vector_field and adds to SparseGrid2d and the bag supplied
+     * @param vector_field
+     * @param grid Grid to fill up
+     * @param addTo
+     * @param type Should be a subclass of Structure, if none is given, then it just uses a generic structure
      */
-    static void readInSchools(GeomVectorField schools_vector)
+    static void readInStructures(GeomVectorField vector_field, SparseGrid2D grid, Bag addTo, Structure type)
     {
-        ebolaSim.schoolGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
-        Bag school_geom = schools_vector.getGeometries();
+        Bag school_geom = vector_field.getGeometries();
 
-        Envelope e = schools_vector.getMBR();
+        Envelope e = vector_field.getMBR();
         double xmin = e.getMinX(), ymin = e.getMinY(), xmax = e.getMaxX(), ymax = e.getMaxY();
         int xcols = ebolaSim.world_width - 1, ycols = ebolaSim.world_height - 1;
         //System.out.println("Number of schools = " + school_geom.size());
         for(Object o: school_geom)
         {
             MasonGeometry school = (MasonGeometry)o;
-            Point point = schools_vector.getGeometryLocation(school);
+            Point point = vector_field.getGeometryLocation(school);
             double x = point.getX(), y = point.getY();
             int xint = (int) Math.floor(xcols * (x - xmin) / (xmax - xmin)), yint = (int) (ycols - Math.floor(ycols * (y - ymin) / (ymax - ymin))); // REMEMBER TO FLIP THE Y VALUE
-            School s = new School(new Int2D(xint, yint));
-            ebolaSim.schools.add(s);
+            Structure structure;
+            if(type instanceof School)
+                structure = new School(new Int2D(xint, yint));
+            else
+                structure = new Structure(new Int2D(xint, yint));
+            addTo.add(structure);
             //System.out.println("(" + xint + ", " + yint + ")");
-            ebolaSim.schoolGrid.setObjectLocation(s, xint, yint);
+            grid.setObjectLocation(structure, xint, yint);
         }
     }
 
@@ -816,6 +833,14 @@ public class EbolaBuilder
             }
             System.out.println("average school population = " + sum*1.0/count);
             System.out.println("max school pop = " + max_size);
+
+            //print distribution of distance to farm
+            for(int i = 0; i < farmDistanceFrequency.length; i++)
+            {
+                ebolaSim.distribution.addValue((Number)(farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop), "All distances", i);
+                System.out.print(farmDistanceFrequency[i] * 1.0 * 1.0 / ebolaSim.total_scaled_pop * 100 + "%" + "\t\t");
+            }
+            System.out.println("");
         }
         catch(FileNotFoundException e)
         {
@@ -870,6 +895,10 @@ public class EbolaBuilder
                 setDailyWorkHours(resident, Parameters.FEMALE_WEEKLY_HOURS_BY_SECTOR);
             }
         }
+
+        //now we have to set the daily destination
+        if(resident.isEmployed())
+            setWorkDestination(resident);
 
         return resident;
     }
@@ -986,6 +1015,61 @@ public class EbolaBuilder
             }
         }
     }
+
+    private static int getWorkSize(int sector_id)
+    {
+        double rand = ebolaSim.random.nextDouble();
+        int sum = 0;
+        for(int i = 0; i < Parameters.WORK_SIZE_BY_SECTOR[sector_id].length; i++)
+        {
+            sum += Parameters.WORK_SIZE_BY_SECTOR[sector_id][i];
+            if(rand < sum)
+            {
+                //we found the work size index, now convert it to number
+                int size;
+                if(i == 0)
+                    size = 1;
+                else if(i == 2)
+                    size = 2 + ebolaSim.random.nextInt(3);
+                else if(i == 3)
+                    size = 5 + ebolaSim.random.nextInt(5);
+                else if(i == 4)
+                    size = 10 + ebolaSim.random.nextInt(10);
+                else if(i == 5)
+                    size = 20 + ebolaSim.random.nextInt(30);
+                else
+                    size = 55;
+                return size;
+            }
+        }
+        //error
+        return -1;
+    }
+
+    private static int[] farmDistanceFrequency = new int[100];
+    private static void setWorkDestination(Resident resident)
+    {
+        if(resident.getSector_id() == Constants.EDUCATION)
+        {
+            Structure farm = getNearestStructureByRoute(resident.getHousehold(), ebolaSim.farmNodes);
+            resident.setWorkDayDestination(farm);
+            if(farm != null)
+            {
+                Route routeToWork = resident.getHousehold().getRoute(farm);
+                int distance = (int)Math.round(Parameters.convertToKilometers(routeToWork.getTotalDistance()));
+                if(distance < farmDistanceFrequency.length)
+                    farmDistanceFrequency[distance]++;
+                else
+                    farmDistanceFrequency[farmDistanceFrequency.length-1]++;
+            }
+            else
+            {
+                System.out.println("COULD NOT FIND FARM!!!");
+            }
+
+        }
+    }
+
     private static Structure getNearestStructureByRoute(Structure start, Map<Node, Structure> endNodes)
     {
         //first check if route is cached TODO: Assumes that all cached paths are closest to the structure
@@ -1049,7 +1133,7 @@ public class EbolaBuilder
 
     /**
      * @param county_id Id of county
-     * @return country, 0 - Guinea, 1 - Sierra Leone, 2 - Liberia
+     * @return country, 0 - Guinea, 1 - Sierra Leone, 2 - Liberia okay
      */
     private static int determineCountry(int county_id)
     {
