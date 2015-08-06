@@ -1,4 +1,6 @@
 import com.sun.org.apache.bcel.internal.generic.ASTORE;
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+import com.sun.xml.internal.ws.api.pipe.FiberContextSwitchInterceptor;
 import com.vividsolutions.jts.geom.*;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomGridField;
@@ -50,6 +52,25 @@ public class EbolaBuilder
         ebolaSim.schoolGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
         ebolaSim.farmGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
 
+        //TEMP TODO
+        int[] freq = new int[15];
+        double avg = Parameters.AVERAGE_FARM_DISTANCE;
+        double stdev = Parameters.STDEV_FARM_DISTANCE;
+        for(int i = 0; i < 100000; i++)
+        {
+            double lognormal = Stats.normalToLognormal(Stats.calcLognormalMu(avg, stdev), Stats.calcLognormalSigma(avg, stdev), ebolaSim.random.nextGaussian());
+            if(Math.round(lognormal) > freq.length-1)
+                freq[freq.length-1]++;
+            else
+                freq[(int)Math.round(lognormal)]++;
+        }
+        for(int i = 0; i < freq.length; i++)
+        {
+            System.out.println(freq[i] + " ");
+            ebolaSim.distribution.addValue((Number) freq[i], "All distances", i);
+        }
+
+
         try
         {
             String[] files = {Parameters.ROADS_SHAPE_PATH, Parameters.SCHOOLS_PATH, Parameters.FARMS_PATH};//all the files we want to read in
@@ -84,7 +105,7 @@ public class EbolaBuilder
         readInStructures(schools_vector, ebolaSim.schoolGrid, ebolaSim.schools, new School(null));
 
         //add farms from vectorfield
-        readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, null);
+        readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, new WorkLocation(null, Constants.AGRICULTURE));
 
         //assignNearest Nodes to all facilities except households
         assignNearestNode(ebolaSim.schoolGrid, ebolaSim.schoolNodes);
@@ -267,6 +288,8 @@ public class EbolaBuilder
             Structure structure;
             if(type instanceof School)
                 structure = new School(new Int2D(xint, yint));
+            else if(type instanceof WorkLocation)
+                structure = new WorkLocation(new Int2D(xint, yint), ((WorkLocation) type).getSector_id());
             else
                 structure = new Structure(new Int2D(xint, yint));
             addTo.add(structure);
@@ -837,7 +860,7 @@ public class EbolaBuilder
             //print distribution of distance to farm
             for(int i = 0; i < farmDistanceFrequency.length; i++)
             {
-                ebolaSim.distribution.addValue((Number)(farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop), "All distances", i);
+                //ebolaSim.distribution.addValue((Number)(farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop), "All distances", i);
                 System.out.print(farmDistanceFrequency[i] * 1.0 * 1.0 / ebolaSim.total_scaled_pop * 100 + "%" + "\t\t");
             }
             System.out.println("");
@@ -932,7 +955,7 @@ public class EbolaBuilder
                 index = 3;
             if(rand < inactive_school[index])
             {
-                School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes);
+                School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.schoolNodes, Double.MAX_VALUE, false);
                 resident.setWorkDayDestination(nearestSchool);//add school as workday destination
             }
             else
@@ -1016,45 +1039,18 @@ public class EbolaBuilder
         }
     }
 
-    private static int getWorkSize(int sector_id)
-    {
-        double rand = ebolaSim.random.nextDouble();
-        int sum = 0;
-        for(int i = 0; i < Parameters.WORK_SIZE_BY_SECTOR[sector_id].length; i++)
-        {
-            sum += Parameters.WORK_SIZE_BY_SECTOR[sector_id][i];
-            if(rand < sum)
-            {
-                //we found the work size index, now convert it to number
-                int size;
-                if(i == 0)
-                    size = 1;
-                else if(i == 2)
-                    size = 2 + ebolaSim.random.nextInt(3);
-                else if(i == 3)
-                    size = 5 + ebolaSim.random.nextInt(5);
-                else if(i == 4)
-                    size = 10 + ebolaSim.random.nextInt(10);
-                else if(i == 5)
-                    size = 20 + ebolaSim.random.nextInt(30);
-                else
-                    size = 55;
-                return size;
-            }
-        }
-        //error
-        return -1;
-    }
-
     private static int[] farmDistanceFrequency = new int[100];
     private static void setWorkDestination(Resident resident)
     {
-        if(resident.getSector_id() == Constants.EDUCATION)
+        if(resident.getSector_id() == Constants.AGRICULTURE)
         {
-            Structure farm = getNearestStructureByRoute(resident.getHousehold(), ebolaSim.farmNodes);
+            double max_distance = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), ebolaSim.random.nextGaussian());
+            max_distance = Parameters.convertFromKilometers(max_distance);//convert back to world units
+            WorkLocation farm = (WorkLocation)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.farmNodes, max_distance, true);
             resident.setWorkDayDestination(farm);
             if(farm != null)
             {
+                farm.addMember(resident);
                 Route routeToWork = resident.getHousehold().getRoute(farm);
                 int distance = (int)Math.round(Parameters.convertToKilometers(routeToWork.getTotalDistance()));
                 if(distance < farmDistanceFrequency.length)
@@ -1064,13 +1060,77 @@ public class EbolaBuilder
             }
             else
             {
-                System.out.println("COULD NOT FIND FARM!!!");
+                //could not find a nearby farm, now create one
+                double farm_commute_on_road = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_DISTANCE, Parameters.STDEV_FARM_DISTANCE), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_DISTANCE, Parameters.STDEV_FARM_DISTANCE), ebolaSim.random.nextGaussian());
+                farm_commute_on_road = Parameters.convertFromKilometers(max_distance);//convert back to world units
+
+                double farm_commute_off_road = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.OFF_ROAD_AVERAGE, Parameters.OFF_ROAD_STDEV), Stats.calcLognormalSigma(Parameters.OFF_ROAD_AVERAGE, Parameters.OFF_ROAD_STDEV), ebolaSim.random.nextGaussian());
+                farm_commute_off_road = Parameters.convertFromKilometers(max_distance);//convert back to world units
+
+                WorkLocation workLocation = createWorkLocation(resident, farm_commute_on_road, farm_commute_off_road, ebolaSim.farmNodes, ebolaSim.farmGrid);
+                resident.setWorkDayDestination(workLocation);
+                workLocation.addMember(resident);
             }
 
         }
     }
 
-    private static Structure getNearestStructureByRoute(Structure start, Map<Node, Structure> endNodes)
+    private static WorkLocation createWorkLocation(Resident resident, double on_road_distance, double off_road_distance, Map<Node, Structure> nodeStructureMap, SparseGrid2D grid)
+    {
+        Route route = AStar.getNodeAtDistance(resident.getHousehold().getNearestNode(), on_road_distance);
+        if(route != null)
+        {
+            Node tempEndNode = route.getEnd();
+            Int2D endLocation = moveAwayFromRoad(tempEndNode.location, off_road_distance);
+
+            //create a new node at this location and connect the two
+            Node endNode = new Node(endLocation);
+            Edge e = new Edge(endNode, tempEndNode, (int)endNode.location.distance(tempEndNode.location));
+            endNode.links.add(e);
+            tempEndNode.links.add(e);
+
+            //create the WorkLocation and set nearest node
+            WorkLocation workLocation = new WorkLocation(endLocation, resident.getSector_id());
+            grid.setObjectLocation(workLocation, workLocation.getLocation());
+            workLocation.setNearestNode(endNode);
+
+            //add the node to the structure map so that it can be found
+            nodeStructureMap.put(endNode, workLocation);
+
+            //cache the route
+            resident.getHousehold().cacheRoute(route, workLocation);
+        }
+        return null;//nothing we can do if can't get a route
+    }
+
+    private static Int2D moveAwayFromRoad(Int2D location, double off_road_distance)
+    {
+        int cX = location.getX();
+        int cY = location.getY();
+
+        while(location.distance(cX, cY) <= off_road_distance)
+        {
+            //simply pick the largest one using road cost
+            DoubleBag val = new DoubleBag();
+            IntBag xBag = new IntBag();
+            IntBag yBag = new IntBag();
+
+            ebolaSim.road_cost.getRadialNeighbors(cX, cY, 1, Grid2D.BOUNDED, true, val, xBag, yBag);
+            double max = Double.MIN_VALUE;
+            int index = 0;
+            for (int i = 0; i < val.size(); i++)
+                if (val.get(i) > max)
+                {
+                    max = val.get(i);
+                    index = i;
+                }
+            cY = yBag.get(index);
+            cX = xBag.get(index);
+        }
+        return new Int2D(cX, cY);
+    }
+
+    private static Structure getNearestStructureByRoute(Structure start, Map<Node, Structure> endNodes, double max_distance, boolean check_capacity)
     {
         //first check if route is cached TODO: Assumes that all cached paths are closest to the structure
         Iterator<Structure> it = start.getCachedRoutes().keySet().iterator();
@@ -1081,7 +1141,7 @@ public class EbolaBuilder
                 return st;
         }
 
-        Route route = AStar.getNearestNode(start.getNearestNode(), endNodes);
+        Route route = AStar.getNearestNode(start.getNearestNode(), endNodes, max_distance, check_capacity);
 
         if(route == null)
             return null;

@@ -16,6 +16,8 @@ public class Structure
     protected Bag members;//all people that go to this structure on the daily.  Could be students, household members, hospital staff, etc
     protected HashMap<Structure, Route> cachedPaths;
 
+    protected int capacity;
+
     public Structure(Int2D location)
     {
         this.location = location;
@@ -97,4 +99,11 @@ public class Structure
         return cachedPaths;
     }
 
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
 }

@@ -3,7 +3,7 @@
  */
 public class Parameters
 {
-    public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.0001; //percentage of total population that agents will be created.  Maximimum of 1
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
     public static double POP_BLOCK_METERS = 926.1;//Height and width of one population block. (http://www.esri.com/news/arcuser/0400/wdside.html)
@@ -166,8 +166,23 @@ public class Parameters
                                                     {0.156,0.168,0.199,0.094,0.129,0.254}};
     public static int STUDENT_DAILY_HOURS = 7;
 
+    //Commuting parameters for farms.  Uses a log normal distribution
+    public static double AVERAGE_FARM_DISTANCE = 2;//kilometers
+    public static double STDEV_FARM_DISTANCE = 1.5;//kilometers
+
+    public static double AVERAGE_FARM_MAX = 6;//km
+    public static double STDEV_FARM_MAX = 1;//km
+
+    public static double OFF_ROAD_AVERAGE = 0.5;//km
+    public static double OFF_ROAD_STDEV = 0.25;//km
+
     public static double convertToKilometers(double val)
     {
         return val * (Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE)/1000.0;
+    }
+
+    public static double convertFromKilometers(double val)
+    {
+        return val*1000.0/(Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE);
     }
 }
