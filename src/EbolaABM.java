@@ -37,8 +37,7 @@ public class EbolaABM extends SimState
 
     public Bag schools = new Bag();
     public Bag farms = new Bag();
-    public Map<EbolaBuilder.Node, Structure> schoolNodes = new HashMap<>(10000);
-    public Map<EbolaBuilder.Node, Structure> farmNodes = new HashMap<>(10000);
+    public ArrayList<Map<EbolaBuilder.Node, Structure>> workNodeStructureMap = new ArrayList<>();
     public Map<EbolaBuilder.Node, Structure> householdNodes = new HashMap<>(10000);
 
     double max_distance = 0;

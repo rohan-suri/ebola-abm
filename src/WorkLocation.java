@@ -19,7 +19,7 @@ public class WorkLocation extends Structure
     private static int getWorkSize(int sector_id)
     {
         double rand = EbolaBuilder.ebolaSim.random.nextDouble();
-        int sum = 0;
+        double sum = 0;
         for(int i = 0; i < Parameters.WORK_SIZE_BY_SECTOR[sector_id].length; i++)
         {
             sum += Parameters.WORK_SIZE_BY_SECTOR[sector_id][i];
@@ -29,13 +29,13 @@ public class WorkLocation extends Structure
                 int size;
                 if(i == 0)
                     size = 1;
-                else if(i == 2)
+                else if(i == 1)
                     size = 2 + EbolaBuilder.ebolaSim.random.nextInt(3);
-                else if(i == 3)
+                else if(i == 2)
                     size = 5 + EbolaBuilder.ebolaSim.random.nextInt(5);
-                else if(i == 4)
+                else if(i == 3)
                     size = 10 + EbolaBuilder.ebolaSim.random.nextInt(10);
-                else if(i == 5)
+                else if(i == 4)
                     size = 20 + EbolaBuilder.ebolaSim.random.nextInt(30);
                 else
                     size = 55;

@@ -3,7 +3,7 @@
  */
 public class Parameters
 {
-    public static double SCALE = 0.0001; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.005; //percentage of total population that agents will be created.  Maximimum of 1
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
     public static double POP_BLOCK_METERS = 926.1;//Height and width of one population block. (http://www.esri.com/news/arcuser/0400/wdside.html)
@@ -178,11 +178,11 @@ public class Parameters
 
     public static double convertToKilometers(double val)
     {
-        return val * (Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE)/1000.0;
+        return (val * (Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE))/1000.0;
     }
 
     public static double convertFromKilometers(double val)
     {
-        return val*1000.0/(Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE);
+        return (val*1000.0)/(Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE);
     }
 }
