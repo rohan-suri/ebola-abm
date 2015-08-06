@@ -43,7 +43,8 @@ public class WorkLocation extends Structure
             }
         }
         //error
-        return -1;
+        //System.out.println("rand = " + rand);
+        return 55;
     }
 
     public int getSector_id() {

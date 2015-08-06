@@ -15,7 +15,7 @@ public class Structure
     protected EbolaBuilder.Node nearestNode;
     protected Bag members;//all people that go to this structure on the daily.  Could be students, household members, hospital staff, etc
     protected HashMap<Structure, Route> cachedPaths;
-
+    int currentMembers;
     protected int capacity;
 
     public Structure(Int2D location)
@@ -105,5 +105,9 @@ public class Structure
 
     public void setCapacity(int capacity) {
         this.capacity = capacity;
+    }
+
+    public int getCurrentMembers() {
+        return members.size();
     }
 }

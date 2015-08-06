@@ -90,11 +90,11 @@ public class EbolaBuilder
         readInStructures(schools_vector, ebolaSim.schoolGrid, ebolaSim.schools, new School(null));
 
         //add farms from vectorfield
-        readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, new WorkLocation(null, Constants.AGRICULTURE));
+        //readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, new WorkLocation(null, Constants.AGRICULTURE));
 
         //assignNearest Nodes to all facilities except households
         assignNearestNode(ebolaSim.schoolGrid, ebolaSim.workNodeStructureMap.get(Constants.EDUCATION));
-        assignNearestNode(ebolaSim.farmGrid, ebolaSim.workNodeStructureMap.get(Constants.AGRICULTURE));
+        //assignNearestNode(ebolaSim.farmGrid, ebolaSim.workNodeStructureMap.get(Constants.AGRICULTURE));
 
         //read in csv that gives the distribution of ages for the three countries from landscan data
         setUpAgeDist(age_dist_file);
@@ -946,7 +946,7 @@ public class EbolaBuilder
                 index = 3;
             if(rand < inactive_school[index])
             {
-                School nearestSchool  = (School)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.workNodeStructureMap.get(Constants.EDUCATION), Double.MAX_VALUE, false);
+                Structure nearestSchool  = getNearestStructureByRoute(resident.getHousehold(), ebolaSim.workNodeStructureMap.get(Constants.EDUCATION), Double.MAX_VALUE, false);
                 resident.setWorkDayDestination(nearestSchool);//add school as workday destination
             }
             else
@@ -1033,40 +1033,36 @@ public class EbolaBuilder
     private static int[] farmDistanceFrequency = new int[70];
     private static void setWorkDestination(Resident resident)
     {
-        if(resident.getSector_id() == Constants.AGRICULTURE)
+        double max_distance = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), ebolaSim.random.nextGaussian());
+        max_distance = Parameters.convertFromKilometers(max_distance);//convert back to world units
+        WorkLocation workLocation = (WorkLocation)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.workNodeStructureMap.get(resident.getSector_id()), max_distance, true);
+        resident.setWorkDayDestination(workLocation);
+        if(workLocation != null)
         {
-            double max_distance = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), ebolaSim.random.nextGaussian());
-            max_distance = Parameters.convertFromKilometers(max_distance);//convert back to world units
-            WorkLocation farm = (WorkLocation)getNearestStructureByRoute(resident.getHousehold(), ebolaSim.workNodeStructureMap.get(Constants.AGRICULTURE), max_distance, true);
-            resident.setWorkDayDestination(farm);
-            if(farm != null)
-            {
-                farm.addMember(resident);
-                Route routeToWork = resident.getHousehold().getRoute(farm);
+            workLocation.addMember(resident);
+            Route routeToWork = resident.getHousehold().getRoute(workLocation);
 //                int distance = (int)Math.round(Parameters.convertToKilometers(routeToWork.getTotalDistance()));
 //                if(distance < farmDistanceFrequency.length)
 //                    farmDistanceFrequency[distance]++;
 //                else
 //                    farmDistanceFrequency[farmDistanceFrequency.length-1]++;
-            }
-            else
+        }
+        else
+        {
+            //could not find a nearby farm, now create one
+            double farm_commute_on_road = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_DISTANCE, Parameters.STDEV_FARM_DISTANCE), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_DISTANCE, Parameters.STDEV_FARM_DISTANCE), ebolaSim.random.nextGaussian());
+            //System.out.println("Looking for node " + farm_commute_on_road + " km away");
+            farm_commute_on_road = Parameters.convertFromKilometers(farm_commute_on_road);//convert back to world units
+            //System.out.println("converted back to km = " + Parameters.convertToKilometers(farm_commute_on_road));
+            double farm_commute_off_road = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.OFF_ROAD_AVERAGE, Parameters.OFF_ROAD_STDEV), Stats.calcLognormalSigma(Parameters.OFF_ROAD_AVERAGE, Parameters.OFF_ROAD_STDEV), ebolaSim.random.nextGaussian());
+            farm_commute_off_road = Parameters.convertFromKilometers(farm_commute_off_road);//convert back to world units
+
+            workLocation = createWorkLocation(resident, farm_commute_on_road, farm_commute_off_road, ebolaSim.workNodeStructureMap.get(resident.getSector_id()), ebolaSim.farmGrid);
+            if(workLocation != null)
             {
-                //could not find a nearby farm, now create one
-                double farm_commute_on_road = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_DISTANCE, Parameters.STDEV_FARM_DISTANCE), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_DISTANCE, Parameters.STDEV_FARM_DISTANCE), ebolaSim.random.nextGaussian());
-                //System.out.println("Looking for node " + farm_commute_on_road + " km away");
-                farm_commute_on_road = Parameters.convertFromKilometers(farm_commute_on_road);//convert back to world units
-                //System.out.println("converted back to km = " + Parameters.convertToKilometers(farm_commute_on_road));
-                double farm_commute_off_road = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.OFF_ROAD_AVERAGE, Parameters.OFF_ROAD_STDEV), Stats.calcLognormalSigma(Parameters.OFF_ROAD_AVERAGE, Parameters.OFF_ROAD_STDEV), ebolaSim.random.nextGaussian());
-                farm_commute_off_road = Parameters.convertFromKilometers(farm_commute_off_road);//convert back to world units
-
-                WorkLocation workLocation = createWorkLocation(resident, farm_commute_on_road, farm_commute_off_road, ebolaSim.workNodeStructureMap.get(Constants.AGRICULTURE), ebolaSim.farmGrid);
-                if(workLocation != null)
-                {
-                    resident.setWorkDayDestination(workLocation);
-                    workLocation.addMember(resident);
-                }
+                resident.setWorkDayDestination(workLocation);
+                workLocation.addMember(resident);
             }
-
         }
     }
 
@@ -1077,7 +1073,7 @@ public class EbolaBuilder
         {
             Node tempEndNode = route.getEnd();
             Int2D endLocation = moveAwayFromRoad(tempEndNode.location, off_road_distance);
-
+            route.addToEnd(endLocation);
             //create a new node at this location and connect the two
             Node endNode = new Node(endLocation);
             Edge e = new Edge(endNode, tempEndNode, (int)endNode.location.distance(tempEndNode.location));
@@ -1098,6 +1094,7 @@ public class EbolaBuilder
 
             //cache the route
             resident.getHousehold().cacheRoute(route, workLocation);
+            return workLocation;
         }
         return null;//nothing we can do if can't get a route
     }

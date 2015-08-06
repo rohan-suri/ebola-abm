@@ -57,4 +57,9 @@ public class Route
             reversedPath.add(path.get(i));
         return new Route(reversedPath, this.distance, this.end, this.start);
     }
+
+    public void addToEnd(Int2D location)
+    {
+        path.add(location);
+    }
 }
