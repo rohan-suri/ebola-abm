@@ -341,7 +341,7 @@ public class AStar {
                 totalDistance += x.node.location.distance(x.cameFrom.node.location);
         }
 
-        return new Route(result, totalDistance, start.node, end.node);
+        return new Route(result, totalDistance, start.node, end.node, Parameters.WALKING_SPEED);
     }
 
     /**
