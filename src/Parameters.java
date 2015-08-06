@@ -17,6 +17,7 @@ public class Parameters
     public static String ROADS_COST_PATH = "data/road_cost.dat";//Path to cost distance data for all allRoadNodes in the network
     public static String SCHOOLS_PATH = "data/schools_shapefile/all_schools.shp";//Path to shapefile that has location of all primary schools
     public static String FARMS_PATH = "data/farms_shapefile/all_farms.shp";
+    public static String HOSPITALS_PATH = "data/hospitals_shapefile/all_hospitals.shp";//Path to shapefile that has location of all health facilities
 
     public static double MIN_POP_URBAN = 575.45;//Minimum population density per 926 meters or 1000 people per square mile to be urban. Source: http://cber.cba.ua.edu/asdc/urban_rural.html
     public static double MIN_POP_SURROUNDING = 287.73;//Minimum surrounding population density per 926 meters.  An urban district must be surrounded by
@@ -170,7 +171,7 @@ public class Parameters
     public static double AVERAGE_FARM_DISTANCE = 2;//kilometers
     public static double STDEV_FARM_DISTANCE = 1.5;//kilometers
 
-    public static double AVERAGE_FARM_MAX = 6;//km
+    public static double AVERAGE_FARM_MAX = 7;//km
     public static double STDEV_FARM_MAX = 1;//km
 
     public static double OFF_ROAD_AVERAGE = 0.5;//km

@@ -133,8 +133,27 @@ public class EbolaWithUI extends GUIState
         //Farms
         FieldPortrayal2D farmPortrayal = new SparseGridPortrayal2D();
         farmPortrayal.setField(((EbolaABM)state).farmGrid);
-        farmPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(17, 202, 255), 1.0, true));
-        display.attach(farmPortrayal, "Farms");
+        farmPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(17, 202, 255), 1.0, true)
+        {
+            @Override
+            public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
+            {
+                WorkLocation wl = (WorkLocation)object;
+
+                if(wl.getSector_id() == Constants.HEALTH)
+                {
+                    paint = new Color(193, 0, 255);
+                    //super.scale = 4.0;
+                }
+                else
+                {
+                    paint = new Color(17, 202, 255);
+                }
+
+                super.draw(object, graphics, info);
+            }
+        });
+        display.attach(farmPortrayal, "Work Locations");
 
         //---------------------Adding the road portrayal------------------------------
         GeomVectorFieldPortrayal roadLinkPortrayal = new GeomVectorFieldPortrayal();

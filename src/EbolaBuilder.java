@@ -49,6 +49,7 @@ public class EbolaBuilder
         System.out.println("(" + ebolaSim.world_width + ", " + ebolaSim.world_height + ")");
         GeomVectorField schools_vector = new GeomVectorField();
         GeomVectorField farms_vector = new GeomVectorField();
+        GeomVectorField hospitals_vector = new GeomVectorField();
         ebolaSim.schoolGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
         ebolaSim.farmGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
 
@@ -58,8 +59,8 @@ public class EbolaBuilder
 
         try
         {
-            String[] files = {Parameters.ROADS_SHAPE_PATH, Parameters.SCHOOLS_PATH, Parameters.FARMS_PATH};//all the files we want to read in
-            GeomVectorField[] vectorFields = {ebolaSim.roadLinks, schools_vector, farms_vector};//all the vector fields we want to fill
+            String[] files = {Parameters.ROADS_SHAPE_PATH, Parameters.SCHOOLS_PATH, Parameters.FARMS_PATH, Parameters.HOSPITALS_PATH};//all the files we want to read in
+            GeomVectorField[] vectorFields = {ebolaSim.roadLinks, schools_vector, farms_vector, hospitals_vector};//all the vector fields we want to fill
             readInShapefile(files, vectorFields);
 
             System.out.println("Done getting information, now analyzing.");
@@ -91,6 +92,9 @@ public class EbolaBuilder
 
         //add farms from vectorfield
         //readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, new WorkLocation(null, Constants.AGRICULTURE));
+
+        //add hospitals from vectorfield
+        readInStructures(hospitals_vector, ebolaSim.farmGrid, new Bag(), new WorkLocation(null, Constants.HEALTH));
 
         //assignNearest Nodes to all facilities except households
         assignNearestNode(ebolaSim.schoolGrid, ebolaSim.workNodeStructureMap.get(Constants.EDUCATION));
@@ -1057,6 +1061,8 @@ public class EbolaBuilder
             double farm_commute_off_road = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.OFF_ROAD_AVERAGE, Parameters.OFF_ROAD_STDEV), Stats.calcLognormalSigma(Parameters.OFF_ROAD_AVERAGE, Parameters.OFF_ROAD_STDEV), ebolaSim.random.nextGaussian());
             farm_commute_off_road = Parameters.convertFromKilometers(farm_commute_off_road);//convert back to world units
 
+            if(resident.getSector_id() == Constants.HEALTH)
+                System.out.println("Creating NEW NEW NEW NEW Hospital!!!!!!");
             workLocation = createWorkLocation(resident, farm_commute_on_road, farm_commute_off_road, ebolaSim.workNodeStructureMap.get(resident.getSector_id()), ebolaSim.farmGrid);
             if(workLocation != null)
             {
