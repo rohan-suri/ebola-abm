@@ -94,7 +94,7 @@ public class EbolaBuilder
         //readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, new WorkLocation(null, Constants.AGRICULTURE));
 
         //add hospitals from vectorfield
-        readInStructures(hospitals_vector, ebolaSim.farmGrid, new Bag(), new WorkLocation(null, Constants.HEALTH));
+        //readInStructures(hospitals_vector, ebolaSim.farmGrid, new Bag(), new WorkLocation(null, Constants.HEALTH));
 
         //assignNearest Nodes to all facilities except households
         assignNearestNode(ebolaSim.schoolGrid, ebolaSim.workNodeStructureMap.get(Constants.EDUCATION));
@@ -1028,7 +1028,7 @@ public class EbolaBuilder
                 else
                     hours = 65;
                 //change hours to daily
-                hours /= 7.0;
+                hours /= 5.0;
                 resident.setDailyWorkHours((int)Math.round(hours));
             }
         }
@@ -1061,8 +1061,6 @@ public class EbolaBuilder
             double farm_commute_off_road = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.OFF_ROAD_AVERAGE, Parameters.OFF_ROAD_STDEV), Stats.calcLognormalSigma(Parameters.OFF_ROAD_AVERAGE, Parameters.OFF_ROAD_STDEV), ebolaSim.random.nextGaussian());
             farm_commute_off_road = Parameters.convertFromKilometers(farm_commute_off_road);//convert back to world units
 
-            if(resident.getSector_id() == Constants.HEALTH)
-                System.out.println("Creating NEW NEW NEW NEW Hospital!!!!!!");
             workLocation = createWorkLocation(resident, farm_commute_on_road, farm_commute_off_road, ebolaSim.workNodeStructureMap.get(resident.getSector_id()), ebolaSim.farmGrid);
             if(workLocation != null)
             {

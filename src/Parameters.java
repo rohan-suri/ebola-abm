@@ -9,6 +9,10 @@ public class Parameters
     public static double POP_BLOCK_METERS = 926.1;//Height and width of one population block. (http://www.esri.com/news/arcuser/0400/wdside.html)
     public static double WORLD_LENGTH = WORLD_TO_POP_SCALE * POP_BLOCK_METERS;//The size of one grid cell in meters
 
+    public static double TEMPORAL_RESOLUTION = 0.25;//steps per hour
+
+    public static double WALKING_SPEED = 5.1;//km per hour
+
     //-------File paths-------//
     public static String POP_PATH = "data/merged_pop.asc"; //Path to liberia population data (LandScan 2013)
     public static String ADMIN_PATH = "data/merged_admin.asc";//Path to file that has administration and county boundaries for all three countries (LandScan 2013)

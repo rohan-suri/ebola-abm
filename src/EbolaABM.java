@@ -66,6 +66,8 @@ public class EbolaABM extends SimState
     int[] roadDistanceHistogram = new int[50];
     boolean updatedChart = false;
 
+    public int firstResidentHash;
+
     public Bag residents;
 
     public EbolaABM(long seed)
