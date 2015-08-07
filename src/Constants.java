@@ -28,4 +28,10 @@ public class Constants
     public static int OTHER_SERVICE = 18;
     public static int ACTIVITIES_OF_EMPLOYER = 19;
     public static int INTERNATIONAL_ORGANIZATIONS = 20;
+
+    public static int SUSCEPTIBLE = 0;
+    public static int EXPOSED = 1;
+    public static int INFECTIOUS = 2;
+    public static int RECOVERED = 3;
+    public static int DEAD = 4;
 }

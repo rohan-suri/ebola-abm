@@ -3,7 +3,7 @@
  */
 public class Parameters
 {
-    public static double SCALE = 0.001; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
     public static double POP_BLOCK_METERS = 926.1;//Height and width of one population block. (http://www.esri.com/news/arcuser/0400/wdside.html)
@@ -190,4 +190,9 @@ public class Parameters
     {
         return (val*1000.0)/(Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE);
     }
+
+    //Ebola Disease Model Parameters
+    public static double TRANSMISSIBILITY = 0.05;//per temporal resolution TODO Make indepent of temporal resolution
+    public static double RECOVERABLE_CHANCE = 0.1;
+    public static double RECOVERY_DAYS = 4;
 }

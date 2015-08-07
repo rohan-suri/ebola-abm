@@ -86,7 +86,16 @@ public class EbolaWithUI extends GUIState
         {
             public void draw (Object object, Graphics2D graphics, DrawInfo2D info)
             {
-                paint = new Color(20, 4, 255);
+                Resident resident = (Resident)object;
+                if(resident.getHealthStatus() == Constants.DEAD)
+                    paint = new Color(124, 115, 92);
+                else if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
+                    paint = new Color(20, 4, 255);
+                else if(resident.getHealthStatus() == Constants.INFECTIOUS)
+                    paint = new Color(255, 0, 48);
+                else if(resident.getHealthStatus() == Constants.RECOVERED)
+                    paint = new Color(255, 20, 215);
+
                 super.scale = 1.0;
                 super.draw(object, graphics, info);
             }
@@ -95,7 +104,7 @@ public class EbolaWithUI extends GUIState
 
         FieldPortrayal2D householdortrayal = new SparseGridPortrayal2D();
         householdortrayal.setField(((EbolaABM)state).householdGrid);
-        householdortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(0, 128, 255), 1.0, true)
+        householdortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(0, 128, 255), 1.0, false)
         {
             @Override
             public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
@@ -127,13 +136,13 @@ public class EbolaWithUI extends GUIState
 
         FieldPortrayal2D schoolPortrayal = new SparseGridPortrayal2D();
         schoolPortrayal.setField(((EbolaABM)state).schoolGrid);
-        schoolPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 0, 22), 1.0, true));
+        schoolPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 154, 146), 1.0, false));
         display.attach(schoolPortrayal, "Schools");
 
         //Farms
         FieldPortrayal2D farmPortrayal = new SparseGridPortrayal2D();
         farmPortrayal.setField(((EbolaABM)state).farmGrid);
-        farmPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(17, 202, 255), 1.0, true)
+        farmPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(17, 202, 255), 1.0, false)
         {
             @Override
             public void draw(Object object, Graphics2D graphics, DrawInfo2D info)

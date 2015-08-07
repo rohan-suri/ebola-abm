@@ -1,3 +1,4 @@
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.util.Bag;
@@ -34,6 +35,9 @@ public class Resident implements Steppable
     private boolean employed;
     private int dailyWorkHours;
 
+    private int healthStatus;
+    private double deathTimer = Parameters.RECOVERY_DAYS*24;//in hours
+
     public Resident(Int2D location, Household household, int sex, int age, boolean isUrban)
     {
         this.location = location;
@@ -43,15 +47,50 @@ public class Resident implements Steppable
         this.isUrban = isUrban;
         this.sector_id = -1;//set default to no sector
         this.employed = false;//default isfalse
+        this.healthStatus = Constants.SUSCEPTIBLE;
     }
 
     @Override
     public void step(SimState state)
     {
-        if(workDayDestination == null)
+        if(healthStatus == Constants.DEAD)
             return;
+
         EbolaABM ebolaSim = (EbolaABM) state;
         long cStep = ebolaSim.schedule.getSteps();
+
+        if(healthStatus == Constants.INFECTIOUS)//infect everyone!!!
+        {
+            if(deathTimer < 0)
+            {
+                //decide to kill or be recovered
+                double rand = ebolaSim.random.nextDouble();
+                if(rand < Parameters.RECOVERABLE_CHANCE)
+                    this.healthStatus = Constants.RECOVERED;
+                else
+                {
+                    healthStatus = Constants.DEAD;
+                }
+            }
+            else
+            {
+                deathTimer -= Parameters.TEMPORAL_RESOLUTION;//closer to death!
+                Bag nearByPeople = ebolaSim.world.getNeighborsWithinDistance(new Double2D(location), 1);
+                for(Object o: nearByPeople)
+                {
+                    Resident resident = (Resident)o;
+                    if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
+                    {
+                        double rand = ebolaSim.random.nextDouble();
+                        if(rand < Parameters.TRANSMISSIBILITY)//infect this agent
+                            resident.setHealthStatus(Constants.INFECTIOUS);
+                    }
+                }
+            }
+        }
+        if(workDayDestination == null)
+            return;
+
 
 //        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation)
 //            ebolaSim.firstResidentHash = this.hashCode();
@@ -291,5 +330,13 @@ public class Resident implements Steppable
 
     public void setDailyWorkHours(int dailyWorkHours) {
         this.dailyWorkHours = dailyWorkHours;
+    }
+
+    public int getHealthStatus() {
+        return healthStatus;
+    }
+
+    public void setHealthStatus(int healthStatus) {
+        this.healthStatus = healthStatus;
     }
 }
