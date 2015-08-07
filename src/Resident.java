@@ -53,10 +53,10 @@ public class Resident implements Steppable
         EbolaABM ebolaSim = (EbolaABM) state;
         long cStep = ebolaSim.schedule.getSteps();
 
-        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation)
-            ebolaSim.firstResidentHash = this.hashCode();
-        if(this.hashCode() == ebolaSim.firstResidentHash)
-            System.out.println("FOUDN ASLKDFJASFJ");
+//        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation)
+//            ebolaSim.firstResidentHash = this.hashCode();
+//        if(this.hashCode() == ebolaSim.firstResidentHash)
+//            System.out.println("FOUDN ASLKDFJASFJ");
 
         //check if we have a goal
         if(goal == null)//calc goal
@@ -69,7 +69,7 @@ public class Resident implements Steppable
             {
                 if(this.location.distance(household.getLocation()) != 0)//make sure we are not at home
                 {
-                    if (atGoalLength == 0) {
+                    if (atGoalLength < 0) {
                         //go back home
                         setGoal(this.goal, household, 100);
                     }

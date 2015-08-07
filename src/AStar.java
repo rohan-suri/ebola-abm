@@ -332,16 +332,58 @@ public class AStar {
     static Route reconstructRoute(AStarNodeWrapper n, AStarNodeWrapper start, AStarNodeWrapper end)
     {
         List<Int2D> result = new ArrayList<>(20);
+        double speed = Parameters.WALKING_SPEED;
+
+        //adjust speed to temporal resolution
+        speed *= Parameters.TEMPORAL_RESOLUTION;//now km per step
+
+        //convert speed to cell block per step
+        speed = Parameters.convertFromKilometers(speed);
+
+        double mod_speed = speed;//
         double totalDistance = 0;
         AStarNodeWrapper x = n;
-        while (x.cameFrom != null) {
-            result.add(0, x.node.location); // add this edge to the front of the list
+
+        //start by adding the last one
+        result.add(0, x.node.location);
+
+        if(x.cameFrom != null)
+        {
             x = x.cameFrom;
-            if(x.cameFrom != null)
-                totalDistance += x.node.location.distance(x.cameFrom.node.location);
+
+            while (x != null)
+            {
+                double dist = x.node.location.distance(result.get(0));
+
+                while(mod_speed < dist)
+                {
+                    result.add(0, getPointAlongLine(result.get(0), x.node.location, mod_speed/dist));
+                    dist = x.node.location.distance(result.get(0));
+                    mod_speed = speed;
+                }
+                mod_speed -= dist;
+
+                x = x.cameFrom;
+
+                if(x != null && x.cameFrom != null)
+                    totalDistance += x.node.location.distance(x.cameFrom.node.location);
+            }
         }
 
+        result.add(0, start.node.location);
         return new Route(result, totalDistance, start.node, end.node, Parameters.WALKING_SPEED);
+    }
+
+    /**
+     * Gets a point a certain percent a long the line
+     * @param start
+     * @param end
+     * @param percent the percent along the line you want to get.  Must be less than 1
+     * @return
+     */
+    public static Int2D getPointAlongLine(Int2D start, Int2D end, double percent)
+    {
+        return new Int2D((int)Math.round((end.getX()-start.getX())*percent + start.getX()), (int)Math.round((end.getY()-start.getY())*percent + start.getY()));
     }
 
     /**
