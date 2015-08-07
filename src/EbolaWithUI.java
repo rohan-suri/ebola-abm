@@ -4,6 +4,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.dial.*;
 import sim.display.Console;
 import sim.display.Controller;
 import sim.display.Display2D;
@@ -19,6 +20,7 @@ import sim.portrayal.network.SimpleEdgePortrayal2D;
 import sim.portrayal.network.SpatialNetwork2D;
 import sim.portrayal.simple.OvalPortrayal2D;
 import sim.portrayal.simple.RectanglePortrayal2D;
+import sim.util.media.chart.TimeSeriesChartGenerator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -68,6 +70,112 @@ public class EbolaWithUI extends GUIState
 
         frame4.pack();
         c.registerFrame(frame4);
+
+        //health status chart
+
+        Dimension dm = new Dimension(30,30);
+        Dimension dmn = new Dimension(30,30);
+
+        TimeSeriesChartGenerator chartSeriesCholera;
+        chartSeriesCholera = new TimeSeriesChartGenerator();
+        chartSeriesCholera.createFrame();
+        chartSeriesCholera.setSize(dm);
+        chartSeriesCholera.setTitle("Health Status");
+        chartSeriesCholera.setRangeAxisLabel("Number of People");
+        chartSeriesCholera.setDomainAxisLabel("Minutes");
+        chartSeriesCholera.setMaximumSize(dm);
+        chartSeriesCholera.setMinimumSize(dmn);
+//        chartSeriesCholera.setMinimumChartDrawSize(400, 300); // makes it scale at small sizes
+//        chartSeriesCholera.setPreferredChartSize(400, 300); // lets it be small
+
+        chartSeriesCholera.addSeries(((EbolaABM) this.state).totalsusceptibleSeries , null);
+        chartSeriesCholera.addSeries(((EbolaABM) this.state).totalExposedSeries , null);
+        chartSeriesCholera.addSeries(((EbolaABM) this.state).totalInfectedSeries , null);
+        chartSeriesCholera.addSeries(((EbolaABM) this.state).totalRecoveredSeries , null);
+        chartSeriesCholera.addSeries(((EbolaABM) this.state).totalDeadSeries, null);
+
+
+
+
+        JFrame frameSeries = chartSeriesCholera.createFrame(this);
+        frameSeries.pack();
+        c.registerFrame(frameSeries);
+
+        //time chart
+        StandardDialFrame dialFrame = new StandardDialFrame();
+        DialBackground ddb = new DialBackground(Color.white);
+        dialFrame.setBackgroundPaint(Color.lightGray);
+        dialFrame.setForegroundPaint(Color.darkGray);
+
+        DialPlot plot = new DialPlot();
+        plot.setView(0.0, 0.0, 1.0, 1.0);
+        plot.setBackground(ddb);
+        plot.setDialFrame(dialFrame);
+
+        plot.setDataset(0, ((EbolaABM) this.state).hourDialer);
+        plot.setDataset(1,((EbolaABM) this.state).dayDialer);
+
+
+        DialTextAnnotation annotation1 = new DialTextAnnotation("Hour");
+        annotation1.setFont(new Font("Dialog", Font.BOLD, 14));
+        annotation1.setRadius(0.1);
+        plot.addLayer(annotation1);
+
+
+//        DialValueIndicator dvi = new DialValueIndicator(0);
+//        dvi.setFont(new Font("Dialog", Font.PLAIN, 10));
+//        dvi.setOutlinePaint(Color.black);
+//        plot.addLayer(dvi);
+//
+
+        DialValueIndicator dvi2 = new DialValueIndicator(1);
+        dvi2.setFont(new Font("Dialog", Font.PLAIN, 22));
+        dvi2.setOutlinePaint(Color.red);
+        dvi2.setRadius(0.3);
+        plot.addLayer(dvi2);
+
+        DialTextAnnotation annotation2 = new DialTextAnnotation("Day");
+        annotation2.setFont(new Font("Dialog", Font.BOLD, 18));
+        annotation2.setRadius(0.4);
+        plot.addLayer(annotation2);
+
+        StandardDialScale scale = new StandardDialScale(0.0, 23.99, 90, -360, 1.0,59);
+        scale.setTickRadius(0.9);
+        scale.setTickLabelOffset(0.15);
+        scale.setTickLabelFont(new Font("Dialog", Font.PLAIN, 12));
+        plot.addScale(0, scale);
+        scale.setMajorTickPaint(Color.black);
+        scale.setMinorTickPaint(Color.lightGray);
+
+
+
+
+//        StandardDialScale scale2 = new StandardDialScale(1, 7, -150, -240, 1,1);
+//        scale2.setTickRadius(0.50);
+//        scale2.setTickLabelOffset(0.15);
+//        scale2.setTickLabelPaint(Color.RED);
+//        scale2.setTickLabelFont(new Font("Dialog", Font.PLAIN, 12));
+//        plot.addScale(1, scale2);
+//
+//        DialPointer needle2 = new DialPointer.Pin(1);
+//        plot.addPointer(needle2);
+//        needle2.setRadius(0.40);
+        // plot.mapDatasetToScale(1, 1);
+
+        DialPointer needle = new DialPointer.Pointer(0);
+        plot.addPointer(needle);
+
+
+        DialCap cap = new DialCap();
+        cap.setRadius(0.10);
+        plot.setCap(cap);
+
+        JFreeChart chart1 = new JFreeChart(plot);
+        ChartFrame timeframe = new ChartFrame("Time Chart", chart1);
+        timeframe.setVisible(false);
+        timeframe.setSize(200, 100);
+        timeframe.pack();
+        c.registerFrame(timeframe);
     }
 
     @Override

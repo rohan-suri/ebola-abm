@@ -1,6 +1,9 @@
 import com.sun.corba.se.impl.orb.ParserAction;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultValueDataset;
+import org.jfree.data.xy.XYSeries;
 import sim.engine.SimState;
+import sim.engine.Steppable;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomVectorField;
 import sim.field.grid.DoubleGrid2D;
@@ -68,6 +71,18 @@ public class EbolaABM extends SimState
 
     public int firstResidentHash;
 
+    //xy series for health status
+    public XYSeries totalsusceptibleSeries = new XYSeries("Susceptible"); // shows  number of Susceptible agents
+    public XYSeries totalExposedSeries = new XYSeries("Exposed");
+    public XYSeries totalInfectedSeries = new XYSeries(" Infected"); //shows number of infected agents
+    public XYSeries totalRecoveredSeries = new XYSeries(" Recovered"); // shows number of recovered agents
+    public XYSeries totalDeadSeries = new XYSeries(" Dead"); // shows number of recovered agents
+
+
+    // timer graphics
+    DefaultValueDataset hourDialer = new DefaultValueDataset(); // shows the current hour
+    DefaultValueDataset dayDialer = new DefaultValueDataset(); // counts
+
     public Bag residents;
 
     public EbolaABM(long seed)
@@ -81,7 +96,46 @@ public class EbolaABM extends SimState
         super.start();
         residents = new Bag();
         EbolaBuilder.initializeWorld(this, Parameters.POP_PATH, Parameters.ADMIN_PATH, Parameters.AGE_DIST_PATH);
-        int i = 0;
+
+        Steppable chartUpdater = new Steppable()
+        {
+            @Override
+            public void step(SimState simState)
+            {
+                long cStep = simState.schedule.getSteps();
+
+                Bag allResidents = world.getAllObjects();
+                int total_sus = 0;
+                int total_infectious = 0;
+                int total_recovered = 0;
+                int total_dead = 0;
+                for(Object o: allResidents)
+                {
+                    Resident resident = (Resident)o;
+                    if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
+                        total_sus++;
+                    else if(resident.getHealthStatus() == Constants.INFECTIOUS)
+                        total_infectious++;
+                    else if(resident.getHealthStatus() == Constants.RECOVERED)
+                        total_recovered++;
+                    else if(resident.getHealthStatus() == Constants.DEAD)
+                        total_dead++;
+                }
+
+                //update health chart
+                totalsusceptibleSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_sus);//every hour
+                totalInfectedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_infectious);//every hour
+                totalDeadSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_dead);//every hour
+
+
+                //update hourDialer and day Dialer
+                double day = cStep*Parameters.TEMPORAL_RESOLUTION/24;
+                double hour = cStep*Parameters.TEMPORAL_RESOLUTION%24;
+                hourDialer.setValue(hour);
+                dayDialer.setValue(day);
+            }
+        };
+        this.schedule.scheduleRepeating(chartUpdater);
     }
 
     @Override
