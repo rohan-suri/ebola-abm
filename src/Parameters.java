@@ -22,6 +22,8 @@ public class Parameters
     public static String SCHOOLS_PATH = "data/schools_shapefile/all_schools.shp";//Path to shapefile that has location of all primary schools
     public static String FARMS_PATH = "data/farms_shapefile/all_farms.shp";
     public static String HOSPITALS_PATH = "data/hospitals_shapefile/all_hospitals.shp";//Path to shapefile that has location of all health facilities
+    public static String ADMIN_ID_PATH = "data/admin_id.asc";//Path to file that contains the id for each county in each of the three countries, unique within each country but not between countries
+    public static String MOVEMENT_PATH = "data/movement/movement_within.csv";//Path to file containing movement data within each country
 
     public static double MIN_POP_URBAN = 575.45;//Minimum population density per 926 meters or 1000 people per square mile to be urban. Source: http://cber.cba.ua.edu/asdc/urban_rural.html
     public static double MIN_POP_SURROUNDING = 287.73;//Minimum surrounding population density per 926 meters.  An urban district must be surrounded by

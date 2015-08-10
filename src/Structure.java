@@ -17,6 +17,7 @@ public class Structure
     protected HashMap<Structure, Route> cachedPaths;
     int currentMembers;
     protected int capacity;
+    private int admin_id;//unique within each country but not unique between countries
 
     public Structure(Int2D location)
     {
@@ -109,5 +110,14 @@ public class Structure
 
     public int getCurrentMembers() {
         return members.size();
+    }
+
+
+    public int getAdmin_id() {
+        return admin_id;
+    }
+
+    public void setAdmin_id(int admin_id) {
+        this.admin_id = admin_id;
     }
 }

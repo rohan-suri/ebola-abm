@@ -67,21 +67,23 @@ public class EbolaBuilder
 
             //get a grid as a base for the mbr
             GeomGridField gridField = new GeomGridField();//just to align mbr
-            InputStream inputStream = new FileInputStream(Parameters.POP_PATH);
+            InputStream inputStream = new FileInputStream(Parameters.ADMIN_ID_PATH);
             ArcInfoASCGridImporter.read(inputStream, GeomGridField.GridDataType.INTEGER, gridField);
-
+            ebolaSim.admin_id = (IntGrid2D)gridField.getGrid();
             //align mbr for all vector files read
             System.out.println("Algining");
             alignVectorFields(gridField, vectorFields);
 
             //Read in the road cost file
             readInRoadCost();
-
         }
         catch(FileNotFoundException e)
         {
             e.printStackTrace();
         }
+
+        //read in movement patters
+        setUpMovementMap(Parameters.MOVEMENT_PATH);
 
         //construct network of roads from roadLinks
         extractFromRoadLinks(ebolaSim.roadLinks, ebolaSim);
@@ -787,7 +789,7 @@ public class EbolaBuilder
                             Household h = new Household(new Int2D(x_coord, y_coord));
                             h.setCountry(country);
                             h.setNearestNode(getNearestNode(h.getLocation().getX(), h.getLocation().getY()));//give it a nearest node
-
+                            h.setAdmin_id(ebolaSim.admin_id.get(i, j));
                             //addNearestNode to the network
                             Node newNode = new Node(h.location);
                             Edge e = new Edge(newNode, h.getNearestNode(), (int)newNode.location.distance(h.getNearestNode().location));
@@ -1151,6 +1153,76 @@ public class EbolaBuilder
             cX = xBag.get(index);
         }
         return new Int2D(cX, cY);
+    }
+
+    /**
+     * Reads in the movement patterns from csv file and populates given map
+     * @param file
+     */
+    private static void setUpMovementMap(String file)
+    {
+        try
+        {
+            // buffer reader for age distribution data
+            CSVReader csvReader = new CSVReader(new FileReader(new File(file)));
+            csvReader.readLine();//skip the headers
+            List<String> line = csvReader.readLine();
+            while(!line.isEmpty())
+            {
+                EbolaABM.MovementPattern mp = new EbolaABM.MovementPattern();
+                int from = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(0)).intValue();
+                int to = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(1)).intValue();
+
+                double x = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(8)).intValue();
+                double y = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(9)).intValue();
+                Int2D location = convertToWorld(x, y);
+
+                double amount = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(12)).intValue();
+
+                mp.source_admin = from;
+                mp.to_admin = to;
+                mp.annual_amnt = amount;
+                mp.destination = location;
+
+                String country = line.get(3);
+                if(country.equals("SLE"))
+                    ebolaSim.movementPatternMapSLE.put(from, mp);
+                else if(country.equals("LBR"))
+                    ebolaSim.movementPatternMapLIB.put(from, mp);
+                else if(country.equals("GIN"))
+                    ebolaSim.movementPatternMapGIN.put(from, mp);
+
+                line = csvReader.readLine();
+            }
+        }
+        catch(FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch(java.text.ParseException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Takes lat/lng and converts it to a INT2d on the world
+     * @param x
+     * @param y
+     * @return
+     */
+    public static Int2D convertToWorld(double x, double y)
+    {
+        Envelope e = ebolaSim.roadLinks.getMBR();
+        double xmin = e.getMinX(), ymin = e.getMinY(), xmax = e.getMaxX(), ymax = e.getMaxY();
+        int xcols = ebolaSim.world_width - 1, ycols = ebolaSim.world_height - 1;
+
+        int xint = (int) Math.floor(xcols * (x - xmin) / (xmax - xmin)), yint = (int) (ycols - Math.floor(ycols * (y - ymin) / (ymax - ymin))); // REMEMBER TO FLIP THE Y VALUE
+        return new Int2D(xint, yint);
     }
 
     private static Structure getNearestStructureByRoute(Structure start, Map<Node, Structure> endNodes, double max_distance, boolean check_capacity)

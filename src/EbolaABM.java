@@ -35,6 +35,7 @@ public class EbolaABM extends SimState
     public GeomVectorField roadLinks;
     public SparseGrid2D allRoadNodes;
     public DoubleGrid2D road_cost; //accumalated cost to get to nearest node on the road network
+    public IntGrid2D admin_id;//contains id for each location (939 x 990)
 
     DefaultCategoryDataset distribution = new DefaultCategoryDataset(); //dataset for seeing age groups of infected
 
@@ -42,6 +43,10 @@ public class EbolaABM extends SimState
     public Bag farms = new Bag();
     public ArrayList<Map<EbolaBuilder.Node, Structure>> workNodeStructureMap = new ArrayList<>();
     public Map<EbolaBuilder.Node, Structure> householdNodes = new HashMap<>(10000);
+    public Map<Integer, MovementPattern> movementPatternMapSLE = new HashMap<>();
+    public Map<Integer, MovementPattern> movementPatternMapLIB = new HashMap<>();
+    public Map<Integer, MovementPattern> movementPatternMapGIN = new HashMap<>();
+
 
     double max_distance = 0;
     double distance_sum = 0;
@@ -148,5 +153,13 @@ public class EbolaABM extends SimState
     {
         doLoop(EbolaABM.class, args);
         System.exit(0);
+    }
+
+    public static class MovementPattern
+    {
+        public int source_admin;
+        public int to_admin;
+        public double annual_amnt;
+        public Int2D destination;
     }
 }
