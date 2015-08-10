@@ -18,6 +18,7 @@ import java.text.*;
 import java.util.*;
 
 import net.sf.csv4j.*;
+import sim.util.distribution.Poisson;
 import sim.util.geo.MasonGeometry;
 
 /**
@@ -70,6 +71,10 @@ public class EbolaBuilder
             InputStream inputStream = new FileInputStream(Parameters.ADMIN_ID_PATH);
             ArcInfoASCGridImporter.read(inputStream, GeomGridField.GridDataType.INTEGER, gridField);
             ebolaSim.admin_id = (IntGrid2D)gridField.getGrid();
+
+            inputStream = new FileInputStream(Parameters.POP_PATH);
+            ArcInfoASCGridImporter.read(inputStream, GeomGridField.GridDataType.INTEGER, gridField);
+
             //align mbr for all vector files read
             System.out.println("Algining");
             alignVectorFields(gridField, vectorFields);
@@ -789,7 +794,7 @@ public class EbolaBuilder
                             Household h = new Household(new Int2D(x_coord, y_coord));
                             h.setCountry(country);
                             h.setNearestNode(getNearestNode(h.getLocation().getX(), h.getLocation().getY()));//give it a nearest node
-                            h.setAdmin_id(ebolaSim.admin_id.get(i, j));
+                            h.setAdmin_id(ebolaSim.admin_id.get(j, i));
                             //addNearestNode to the network
                             Node newNode = new Node(h.location);
                             Edge e = new Edge(newNode, h.getNearestNode(), (int)newNode.location.distance(h.getNearestNode().location));
@@ -813,6 +818,32 @@ public class EbolaBuilder
                                 Resident r = createResident(new Int2D(x_coord, y_coord), h, isUrban, county_id);
                                 ebolaSim.schedule.scheduleRepeating(r);
                                 r.setPop_density(scaled_num_people);
+
+                                //used for movement flow
+                                if(country == Parameters.SL)
+                                {
+                                    Bag residents;
+                                    if(!ebolaSim.admin_id_sle_residents.containsKey(r.getHousehold().getAdmin_id()))
+                                        residents = ebolaSim.admin_id_sle_residents.put(r.getHousehold().getAdmin_id(), new Bag());
+                                    residents = ebolaSim.admin_id_sle_residents.get(r.getHousehold().getAdmin_id());
+                                    residents.add(r);
+                                }
+                                else if(country == Parameters.GUINEA)
+                                {
+                                    Bag residents;
+                                    if(!ebolaSim.admin_id_gin_residents.containsKey(r.getHousehold().getAdmin_id()))
+                                        residents = ebolaSim.admin_id_gin_residents.put(r.getHousehold().getAdmin_id(), new Bag());
+                                    residents = ebolaSim.admin_id_gin_residents.get(r.getHousehold().getAdmin_id());
+                                    residents.add(r);
+                                }
+                                else if(country == Parameters.LIBERIA)
+                                {
+                                    Bag residents;
+                                    if(!ebolaSim.admin_id_lib_residents.containsKey(r.getHousehold().getAdmin_id()))
+                                        residents = ebolaSim.admin_id_lib_residents.put(r.getHousehold().getAdmin_id(), new Bag());
+                                    residents = ebolaSim.admin_id_lib_residents.get(r.getHousehold().getAdmin_id());
+                                    residents.add(r);
+                                }
 //                                if(nearest_school != null)
 //                                    r.setNearestSchool(nearest_school);
 //                                else
@@ -861,14 +892,14 @@ public class EbolaBuilder
             for(Object o: allResidents)
             {
                 Resident resident = (Resident)o;
-                Route route = AStar.getNearestNode(resident.getHousehold().getNearestNode(), ebolaSim.workNodeStructureMap.get(Constants.HEALTH), Parameters.convertFromKilometers(100), false);
-                double distance;// = 50;
-                if(route != null)
-                {
-                    distance = route.getTotalDistance();
-                    if(Math.round(distance) < farmDistanceFrequency.length)
-                        farmDistanceFrequency[(int)Math.round(distance)]++;
-                }
+//                Route route = AStar.getNearestNode(resident.getHousehold().getNearestNode(), ebolaSim.workNodeStructureMap.get(Constants.HEALTH), Parameters.convertFromKilometers(100), false);
+//                double distance;// = 50;
+//                if(route != null)
+//                {
+//                    distance = route.getTotalDistance();
+//                    if(Math.round(distance) < farmDistanceFrequency.length)
+//                        farmDistanceFrequency[(int)Math.round(distance)]++;
+//                }
                 if(resident.isEmployed() && resident.getWorkDayDestination() == null)
                     go_nowhere++;
                 if(resident.isEmployed())

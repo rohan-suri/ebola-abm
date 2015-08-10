@@ -1,4 +1,5 @@
 import com.sun.corba.se.impl.orb.ParserAction;
+import ec.util.MersenneTwisterFast;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultValueDataset;
 import org.jfree.data.xy.XYSeries;
@@ -14,6 +15,7 @@ import sim.field.network.Network;
 import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.Int2D;
+import sim.util.distribution.Poisson;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -47,6 +49,9 @@ public class EbolaABM extends SimState
     public Map<Integer, MovementPattern> movementPatternMapLIB = new HashMap<>();
     public Map<Integer, MovementPattern> movementPatternMapGIN = new HashMap<>();
 
+    public Map<Integer, Bag> admin_id_sle_residents = new HashMap<>();
+    public Map<Integer, Bag> admin_id_lib_residents = new HashMap<>();
+    public Map<Integer, Bag> admin_id_gin_residents = new HashMap<>();
 
     double max_distance = 0;
     double distance_sum = 0;
@@ -141,6 +146,46 @@ public class EbolaABM extends SimState
             }
         };
         this.schedule.scheduleRepeating(chartUpdater);
+
+        Steppable movementManager = new Steppable()
+        {
+            @Override
+            public void step(SimState simState)
+            {
+                long cStep = simState.schedule.getSteps();
+                if(cStep % Math.round(24.0/Parameters.TEMPORAL_RESOLUTION) == 0)//only do this on the daily
+                {
+                    EbolaABM ebolaSim = (EbolaABM)simState;
+                    moveResidents(ebolaSim.movementPatternMapGIN, ebolaSim.admin_id_gin_residents, ebolaSim.random);
+                    moveResidents(ebolaSim.movementPatternMapSLE, ebolaSim.admin_id_sle_residents, ebolaSim.random);
+                    moveResidents(ebolaSim.movementPatternMapLIB, ebolaSim.admin_id_lib_residents, ebolaSim.random);
+
+                }
+            }
+            private void moveResidents(Map<Integer, MovementPattern> movementPatternMap, Map<Integer, Bag> admin_id_residents, MersenneTwisterFast random)
+            {
+                Iterator<Integer> it = movementPatternMap.keySet().iterator();
+                while(it.hasNext())
+                {
+                    MovementPattern mp = movementPatternMap.get(it.next());
+                    Poisson poisson = new Poisson(mp.annual_amnt/365.0, random);
+                    int move_num = poisson.nextInt();
+                    System.out.println("Moving " + move_num + " people w/ mean of " + mp.annual_amnt/365.0);
+                    if(move_num > 0)
+                    {
+                        Bag residents = admin_id_residents.get(mp.source_admin);
+                        while(move_num > 0)
+                        {
+                            Resident randomResident = (Resident)residents.get(random.nextInt(residents.size()));
+                            EbolaBuilder.Node nodeDestination = EbolaBuilder.getNearestNode(mp.destination.getX(), mp.destination.getY());
+                            randomResident.moveResidency(nodeDestination);
+                            move_num--;
+                        }
+                    }
+                }
+            }
+        };
+        this.schedule.scheduleRepeating(movementManager);
     }
 
     @Override

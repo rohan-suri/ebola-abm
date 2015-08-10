@@ -38,6 +38,8 @@ public class Resident implements Steppable
     private int healthStatus;
     private double deathTimer = Parameters.RECOVERY_DAYS*24;//in hours
 
+    private boolean isMoving = false;
+
     public Resident(Int2D location, Household household, int sex, int age, boolean isUrban)
     {
         this.location = location;
@@ -338,5 +340,20 @@ public class Resident implements Steppable
 
     public void setHealthStatus(int healthStatus) {
         this.healthStatus = healthStatus;
+    }
+
+    public void moveResidency(EbolaBuilder.Node destination, int newAdminId)
+    {
+        isMoving = true;
+        //first create a new household
+        
+//        Household newHousehold = new Household();
+//        newHousehold.setAdmin_id(newAdminId);
+//        newHousehold.
+    }
+
+    public boolean isMoving()
+    {
+        return isMoving;
     }
 }
