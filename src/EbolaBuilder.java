@@ -94,11 +94,11 @@ public class EbolaBuilder
         //readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, new WorkLocation(null, Constants.AGRICULTURE));
 
         //add hospitals from vectorfield
-        //readInStructures(hospitals_vector, ebolaSim.farmGrid, new Bag(), new WorkLocation(null, Constants.HEALTH));
+        readInStructures(hospitals_vector, ebolaSim.farmGrid, new Bag(), new WorkLocation(null, Constants.HEALTH));
 
         //assignNearest Nodes to all facilities except households
         assignNearestNode(ebolaSim.schoolGrid, ebolaSim.workNodeStructureMap.get(Constants.EDUCATION));
-        //assignNearestNode(ebolaSim.farmGrid, ebolaSim.workNodeStructureMap.get(Constants.AGRICULTURE));
+        assignNearestNode(ebolaSim.farmGrid, ebolaSim.workNodeStructureMap.get(Constants.AGRICULTURE));
 
         //read in csv that gives the distribution of ages for the three countries from landscan data
         setUpAgeDist(age_dist_file);
@@ -280,10 +280,10 @@ public class EbolaBuilder
             else if(type instanceof WorkLocation)
             {
                 structure = new WorkLocation(new Int2D(xint, yint), ((WorkLocation) type).getSector_id());
-                if(structure.getCapacity() < farmDistanceFrequency.length)
-                    farmDistanceFrequency[structure.getCapacity()]++;
-                else
-                    farmDistanceFrequency[farmDistanceFrequency.length-1]++;
+//                if(structure.getCapacity() < farmDistanceFrequency.length)
+//                    farmDistanceFrequency[structure.getCapacity()]++;
+//                else
+//                    farmDistanceFrequency[farmDistanceFrequency.length-1]++;
             }
             else
                 structure = new Structure(new Int2D(xint, yint));
@@ -853,6 +853,27 @@ public class EbolaBuilder
             System.out.println("max school pop = " + max_size);
 
             //print distribution of distance to farm
+            Bag allResidents = ebolaSim.world.getAllObjects();
+            int go_nowhere = 0;
+            int employed = 0;
+            for(Object o: allResidents)
+            {
+                Resident resident = (Resident)o;
+                Route route = AStar.getNearestNode(resident.getHousehold().getNearestNode(), ebolaSim.workNodeStructureMap.get(Constants.HEALTH), Parameters.convertFromKilometers(100), false);
+                double distance;// = 50;
+                if(route != null)
+                {
+                    distance = route.getTotalDistance();
+                    if(Math.round(distance) < farmDistanceFrequency.length)
+                        farmDistanceFrequency[(int)Math.round(distance)]++;
+                }
+                if(resident.isEmployed() && resident.getWorkDayDestination() == null)
+                    go_nowhere++;
+                if(resident.isEmployed())
+                    employed++;
+
+            }
+            System.out.println("Percent of employed people who are at a bad node = " + go_nowhere*1.0/employed*100);
             for(int i = 0; i < farmDistanceFrequency.length; i++)
             {
                 ebolaSim.distribution.addValue((Number)(farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop), "All distances", i);
@@ -1034,7 +1055,7 @@ public class EbolaBuilder
         }
     }
 
-    private static int[] farmDistanceFrequency = new int[70];
+    private static int[] farmDistanceFrequency = new int[101];
     private static void setWorkDestination(Resident resident)
     {
         double max_distance = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), ebolaSim.random.nextGaussian());
@@ -1086,10 +1107,10 @@ public class EbolaBuilder
 
             //create the WorkLocation and set nearest node
             WorkLocation workLocation = new WorkLocation(endLocation, resident.getSector_id());
-            if(workLocation.getCapacity() < farmDistanceFrequency.length)
-                farmDistanceFrequency[workLocation.getCapacity()]++;
-            else
-                farmDistanceFrequency[farmDistanceFrequency.length-1]++;
+//            if(workLocation.getCapacity() < farmDistanceFrequency.length)
+//                farmDistanceFrequency[workLocation.getCapacity()]++;
+//            else
+//                farmDistanceFrequency[farmDistanceFrequency.length-1]++;
             grid.setObjectLocation(workLocation, workLocation.getLocation());
             workLocation.setNearestNode(endNode);
 
