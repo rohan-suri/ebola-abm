@@ -71,7 +71,7 @@ public class EbolaBuilder
             InputStream inputStream = new FileInputStream(Parameters.ADMIN_ID_PATH);
             ArcInfoASCGridImporter.read(inputStream, GeomGridField.GridDataType.INTEGER, gridField);
             ebolaSim.admin_id = (IntGrid2D)gridField.getGrid();
-
+            //System.out.println("236, 507 = " + ebolaSim.admin_id.get(236, 507));
             inputStream = new FileInputStream(Parameters.POP_PATH);
             ArcInfoASCGridImporter.read(inputStream, GeomGridField.GridDataType.INTEGER, gridField);
 
@@ -1118,7 +1118,7 @@ public class EbolaBuilder
     }
 
     private static int[] farmDistanceFrequency = new int[101];
-    private static void setWorkDestination(Resident resident)
+    public static void setWorkDestination(Resident resident)
     {
         double max_distance = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), ebolaSim.random.nextGaussian());
         max_distance = Parameters.convertFromKilometers(max_distance);//convert back to world units

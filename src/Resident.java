@@ -78,7 +78,7 @@ public class Resident implements Steppable
             else
             {
                 deathTimer -= Parameters.TEMPORAL_RESOLUTION;//closer to death!
-                Bag nearByPeople = ebolaSim.world.getNeighborsWithinDistance(new Double2D(location), 1);
+                Bag nearByPeople = ebolaSim.world.getObjectsAtLocation(this.location);
                 for(Object o: nearByPeople)
                 {
                     Resident resident = (Resident)o;
@@ -381,6 +381,9 @@ public class Resident implements Steppable
 
         setHousehold(newHousehold);
         ebolaSim.householdGrid.setObjectLocation(newHousehold, newHousehold.getLocation());
+
+        //find work near your new household
+        EbolaBuilder.setWorkDestination(this);
 
         //update bag
         //used for movement flow
