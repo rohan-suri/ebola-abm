@@ -1,4 +1,5 @@
 import com.sun.corba.se.impl.orb.ParserAction;
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import ec.util.MersenneTwisterFast;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultValueDataset;
@@ -117,18 +118,21 @@ public class EbolaABM extends SimState
             @Override
             public void step(SimState simState)
             {
-                long cStep = simState.schedule.getSteps();
-
+//                long cStep = simState.schedule.getSteps();
+//
 //                Bag allResidents = world.getAllObjects();
 //                int total_sus = 0;
 //                int total_infectious = 0;
 //                int total_recovered = 0;
+//                int total_exposed = 0;
 //                int total_dead = 0;
 //                for(Object o: allResidents)
 //                {
 //                    Resident resident = (Resident)o;
 //                    if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
 //                        total_sus++;
+//                    else if(resident.getHealthStatus() == Constants.EXPOSED)
+//                        total_exposed++;
 //                    else if(resident.getHealthStatus() == Constants.INFECTIOUS)
 //                        total_infectious++;
 //                    else if(resident.getHealthStatus() == Constants.RECOVERED)
@@ -141,7 +145,7 @@ public class EbolaABM extends SimState
 //                totalsusceptibleSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_sus);//every hour
 //                totalInfectedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_infectious);//every hour
 //                totalDeadSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_dead);//every hour
-//
+//                totalExposedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_exposed);//every hour
 //
 //                //update hourDialer and day Dialer
 //                double day = cStep*Parameters.TEMPORAL_RESOLUTION/24;

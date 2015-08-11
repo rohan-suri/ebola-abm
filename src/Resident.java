@@ -62,7 +62,13 @@ public class Resident implements Steppable
         EbolaABM ebolaSim = (EbolaABM) state;
         long cStep = ebolaSim.schedule.getSteps();
 
-        if(healthStatus == Constants.INFECTIOUS)//infect everyone!!!
+        if(healthStatus == Constants.EXPOSED)
+        {
+            double rand = ebolaSim.random.nextDouble();
+            if(rand < Parameters.EXPOSED_TO_INFECTIOUS)//assume constant rate
+                setHealthStatus(Constants.INFECTIOUS);//now become infectious
+        }
+        else if(healthStatus == Constants.INFECTIOUS)//infect everyone!!!
         {
             if(deathTimer < 0)
             {
@@ -86,7 +92,7 @@ public class Resident implements Steppable
                     {
                         double rand = ebolaSim.random.nextDouble();
                         if(rand < Parameters.TRANSMISSIBILITY)//infect this agent
-                            resident.setHealthStatus(Constants.INFECTIOUS);
+                            resident.setHealthStatus(Constants.EXPOSED);
                     }
                 }
             }

@@ -226,7 +226,7 @@ public class EbolaWithUI extends GUIState
 
         //Farms
         FieldPortrayal2D farmPortrayal = new SparseGridPortrayal2D();
-        farmPortrayal.setField(((EbolaABM)state).farmGrid);
+        farmPortrayal.setField(((EbolaABM) state).farmGrid);
         farmPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(17, 202, 255), 1.0, false)
         {
             @Override
@@ -251,7 +251,7 @@ public class EbolaWithUI extends GUIState
 
         //---------------------Adding the road portrayal------------------------------
         GeomVectorFieldPortrayal roadLinkPortrayal = new GeomVectorFieldPortrayal();
-        roadLinkPortrayal.setField(((EbolaABM)state).roadLinks);
+        roadLinkPortrayal.setField(((EbolaABM) state).roadLinks);
         roadLinkPortrayal.setPortrayalForAll(new GeomPortrayal(Color.BLACK, 2.0, true));
         display.attach(roadLinkPortrayal, "Roads");
 
@@ -272,6 +272,8 @@ public class EbolaWithUI extends GUIState
                     paint = new Color(124, 115, 92);
                 else if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
                     paint = new Color(20, 4, 255);
+                else if(resident.getAge() == Constants.EXPOSED)
+                    paint = new Color(255, 151, 71);
                 else if(resident.getHealthStatus() == Constants.INFECTIOUS)
                     paint = new Color(255, 0, 48);
                 else if(resident.getHealthStatus() == Constants.RECOVERED)
@@ -279,7 +281,7 @@ public class EbolaWithUI extends GUIState
 
                 if(resident.isMoving())
                 {
-                    paint = new Color(255, 151, 71);
+                    //paint = new Color(255, 151, 71);
                     super.scale = 10.0;
                 }
                 else
