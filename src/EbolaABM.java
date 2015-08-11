@@ -45,9 +45,9 @@ public class EbolaABM extends SimState
     public Bag farms = new Bag();
     public ArrayList<Map<EbolaBuilder.Node, Structure>> workNodeStructureMap = new ArrayList<>();
     public Map<EbolaBuilder.Node, Structure> householdNodes = new HashMap<>(10000);
-    public Map<Integer, MovementPattern> movementPatternMapSLE = new HashMap<>();
-    public Map<Integer, MovementPattern> movementPatternMapLIB = new HashMap<>();
-    public Map<Integer, MovementPattern> movementPatternMapGIN = new HashMap<>();
+    public Map<Integer, List<MovementPattern>> movementPatternMapSLE = new HashMap<>();
+    public Map<Integer, List<MovementPattern>> movementPatternMapLIB = new HashMap<>();
+    public Map<Integer, List<MovementPattern>> movementPatternMapGIN = new HashMap<>();
 
     public Map<Integer, Bag> admin_id_sle_residents = new HashMap<>();
     public Map<Integer, Bag> admin_id_lib_residents = new HashMap<>();
@@ -171,42 +171,45 @@ public class EbolaABM extends SimState
                     System.out.println("Managing population flow [" + (System.currentTimeMillis()-now)/1000 + " sec]");
                 }
             }
-            private void moveResidents(Map<Integer, MovementPattern> movementPatternMap, Map<Integer, Bag> admin_id_residents, MersenneTwisterFast random, EbolaABM ebolaSim)
+            private void moveResidents(Map<Integer, List<MovementPattern>> movementPatternMap, Map<Integer, Bag> admin_id_residents, MersenneTwisterFast random, EbolaABM ebolaSim)
             {
                 Iterator<Integer> it = movementPatternMap.keySet().iterator();
                 while(it.hasNext())
                 {
                     int key = it.next();
-                    MovementPattern mp = movementPatternMap.get(key);
-                    Poisson poisson = new Poisson(mp.annual_amnt/365.0, random);
-                    int move_num = poisson.nextInt();
-                    //System.out.println("Moving " + move_num + " people w/ mean of " + mp.annual_amnt/365.0);
-                    if(move_num > 0)
+                    List<MovementPattern> list = movementPatternMap.get(key);
+                    for(MovementPattern mp: list)
                     {
-                        //System.out.println(mp.source_admin + " " + key);
-                        Bag residents = admin_id_residents.get(mp.source_admin);
-                        if(residents == null)
+                        Poisson poisson = new Poisson(mp.annual_amnt/365.0, random);
+                        int move_num = poisson.nextInt();
+                        //System.out.println("Moving " + move_num + " people w/ mean of " + mp.annual_amnt/365.0);
+                        if(move_num > 0)
                         {
-                            System.out.println("NO RESIDENTS IN DISTRICT " + mp.source_admin);
-                            return;
-                        }
-                        while(move_num > 0)
-                        {
-                            Resident randomResident;
-                            int count = 0;
-                            do
+                            //System.out.println(mp.source_admin + " " + key);
+                            Bag residents = admin_id_residents.get(mp.source_admin);
+                            if(residents == null)
                             {
-                                randomResident = (Resident)residents.get(random.nextInt(residents.size()));
-                                count++;
-                                if(count > 1000)//timeout to ensure we don't infinitely loop
-                                    return;
-                            }while(!residentGood(randomResident, ebolaSim) && !randomResident.moveResidency(mp.to_admin, ebolaSim));
-                            if(randomResident != null)
-                            {
-                                residents.remove(randomResident);
-                                randomResident.moveResidency(mp.to_admin, ebolaSim);
+                                System.out.println("NO RESIDENTS IN DISTRICT " + mp.source_admin);
+                                return;
                             }
-                            move_num--;
+                            while(move_num > 0)
+                            {
+                                Resident randomResident;
+                                int count = 0;
+                                do
+                                {
+                                    randomResident = (Resident)residents.get(random.nextInt(residents.size()));
+                                    count++;
+                                    if(count > 1000)//timeout to ensure we don't infinitely loop
+                                        return;
+                                }while(!residentGood(randomResident, ebolaSim) && !randomResident.moveResidency(mp.to_admin, ebolaSim));
+                                if(randomResident != null)
+                                {
+                                    residents.remove(randomResident);
+                                    randomResident.moveResidency(mp.to_admin, ebolaSim);
+                                }
+                                move_num--;
+                            }
                         }
                     }
                 }

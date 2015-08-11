@@ -1246,11 +1246,29 @@ public class EbolaBuilder
 
                 String country = line.get(3);
                 if(country.equals("SLE"))
-                    ebolaSim.movementPatternMapSLE.put(from, mp);
+                {
+                    List list;
+                    if(!ebolaSim.movementPatternMapSLE.containsKey(from))
+                        ebolaSim.movementPatternMapSLE.put(from, new LinkedList<EbolaABM.MovementPattern>());
+                    list = ebolaSim.movementPatternMapSLE.get(from);
+                    list.add(mp);
+                }
                 else if(country.equals("LBR"))
-                    ebolaSim.movementPatternMapLIB.put(from, mp);
+                {
+                    List list;
+                    if(!ebolaSim.movementPatternMapLIB.containsKey(from))
+                        ebolaSim.movementPatternMapLIB.put(from, new LinkedList<EbolaABM.MovementPattern>());
+                    list = ebolaSim.movementPatternMapLIB.get(from);
+                    list.add(mp);
+                }
                 else if(country.equals("GIN"))
-                    ebolaSim.movementPatternMapGIN.put(from, mp);
+                {
+                    List list;
+                    if(!ebolaSim.movementPatternMapGIN.containsKey(from))
+                        ebolaSim.movementPatternMapGIN.put(from, new LinkedList<EbolaABM.MovementPattern>());
+                    list = ebolaSim.movementPatternMapGIN.get(from);
+                    list.add(mp);
+                }
 
                 line = csvReader.readLine();
             }
