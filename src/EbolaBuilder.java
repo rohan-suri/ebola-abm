@@ -780,6 +780,35 @@ public class EbolaBuilder
                                 ebolaSim.sl_urban_pop += num_people;
                         }
 
+                        //add urban center to maps
+                        if(isUrban)
+                        {
+                            if(country == Parameters.GUINEA)
+                            {
+                                List list;
+                                if(!ebolaSim.admin_id_gin_urban.containsKey(ebolaSim.admin_id.get(j, i)))
+                                    ebolaSim.admin_id_gin_urban.put(ebolaSim.admin_id.get(j, i), new LinkedList<Int2D>());
+                                list = ebolaSim.admin_id_gin_urban.get(ebolaSim.admin_id.get(j, i));
+                                list.add(new Int2D(j, i));
+                            }
+                            else if(country == Parameters.LIBERIA)
+                            {
+                                List list;
+                                if(!ebolaSim.admin_id_lib_urban.containsKey(ebolaSim.admin_id.get(j, i)))
+                                    ebolaSim.admin_id_lib_urban.put(ebolaSim.admin_id.get(j, i), new LinkedList<Int2D>());
+                                list = ebolaSim.admin_id_lib_urban.get(ebolaSim.admin_id.get(j, i));
+                                list.add(new Int2D(j, i));
+                            }
+                            else
+                            {
+                                List list;
+                                if(!ebolaSim.admin_id_sle_urban.containsKey(ebolaSim.admin_id.get(j, i)))
+                                    ebolaSim.admin_id_sle_urban.put(ebolaSim.admin_id.get(j, i), new LinkedList<Int2D>());
+                                list = ebolaSim.admin_id_sle_urban.get(ebolaSim.admin_id.get(j, i));
+                                list.add(new Int2D(j, i));
+                            }
+                        }
+
                         //iterate over each house
                         while(scaled_num_people > 0)
                         {

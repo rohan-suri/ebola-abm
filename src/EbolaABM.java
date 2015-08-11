@@ -53,6 +53,11 @@ public class EbolaABM extends SimState
     public Map<Integer, Bag> admin_id_lib_residents = new HashMap<>();
     public Map<Integer, Bag> admin_id_gin_residents = new HashMap<>();
 
+    public Map<Integer, List<Int2D>> admin_id_sle_urban = new HashMap<>();
+    public Map<Integer, List<Int2D>> admin_id_lib_urban = new HashMap<>();
+    public Map<Integer, List<Int2D>> admin_id_gin_urban = new HashMap<>();
+
+
     double max_distance = 0;
     double distance_sum = 0;
     int distance_count = 0;
