@@ -80,7 +80,10 @@ public class EbolaBuilder
             alignVectorFields(gridField, vectorFields);
 
             //Read in the road cost file
+            long now = System.currentTimeMillis();
+            System.out.print("Reading in road_cost ");
             readInRoadCost();
+            System.out.println("[" + (System.currentTimeMillis()-now)/1000 + " secs ]");
         }
         catch(FileNotFoundException e)
         {
