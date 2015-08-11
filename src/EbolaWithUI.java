@@ -187,29 +187,6 @@ public class EbolaWithUI extends GUIState
 
     public void setupPortrayals()
     {
-        ContinuousPortrayal2D residentPortrayal = new ContinuousPortrayal2D();
-
-        residentPortrayal.setField(((EbolaABM)this.state).world);
-        residentPortrayal.setPortrayalForAll(new OvalPortrayal2D()
-        {
-            public void draw (Object object, Graphics2D graphics, DrawInfo2D info)
-            {
-                Resident resident = (Resident)object;
-                if(resident.getHealthStatus() == Constants.DEAD)
-                    paint = new Color(124, 115, 92);
-                else if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
-                    paint = new Color(20, 4, 255);
-                else if(resident.getHealthStatus() == Constants.INFECTIOUS)
-                    paint = new Color(255, 0, 48);
-                else if(resident.getHealthStatus() == Constants.RECOVERED)
-                    paint = new Color(255, 20, 215);
-
-                super.scale = 1.0;
-                super.draw(object, graphics, info);
-            }
-        });
-        display.attach(residentPortrayal, "Residents");
-
         FieldPortrayal2D householdortrayal = new SparseGridPortrayal2D();
         householdortrayal.setField(((EbolaABM)state).householdGrid);
         householdortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(0, 128, 255), 1.0, false)
@@ -283,6 +260,34 @@ public class EbolaWithUI extends GUIState
 //        roadNetworkPortrayal.setPortrayalForAll(new SimpleEdgePortrayal2D());
 //        display.attach(roadNetworkPortrayal, "Road Network");
 
+        ContinuousPortrayal2D residentPortrayal = new ContinuousPortrayal2D();
+
+        residentPortrayal.setField(((EbolaABM)this.state).world);
+        residentPortrayal.setPortrayalForAll(new OvalPortrayal2D()
+        {
+            public void draw (Object object, Graphics2D graphics, DrawInfo2D info)
+            {
+                Resident resident = (Resident)object;
+                if(resident.getHealthStatus() == Constants.DEAD)
+                    paint = new Color(124, 115, 92);
+                else if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
+                    paint = new Color(20, 4, 255);
+                else if(resident.getHealthStatus() == Constants.INFECTIOUS)
+                    paint = new Color(255, 0, 48);
+                else if(resident.getHealthStatus() == Constants.RECOVERED)
+                    paint = new Color(255, 20, 215);
+
+                if(resident.isMoving())
+                {
+                    paint = new Color(255, 151, 71);
+                    super.scale = 10.0;
+                }
+                else
+                    super.scale = 1.0;
+                super.draw(object, graphics, info);
+            }
+        });
+        display.attach(residentPortrayal, "Residents");
     }
 
     @Override

@@ -6,6 +6,7 @@ import sim.util.Double2D;
 import sim.util.Int2D;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by rohansuri on 7/7/15.
@@ -118,6 +119,8 @@ public class Resident implements Steppable
                 }
                 else
                 {
+                    if(isMoving)
+                        isMoving = false;
                     goal = null;
                 }
             }
@@ -342,15 +345,75 @@ public class Resident implements Steppable
         this.healthStatus = healthStatus;
     }
 
-    public void moveResidency(EbolaBuilder.Node destination, int newAdminId)
+    /**
+     * @param newAdminId
+     * @param ebolaSim
+     * @return true when route is not null, if route is null this person cannot move and stays and returns false
+     */
+    public boolean moveResidency(int newAdminId, EbolaABM ebolaSim)
     {
+        //first pick a location for the new house
+        List<Int2D> urban_locations = null;
+        if(household.getCountry() == Parameters.GUINEA)
+            urban_locations = ebolaSim.admin_id_gin_urban.get(newAdminId);
+        else if(household.getCountry() == Parameters.SL)
+            urban_locations = ebolaSim.admin_id_sle_urban.get(newAdminId);
+        else if(household.getCountry() == Parameters.LIBERIA)
+            urban_locations = ebolaSim.admin_id_lib_urban.get(newAdminId);
+
+        //pick a random urban location
+        if(urban_locations == null )
+        {
+            System.out.println("NO URBAN LOCATIONS!!!");
+            return true;
+        }
+        Int2D urban_location = urban_locations.get(ebolaSim.random.nextInt(urban_locations.size()));
+
+        //convert to world scale and randomize
+        Int2D newHouseholdLocation = new Int2D(urban_location.getX()*Parameters.WORLD_TO_POP_SCALE + ebolaSim.random.nextInt(Parameters.WORLD_TO_POP_SCALE), urban_location.getY()*Parameters.WORLD_TO_POP_SCALE + ebolaSim.random.nextInt(Parameters.WORLD_TO_POP_SCALE));
+        Household newHousehold = new Household(newHouseholdLocation);
+        newHousehold.setNearestNode(EbolaBuilder.getNearestNode(newHouseholdLocation.getX(), newHouseholdLocation.getY()));
+        newHousehold.setCountry(household.getCountry());
+        newHousehold.setAdmin_id(newAdminId);
+
+        if(workDayDestination == null || newHousehold.getRoute(this.household) == null)
+            return false;
+
+        setHousehold(newHousehold);
+        ebolaSim.householdGrid.setObjectLocation(newHousehold, newHousehold.getLocation());
+
+        //update bag
+        //used for movement flow
+        int country = household.getCountry();
+        if(country == Parameters.SL)
+        {
+            Bag residents;
+            if(!ebolaSim.admin_id_sle_residents.containsKey(getHousehold().getAdmin_id()))
+                residents = ebolaSim.admin_id_sle_residents.put(getHousehold().getAdmin_id(), new Bag());
+            residents = ebolaSim.admin_id_sle_residents.get(getHousehold().getAdmin_id());
+            residents.add(this);
+        }
+        else if(country == Parameters.GUINEA)
+        {
+            Bag residents;
+            if(!ebolaSim.admin_id_gin_residents.containsKey(getHousehold().getAdmin_id()))
+                residents = ebolaSim.admin_id_gin_residents.put(getHousehold().getAdmin_id(), new Bag());
+            residents = ebolaSim.admin_id_gin_residents.get(getHousehold().getAdmin_id());
+            residents.add(this);
+        }
+        else if(country == Parameters.LIBERIA)
+        {
+            Bag residents;
+            if(!ebolaSim.admin_id_lib_residents.containsKey(getHousehold().getAdmin_id()))
+                residents = ebolaSim.admin_id_lib_residents.put(getHousehold().getAdmin_id(), new Bag());
+            residents = ebolaSim.admin_id_lib_residents.get(getHousehold().getAdmin_id());
+            residents.add(this);
+        }
         isMoving = true;
-        //first create a new household
-        
-//        Household newHousehold = new Household();
-//        newHousehold.setAdmin_id(newAdminId);
-//        newHousehold.
+        return true;
     }
+
+
 
     public boolean isMoving()
     {

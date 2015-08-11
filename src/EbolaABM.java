@@ -119,35 +119,35 @@ public class EbolaABM extends SimState
             {
                 long cStep = simState.schedule.getSteps();
 
-                Bag allResidents = world.getAllObjects();
-                int total_sus = 0;
-                int total_infectious = 0;
-                int total_recovered = 0;
-                int total_dead = 0;
-                for(Object o: allResidents)
-                {
-                    Resident resident = (Resident)o;
-                    if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
-                        total_sus++;
-                    else if(resident.getHealthStatus() == Constants.INFECTIOUS)
-                        total_infectious++;
-                    else if(resident.getHealthStatus() == Constants.RECOVERED)
-                        total_recovered++;
-                    else if(resident.getHealthStatus() == Constants.DEAD)
-                        total_dead++;
-                }
-
-                //update health chart
-                totalsusceptibleSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_sus);//every hour
-                totalInfectedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_infectious);//every hour
-                totalDeadSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_dead);//every hour
-
-
-                //update hourDialer and day Dialer
-                double day = cStep*Parameters.TEMPORAL_RESOLUTION/24;
-                double hour = cStep*Parameters.TEMPORAL_RESOLUTION%24;
-                hourDialer.setValue(hour);
-                dayDialer.setValue(day);
+//                Bag allResidents = world.getAllObjects();
+//                int total_sus = 0;
+//                int total_infectious = 0;
+//                int total_recovered = 0;
+//                int total_dead = 0;
+//                for(Object o: allResidents)
+//                {
+//                    Resident resident = (Resident)o;
+//                    if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
+//                        total_sus++;
+//                    else if(resident.getHealthStatus() == Constants.INFECTIOUS)
+//                        total_infectious++;
+//                    else if(resident.getHealthStatus() == Constants.RECOVERED)
+//                        total_recovered++;
+//                    else if(resident.getHealthStatus() == Constants.DEAD)
+//                        total_dead++;
+//                }
+//
+//                //update health chart
+//                totalsusceptibleSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_sus);//every hour
+//                totalInfectedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_infectious);//every hour
+//                totalDeadSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_dead);//every hour
+//
+//
+//                //update hourDialer and day Dialer
+//                double day = cStep*Parameters.TEMPORAL_RESOLUTION/24;
+//                double hour = cStep*Parameters.TEMPORAL_RESOLUTION%24;
+//                hourDialer.setValue(hour);
+//                dayDialer.setValue(day);
             }
         };
         this.schedule.scheduleRepeating(chartUpdater);
@@ -160,36 +160,72 @@ public class EbolaABM extends SimState
                 long cStep = simState.schedule.getSteps();
                 if(cStep % Math.round(24.0/Parameters.TEMPORAL_RESOLUTION) == 0)//only do this on the daily
                 {
+                    long now = System.currentTimeMillis();
                     EbolaABM ebolaSim = (EbolaABM)simState;
-                    moveResidents(ebolaSim.movementPatternMapGIN, ebolaSim.admin_id_gin_residents, ebolaSim.random);
-                    moveResidents(ebolaSim.movementPatternMapSLE, ebolaSim.admin_id_sle_residents, ebolaSim.random);
-                    moveResidents(ebolaSim.movementPatternMapLIB, ebolaSim.admin_id_lib_residents, ebolaSim.random);
-
+                    System.out.println("GIN");
+                    moveResidents(ebolaSim.movementPatternMapGIN, ebolaSim.admin_id_gin_residents, ebolaSim.random, ebolaSim);
+                    System.out.println("SLE");
+                    moveResidents(ebolaSim.movementPatternMapSLE, ebolaSim.admin_id_sle_residents, ebolaSim.random, ebolaSim);
+                    System.out.println("LIB");
+                    moveResidents(ebolaSim.movementPatternMapLIB, ebolaSim.admin_id_lib_residents, ebolaSim.random, ebolaSim);
+                    System.out.println("Managing population flow [" + (System.currentTimeMillis()-now)/1000 + " sec]");
                 }
             }
-            private void moveResidents(Map<Integer, MovementPattern> movementPatternMap, Map<Integer, Bag> admin_id_residents, MersenneTwisterFast random)
+            private void moveResidents(Map<Integer, MovementPattern> movementPatternMap, Map<Integer, Bag> admin_id_residents, MersenneTwisterFast random, EbolaABM ebolaSim)
             {
                 Iterator<Integer> it = movementPatternMap.keySet().iterator();
                 while(it.hasNext())
                 {
-                    MovementPattern mp = movementPatternMap.get(it.next());
+                    int key = it.next();
+                    MovementPattern mp = movementPatternMap.get(key);
                     Poisson poisson = new Poisson(mp.annual_amnt/365.0, random);
                     int move_num = poisson.nextInt();
-                    System.out.println("Moving " + move_num + " people w/ mean of " + mp.annual_amnt/365.0);
+                    //System.out.println("Moving " + move_num + " people w/ mean of " + mp.annual_amnt/365.0);
                     if(move_num > 0)
                     {
+                        //System.out.println(mp.source_admin + " " + key);
                         Bag residents = admin_id_residents.get(mp.source_admin);
+                        if(residents == null)
+                        {
+                            System.out.println("NO RESIDENTS IN DISTRICT " + mp.source_admin);
+                            return;
+                        }
                         while(move_num > 0)
                         {
-                            Resident randomResident = (Resident)residents.get(random.nextInt(residents.size()));
-                            EbolaBuilder.Node nodeDestination = EbolaBuilder.getNearestNode(mp.destination.getX(), mp.destination.getY());
-                            randomResident.moveResidency(nodeDestination);
+                            Resident randomResident;
+                            int count = 0;
+                            do
+                            {
+                                randomResident = (Resident)residents.get(random.nextInt(residents.size()));
+                                count++;
+                                if(count > 1000)//timeout to ensure we don't infinitely loop
+                                    return;
+                            }while(!residentGood(randomResident, ebolaSim) && !randomResident.moveResidency(mp.to_admin, ebolaSim));
+                            if(randomResident != null)
+                            {
+                                residents.remove(randomResident);
+                                randomResident.moveResidency(mp.to_admin, ebolaSim);
+                            }
                             move_num--;
                         }
                     }
                 }
             }
+
+            private boolean residentGood(Resident resident, EbolaABM ebolaSim)
+            {
+                if(resident.getAge() < 15)
+                    return false;
+                double rand = ebolaSim.random.nextDouble();
+                if(rand < 0.2 && !resident.getIsUrban())
+                    return false;
+                return true;
+            }
+
         };
+
+
+
         this.schedule.scheduleRepeating(movementManager);
     }
 
