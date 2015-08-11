@@ -195,6 +195,7 @@ public class Parameters
 
     //Ebola Disease Model Parameters
     public static double TRANSMISSIBILITY = 0.05;//per temporal resolution TODO Make indepent of temporal resolution
+    public static double EXPOSED_TO_INFECTIOUS = 1.0/9.0;//as reported by Who Ebola Resonse Team source: http://www.nejm.org/doi/full/10.1056/NEJMoa1411100?rss=mostCited&
     public static double RECOVERABLE_CHANCE = 0.1;
     public static double RECOVERY_DAYS = 4;
 }

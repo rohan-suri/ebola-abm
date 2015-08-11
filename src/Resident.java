@@ -383,7 +383,8 @@ public class Resident implements Steppable
         ebolaSim.householdGrid.setObjectLocation(newHousehold, newHousehold.getLocation());
 
         //find work near your new household
-        EbolaBuilder.setWorkDestination(this);
+        if(isEmployed())
+            EbolaBuilder.setWorkDestination(this);
 
         //update bag
         //used for movement flow
