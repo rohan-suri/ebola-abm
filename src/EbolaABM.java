@@ -1,6 +1,7 @@
 import com.sun.corba.se.impl.orb.ParserAction;
 import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import ec.util.MersenneTwisterFast;
+import net.sf.csv4j.CSVReader;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultValueDataset;
 import org.jfree.data.xy.XYSeries;
@@ -18,10 +19,8 @@ import sim.util.Double2D;
 import sim.util.Int2D;
 import sim.util.distribution.Poisson;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -95,10 +94,13 @@ public class EbolaABM extends SimState
     public XYSeries totalRecoveredSeries = new XYSeries(" Recovered"); // shows number of recovered agents
     public XYSeries totalDeadSeries = new XYSeries(" Dead"); // shows number of recovered agents
 
-    //xy series for cumalative cases
+    //xy series for cumulative cases
     public XYSeries totalLiberia = new XYSeries("Liberia");
     public XYSeries totalGuinea = new XYSeries("Guinea");
     public XYSeries totalSierra_Leone = new XYSeries("Sierra Leone");
+
+    //xy series for actual cases
+    public XYSeries totalGuineaActual = new XYSeries("Guinea Actual");
 
     public int totalLiberiaInt = 0;
     public int totalGuineaInt = 0;
@@ -107,6 +109,9 @@ public class EbolaABM extends SimState
     // timer graphics
     DefaultValueDataset hourDialer = new DefaultValueDataset(); // shows the current hour
     DefaultValueDataset dayDialer = new DefaultValueDataset(); // counts
+
+    //List of all actual cases
+    List<Double2D> actualGuineaCases = new LinkedList<>();
 
     public Bag residents;
 
@@ -121,7 +126,7 @@ public class EbolaABM extends SimState
         super.start();
         residents = new Bag();
         EbolaBuilder.initializeWorld(this, Parameters.POP_PATH, Parameters.ADMIN_PATH, Parameters.AGE_DIST_PATH);
-
+        readInActualCases(actualGuineaCases, Parameters.ACTUAL_CASES_GUINEA);
         Steppable chartUpdater = new Steppable()
         {
             @Override
@@ -130,32 +135,32 @@ public class EbolaABM extends SimState
                 long cStep = simState.schedule.getSteps();
                 if(cStep % Math.round(24.0/Parameters.TEMPORAL_RESOLUTION) == 0)//only do this on the daily)
                 {
-                    Bag allResidents = world.getAllObjects();
-                    int total_sus = 0;
-                    int total_infectious = 0;
-                    int total_recovered = 0;
-                    int total_exposed = 0;
-                    int total_dead = 0;
-                    for(Object o: allResidents)
-                    {
-                        Resident resident = (Resident)o;
-                        if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
-                            total_sus++;
-                        else if(resident.getHealthStatus() == Constants.EXPOSED)
-                            total_exposed++;
-                        else if(resident.getHealthStatus() == Constants.INFECTIOUS)
-                            total_infectious++;
-                        else if(resident.getHealthStatus() == Constants.RECOVERED)
-                            total_recovered++;
-                        else if(resident.getHealthStatus() == Constants.DEAD)
-                            total_dead++;
-                    }
-
-                    //update health chart
-                    //totalsusceptibleSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_sus);//every hour
-                    totalInfectedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_infectious);//every hour
-                    totalDeadSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_dead);//every hour
-                    totalExposedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_exposed);//every hour
+//                    Bag allResidents = world.getAllObjects();
+//                    int total_sus = 0;
+//                    int total_infectious = 0;
+//                    int total_recovered = 0;
+//                    int total_exposed = 0;
+//                    int total_dead = 0;
+//                    for(Object o: allResidents)
+//                    {
+//                        Resident resident = (Resident)o;
+//                        if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
+//                            total_sus++;
+//                        else if(resident.getHealthStatus() == Constants.EXPOSED)
+//                            total_exposed++;
+//                        else if(resident.getHealthStatus() == Constants.INFECTIOUS)
+//                            total_infectious++;
+//                        else if(resident.getHealthStatus() == Constants.RECOVERED)
+//                            total_recovered++;
+//                        else if(resident.getHealthStatus() == Constants.DEAD)
+//                            total_dead++;
+//                    }
+//
+//                    //update health chart
+//                    //totalsusceptibleSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_sus);//every hour
+//                    totalInfectedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_infectious);//every hour
+//                    totalDeadSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_dead);//every hour
+//                    totalExposedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_exposed);//every hour
 
                     //update hourDialer and day Dialer
                     double day = cStep*Parameters.TEMPORAL_RESOLUTION/24;
@@ -164,9 +169,16 @@ public class EbolaABM extends SimState
                     dayDialer.setValue(day);
 
                     //update cumalative chart
-                    totalLiberia.add(cStep*Parameters.TEMPORAL_RESOLUTION, totalLiberiaInt);
-                    totalGuinea.add(cStep * Parameters.TEMPORAL_RESOLUTION, totalGuineaInt);
-                    totalSierra_Leone.add(cStep*Parameters.TEMPORAL_RESOLUTION, totalSierra_LeoneInt);
+                    totalLiberia.add(cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION), totalLiberiaInt);
+                    totalGuinea.add(cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION), totalGuineaInt);
+                    totalSierra_Leone.add(cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION), totalSierra_LeoneInt);
+
+                    //update actual
+                    if(actualGuineaCases.get(0).getX() == cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION))
+                    {
+                        totalGuineaActual.add(actualGuineaCases.get(0).getX(), actualGuineaCases.get(0).getY());
+                        actualGuineaCases.remove(0);
+                    }
                 }
             }
         };
@@ -277,5 +289,41 @@ public class EbolaABM extends SimState
         public int to_admin;
         public double annual_amnt;
         public Int2D destination;
+    }
+
+    private void readInActualCases(List<Double2D> cases, String file)
+    {
+        int date_started = 0;
+        try
+        {
+            // buffer reader for age distribution data
+            CSVReader csvReader = new CSVReader(new FileReader(new File(file)));
+            csvReader.readLine();//skip the headers
+            csvReader.readLine();//skip the headers
+            csvReader.readLine();//skip the headers
+            csvReader.readLine();//skip the headers
+
+            List<String> line = csvReader.readLine();
+            while(!line.isEmpty())
+            {
+                //read in the county ids
+                int day = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(7)).intValue() + 6 + (31-date_started);
+                int cases_num = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(8)).intValue();
+                cases.add(new Double2D(day, cases_num));
+                line = csvReader.readLine();
+            }
+        }
+        catch(FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch(java.text.ParseException e)
+        {
+            e.printStackTrace();
+        }
     }
 }

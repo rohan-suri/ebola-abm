@@ -410,7 +410,7 @@ public class Resident implements Steppable
         //pick a random urban location
         if(urban_locations == null )
         {
-            System.out.println("NO URBAN LOCATIONS!!! on id " + newAdminId);
+            //System.out.println("NO URBAN LOCATIONS!!! on id " + newAdminId);
             return true;
         }
         Int2D urban_location = urban_locations.get(ebolaSim.random.nextInt(urban_locations.size()));

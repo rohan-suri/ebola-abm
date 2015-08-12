@@ -3,7 +3,7 @@
  */
 public class Parameters
 {
-    public static double SCALE = 0.001; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
     public static double POPULATION_FLOW_SCALE = 1;//scale of how many people move around
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
@@ -25,6 +25,7 @@ public class Parameters
     public static String HOSPITALS_PATH = "data/hospitals_shapefile/all_hospitals.shp";//Path to shapefile that has location of all health facilities
     public static String ADMIN_ID_PATH = "data/admin_id.asc";//Path to file that contains the id for each county in each of the three countries, unique within each country but not between countries
     public static String MOVEMENT_PATH = "data/movement/movement_within.csv";//Path to file containing movement data within each country
+    public static String ACTUAL_CASES_GUINEA = "data/actual_cases/guinea_actual.csv";//path to csv file containing actual cases for guinea
 
     public static double MIN_POP_URBAN = 575.45;//Minimum population density per 926 meters or 1000 people per square mile to be urban. Source: http://cber.cba.ua.edu/asdc/urban_rural.html
     public static double MIN_POP_SURROUNDING = 287.73;//Minimum surrounding population density per 926 meters.  An urban district must be surrounded by
@@ -50,7 +51,7 @@ public class Parameters
 
     //-------Guinea---------//
     public static int GUINEA = 0;//ID for Guinea
-    public static double GUINEA_AVG_HOUSEHOLD_SIZE = 8.75; //Sierra Leone's average household size (2014, http://www.euromonitor.com/medialibrary/PDF/Book_WEF_2014.pdf)
+    public static double GUINEA_AVG_HOUSEHOLD_SIZE = 7; //Sierra Leone's average household size (2014, http://www.euromonitor.com/medialibrary/PDF/Book_WEF_2014.pdf)
 
 
     //Parameters for inactive vs labour force. Taken from: http://www.ilo.org/wcmsp5/groups/public/---dgreports/---stat/documents/presentation/wcms_156366.pdf
@@ -195,14 +196,13 @@ public class Parameters
     }
 
     //Ebola Disease Model Parameters
-    public static double SUSCEPTIBLE_TO_EXPOSED = 0.03 * Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
+    public static double SUSCEPTIBLE_TO_EXPOSED = 0.0025* Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
     public static double INCUBATION_PERIOD_AVERAGE = 12.0;//as reported by Who Ebola Resonse Team source: http://www.nejm.org/doi/full/10.1056/NEJMoa1411100?rss=mostCited&
     public static double INCUBATION_PERIOD_STDEV = 1.0;//Standard deviation from reports above
     public static double CASE_FATALITY_RATIO = 0.70;//number of cases resulting in death
-    public static double RECOVERY_PERIOD_AVERAGE = 15.0;
+    public static double RECOVERY_PERIOD_AVERAGE = 14.0;
     public static double RECOVERY_PERIOD_STDEV = 1.0;
 
     public static double FATALITY_PERIOD_AVERAGE = 8.0;
     public static double FATALITY_PERIOD_STDEV = 1.0;
-
 }
