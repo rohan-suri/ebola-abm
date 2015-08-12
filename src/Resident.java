@@ -113,7 +113,15 @@ public class Resident implements Steppable
                 {
                     double rand = ebolaSim.random.nextDouble();
                     if(rand < Parameters.SUSCEPTIBLE_TO_EXPOSED)//infect this agent
+                    {
                         resident.setHealthStatus(Constants.EXPOSED);
+                        if(resident.getHousehold().getCountry() == Parameters.LIBERIA)
+                            ebolaSim.totalLiberiaInt++;
+                        else if(resident.getHousehold().getCountry() == Parameters.SL)
+                            ebolaSim.totalSierra_LeoneInt++;
+                        else if(resident.getHousehold().getCountry() == Parameters.GUINEA)
+                            ebolaSim.totalGuineaInt++;
+                    }
                 }
             }
 

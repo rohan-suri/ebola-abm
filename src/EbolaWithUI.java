@@ -76,30 +76,49 @@ public class EbolaWithUI extends GUIState
         Dimension dm = new Dimension(30,30);
         Dimension dmn = new Dimension(30,30);
 
-        TimeSeriesChartGenerator chartSeriesCholera;
-        chartSeriesCholera = new TimeSeriesChartGenerator();
-        chartSeriesCholera.createFrame();
-        chartSeriesCholera.setSize(dm);
-        chartSeriesCholera.setTitle("Health Status");
-        chartSeriesCholera.setRangeAxisLabel("Number of People");
-        chartSeriesCholera.setDomainAxisLabel("Minutes");
-        chartSeriesCholera.setMaximumSize(dm);
-        chartSeriesCholera.setMinimumSize(dmn);
+        TimeSeriesChartGenerator healthStatus;
+        healthStatus = new TimeSeriesChartGenerator();
+        healthStatus.createFrame();
+        healthStatus.setSize(dm);
+        healthStatus.setTitle("Health Status");
+        healthStatus.setRangeAxisLabel("Number of People");
+        healthStatus.setDomainAxisLabel("Hours");
+        healthStatus.setMaximumSize(dm);
+        healthStatus.setMinimumSize(dmn);
 //        chartSeriesCholera.setMinimumChartDrawSize(400, 300); // makes it scale at small sizes
 //        chartSeriesCholera.setPreferredChartSize(400, 300); // lets it be small
 
-        chartSeriesCholera.addSeries(((EbolaABM) this.state).totalsusceptibleSeries , null);
-        chartSeriesCholera.addSeries(((EbolaABM) this.state).totalExposedSeries , null);
-        chartSeriesCholera.addSeries(((EbolaABM) this.state).totalInfectedSeries , null);
-        chartSeriesCholera.addSeries(((EbolaABM) this.state).totalRecoveredSeries , null);
-        chartSeriesCholera.addSeries(((EbolaABM) this.state).totalDeadSeries, null);
+        healthStatus.addSeries(((EbolaABM) this.state).totalsusceptibleSeries, null);
+        healthStatus.addSeries(((EbolaABM) this.state).totalExposedSeries, null);
+        healthStatus.addSeries(((EbolaABM) this.state).totalInfectedSeries, null);
+        healthStatus.addSeries(((EbolaABM) this.state).totalRecoveredSeries, null);
+        healthStatus.addSeries(((EbolaABM) this.state).totalDeadSeries, null);
+
+        //chart for cumalative cases
+        TimeSeriesChartGenerator charSeriesCumalative;
+        charSeriesCumalative = new TimeSeriesChartGenerator();
+        charSeriesCumalative.createFrame();
+        charSeriesCumalative.setSize(dm);
+        charSeriesCumalative.setTitle("Cumalative Cases");
+        charSeriesCumalative.setRangeAxisLabel("Number of People");
+        charSeriesCumalative.setDomainAxisLabel("Hours");
+        charSeriesCumalative.setMaximumSize(dm);
+        charSeriesCumalative.setMinimumSize(dmn);
+//        chartSeriesCholera.setMinimumChartDrawSize(400, 300); // makes it scale at small sizes
+//        chartSeriesCholera.setPreferredChartSize(400, 300); // lets it be small
+
+        charSeriesCumalative.addSeries(((EbolaABM) this.state).totalLiberia , null);
+        charSeriesCumalative.addSeries(((EbolaABM) this.state).totalGuinea , null);
+        charSeriesCumalative.addSeries(((EbolaABM) this.state).totalSierra_Leone, null);
 
 
-
-
-        JFrame frameSeries = chartSeriesCholera.createFrame(this);
+        JFrame frameSeries = healthStatus.createFrame(this);
         frameSeries.pack();
         c.registerFrame(frameSeries);
+
+        JFrame cumalativeFrameSeries = charSeriesCumalative.createFrame(this);
+        cumalativeFrameSeries.pack();
+        c.registerFrame(cumalativeFrameSeries);
 
         //time chart
         StandardDialFrame dialFrame = new StandardDialFrame();

@@ -95,6 +95,14 @@ public class EbolaABM extends SimState
     public XYSeries totalRecoveredSeries = new XYSeries(" Recovered"); // shows number of recovered agents
     public XYSeries totalDeadSeries = new XYSeries(" Dead"); // shows number of recovered agents
 
+    //xy series for cumalative cases
+    public XYSeries totalLiberia = new XYSeries("Liberia");
+    public XYSeries totalGuinea = new XYSeries("Guinea");
+    public XYSeries totalSierra_Leone = new XYSeries("Sierra Leone");
+
+    public int totalLiberiaInt = 0;
+    public int totalGuineaInt = 0;
+    public int totalSierra_LeoneInt = 0;
 
     // timer graphics
     DefaultValueDataset hourDialer = new DefaultValueDataset(); // shows the current hour
@@ -119,40 +127,47 @@ public class EbolaABM extends SimState
             @Override
             public void step(SimState simState)
             {
-//                long cStep = simState.schedule.getSteps();
-//
-//                Bag allResidents = world.getAllObjects();
-//                int total_sus = 0;
-//                int total_infectious = 0;
-//                int total_recovered = 0;
-//                int total_exposed = 0;
-//                int total_dead = 0;
-//                for(Object o: allResidents)
-//                {
-//                    Resident resident = (Resident)o;
-//                    if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
-//                        total_sus++;
-//                    else if(resident.getHealthStatus() == Constants.EXPOSED)
-//                        total_exposed++;
-//                    else if(resident.getHealthStatus() == Constants.INFECTIOUS)
-//                        total_infectious++;
-//                    else if(resident.getHealthStatus() == Constants.RECOVERED)
-//                        total_recovered++;
-//                    else if(resident.getHealthStatus() == Constants.DEAD)
-//                        total_dead++;
-//                }
-//
-//                //update health chart
-//                totalsusceptibleSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_sus);//every hour
-//                totalInfectedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_infectious);//every hour
-//                totalDeadSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_dead);//every hour
-//                totalExposedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_exposed);//every hour
-//
-//                //update hourDialer and day Dialer
-//                double day = cStep*Parameters.TEMPORAL_RESOLUTION/24;
-//                double hour = cStep*Parameters.TEMPORAL_RESOLUTION%24;
-//                hourDialer.setValue(hour);
-//                dayDialer.setValue(day);
+                long cStep = simState.schedule.getSteps();
+                if(cStep % Math.round(24.0/Parameters.TEMPORAL_RESOLUTION) == 0)//only do this on the daily)
+                {
+                    Bag allResidents = world.getAllObjects();
+                    int total_sus = 0;
+                    int total_infectious = 0;
+                    int total_recovered = 0;
+                    int total_exposed = 0;
+                    int total_dead = 0;
+                    for(Object o: allResidents)
+                    {
+                        Resident resident = (Resident)o;
+                        if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
+                            total_sus++;
+                        else if(resident.getHealthStatus() == Constants.EXPOSED)
+                            total_exposed++;
+                        else if(resident.getHealthStatus() == Constants.INFECTIOUS)
+                            total_infectious++;
+                        else if(resident.getHealthStatus() == Constants.RECOVERED)
+                            total_recovered++;
+                        else if(resident.getHealthStatus() == Constants.DEAD)
+                            total_dead++;
+                    }
+
+                    //update health chart
+                    totalsusceptibleSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_sus);//every hour
+                    totalInfectedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_infectious);//every hour
+                    totalDeadSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_dead);//every hour
+                    totalExposedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_exposed);//every hour
+
+                    //update hourDialer and day Dialer
+                    double day = cStep*Parameters.TEMPORAL_RESOLUTION/24;
+                    double hour = cStep*Parameters.TEMPORAL_RESOLUTION%24;
+                    hourDialer.setValue(hour);
+                    dayDialer.setValue(day);
+
+                    //update cumalative chart
+                    totalLiberia.add(cStep*Parameters.TEMPORAL_RESOLUTION, totalLiberiaInt);
+                    totalGuinea.add(cStep * Parameters.TEMPORAL_RESOLUTION, totalGuineaInt);
+                    totalSierra_Leone.add(cStep*Parameters.TEMPORAL_RESOLUTION, totalSierra_LeoneInt);
+                }
             }
         };
         this.schedule.scheduleRepeating(chartUpdater);
