@@ -159,7 +159,7 @@ public class Resident implements Steppable
                 {
                     if (atGoalLength < 0) {
                         //go back home
-                        setGoal(this.goal, household, 100);
+                        setGoal(this.goal, household, 100, Parameters.WALKING_SPEED);
                     }
                     atGoalLength -= 1*Parameters.TEMPORAL_RESOLUTION ;
                 }
@@ -254,18 +254,18 @@ public class Resident implements Steppable
                 double rand = ebolaSim.random.nextDouble();
                 if(rand < 0.7)
                 {
-                    setGoal(this.getHousehold(), workDayDestination, dailyWorkHours);
+                    setGoal(this.getHousehold(), workDayDestination, dailyWorkHours, Parameters.WALKING_SPEED);
                 }
             }
 
         }
     }
 
-    private void setGoal(Structure from, Structure to, int stayDuration)
+    private void setGoal(Structure from, Structure to, int stayDuration, double speed)
     {
         this.goal = to;
         this.atGoalLength = stayDuration;
-        this.route = from.getRoute(to);
+        this.route = from.getRoute(to, speed);
         this.routePosition = 0;
     }
 
@@ -429,7 +429,7 @@ public class Resident implements Steppable
         newHousehold.getNearestNode().links.add(e);
         newHousehold.setNearestNode(newNode);
 
-        if(workDayDestination == null || newHousehold.getRoute(this.household) == null)
+        if(workDayDestination == null || newHousehold.getRoute(this.household, 20.0) == null)
         {
             //bail out we can't get to it
             //but first we must remove the link we just made
@@ -475,7 +475,7 @@ public class Resident implements Steppable
         ebolaSim.householdGrid.setObjectLocation(newHousehold, newHousehold.getLocation());
 
         //update goal
-        setGoal(this.getHousehold(), newHousehold, 0);
+        setGoal(this.getHousehold(), newHousehold, 0, 20.0);
         setHousehold(newHousehold);
 
         return true;

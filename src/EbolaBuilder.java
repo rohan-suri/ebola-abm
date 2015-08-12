@@ -1131,7 +1131,7 @@ public class EbolaBuilder
         if(workLocation != null)
         {
             workLocation.addMember(resident);
-            Route routeToWork = resident.getHousehold().getRoute(workLocation);
+            Route routeToWork = resident.getHousehold().getRoute(workLocation, Parameters.WALKING_SPEED);
 //                int distance = (int)Math.round(Parameters.convertToKilometers(routeToWork.getTotalDistance()));
 //                if(distance < farmDistanceFrequency.length)
 //                    farmDistanceFrequency[distance]++;
@@ -1159,7 +1159,7 @@ public class EbolaBuilder
 
     private static WorkLocation createWorkLocation(Resident resident, double on_road_distance, double off_road_distance, Map<Node, Structure> nodeStructureMap, SparseGrid2D grid)
     {
-        Route route = AStar.getNodeAtDistance(resident.getHousehold().getNearestNode(), on_road_distance);
+        Route route = AStar.getNodeAtDistance(resident.getHousehold().getNearestNode(), on_road_distance, Parameters.WALKING_SPEED);
         if(route != null)
         {
             Node tempEndNode = route.getEnd();
@@ -1318,7 +1318,7 @@ public class EbolaBuilder
                 return st;
         }
 
-        Route route = AStar.getNearestNode(start.getNearestNode(), endNodes, max_distance, check_capacity);
+        Route route = AStar.getNearestNode(start.getNearestNode(), endNodes, max_distance, check_capacity, Parameters.WALKING_SPEED);
 
         if(route == null)
             return null;

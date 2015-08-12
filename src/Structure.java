@@ -65,7 +65,7 @@ public class Structure
      * @param destination Destination Structure
      * @return null if no path exist, otherwise uses AStar to find shortest path to destination
      */
-    public Route getRoute(Structure destination)
+    public Route getRoute(Structure destination, double speed)
     {
         if(cachedPaths.containsKey(destination))//means we have this path cached
         {
@@ -77,13 +77,13 @@ public class Structure
             //check if the route has already been cached for the other way (destination -> here)
             if(destination.getCachedRoutes().containsKey(this))
             {
-                Route route = destination.getRoute(this).reverse();//be sure to reverse the route
+                Route route = destination.getRoute(this, speed).reverse();//be sure to reverse the route
                 cachedPaths.put(destination, route);
                 return route;
             }
             else
             {
-                Route route = AStar.astarPath(this.getNearestNode(), destination.getNearestNode());
+                Route route = AStar.astarPath(this.getNearestNode(), destination.getNearestNode(), speed);
                 cachedPaths.put(destination, route);
                 return route;
             }

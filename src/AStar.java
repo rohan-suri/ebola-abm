@@ -19,7 +19,7 @@ public class AStar {
      * @param goal
      * @return
      */
-    static public Route astarPath(EbolaBuilder.Node start, EbolaBuilder.Node goal) {
+    static public Route astarPath(EbolaBuilder.Node start, EbolaBuilder.Node goal, double speed) {
 //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
 //            return cache.get(cacheKey);
@@ -60,7 +60,7 @@ public class AStar {
             }
             if(x.node == goal ){ // we have found the shortest possible path to the goal!
                 // Reconstruct the path and send it back.
-                return reconstructRoute(goalNode, startNode, goalNode);
+                return reconstructRoute(goalNode, startNode, goalNode, speed);
             }
             openSet.remove(x); // maintain the lists
             closedSet.add(x);
@@ -120,7 +120,7 @@ public class AStar {
      * @param check_capacity determines whether we chceck the capacity of Structure
      * @return
      */
-    public static Route getNearestNode(EbolaBuilder.Node start, Map<EbolaBuilder.Node, Structure> endNodes, double max_distance, boolean check_capacity)
+    public static Route getNearestNode(EbolaBuilder.Node start, Map<EbolaBuilder.Node, Structure> endNodes, double max_distance, boolean check_capacity, double speed)
     {
         //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
@@ -167,10 +167,10 @@ public class AStar {
                 if(check_capacity)//check if this structure is already full!
                 {
                     if(!(endNodes.get(x.node).getMembers().size() >= endNodes.get(x.node).getCapacity()))//means it is not full
-                        return reconstructRoute(x, startNode, x);
+                        return reconstructRoute(x, startNode, x, speed);
                 }
                 else // Reconstruct the path and send it back.
-                    return reconstructRoute(x, startNode, x);
+                    return reconstructRoute(x, startNode, x, speed);
             }
             openSet.remove(x); // maintain the lists
             closedSet.add(x);
@@ -228,7 +228,7 @@ public class AStar {
      * @param distance the target distance to stop
      * @return
      */
-    public static Route getNodeAtDistance(EbolaBuilder.Node start, double distance)
+    public static Route getNodeAtDistance(EbolaBuilder.Node start, double distance, double speed)
     {
         //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
@@ -267,7 +267,7 @@ public class AStar {
             //check if we have reached maximum route distance
             if(x.hx > distance)////we are at the distance!!!
             {
-                return reconstructRoute(x, startNode, x);
+                return reconstructRoute(x, startNode, x, speed);
             }
             if(x == null)
             {
@@ -329,10 +329,9 @@ public class AStar {
      * @param n the end point of the path
      * @return an Route from start to goal
      */
-    static Route reconstructRoute(AStarNodeWrapper n, AStarNodeWrapper start, AStarNodeWrapper end)
+    static Route reconstructRoute(AStarNodeWrapper n, AStarNodeWrapper start, AStarNodeWrapper end, double speed)
     {
         List<Int2D> result = new ArrayList<>(20);
-        double speed = Parameters.WALKING_SPEED;
 
         //adjust speed to temporal resolution
         speed *= Parameters.TEMPORAL_RESOLUTION;//now km per step
