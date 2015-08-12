@@ -42,6 +42,8 @@ public class Resident implements Steppable
     private boolean isMoving = false;
 
     boolean doomed_to_die = false;
+    double time_to_resolution = -1;
+    double time_to_infectious = -1;
 
     public Resident(Int2D location, Household household, int sex, int age, boolean isUrban)
     {
@@ -66,41 +68,50 @@ public class Resident implements Steppable
 
         if(healthStatus == Constants.EXPOSED)
         {
-            double rand = ebolaSim.random.nextDouble();
-            if(rand < Parameters.EXPOSED_TO_INFECTIOUS)//assume constant rate
-                setHealthStatus(Constants.INFECTIOUS);//now become infectious
-            //update the hotspots
-            if(ebolaSim.hotSpotsGrid.getObjectsAtLocation(location.getX()/10, location.getY()/10) == null)
-                ebolaSim.hotSpotsGrid.setObjectLocation(new Object(), location.getX()/10, location.getY()/10);
-            //decide whether you will die or stay alive
-            rand = ebolaSim.random.nextDouble();
-            if(rand < Parameters.CASE_FATALITY_RATIO)
-                doomed_to_die = true;//this case will die
+            if(time_to_infectious == -1)//time to infectious has not been determined yet
+            {
+                time_to_infectious = ((ebolaSim.random.nextGaussian()*Parameters.INCUBATION_PERIOD_STDEV)+Parameters.INCUBATION_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
+
+                //decide whether you will die or stay alive
+                double rand = ebolaSim.random.nextDouble();
+                if(rand < Parameters.CASE_FATALITY_RATIO)
+                    doomed_to_die = true;//this case will die
+                else
+                    doomed_to_die = false;//this case will recover
+
+                //update the hotspots
+                if(ebolaSim.hotSpotsGrid.getObjectsAtLocation(location.getX()/10, location.getY()/10) == null)
+                    ebolaSim.hotSpotsGrid.setObjectLocation(new Object(), location.getX()/10, location.getY()/10);
+            }
+            else if(time_to_infectious <= 0)//now become infectious
+            {
+                this.setHealthStatus(Constants.INFECTIOUS);
+            }
             else
-                doomed_to_die = false;//this case will recover
+                time_to_infectious--;
+
         }
         else if(healthStatus == Constants.INFECTIOUS)//infect everyone!!!
         {
-            if(doomed_to_die)
+            if(doomed_to_die && time_to_resolution == -1)
             {
                 //decide to kill or be recovered
-                double rand = ebolaSim.random.nextDouble();
-                if (rand < Parameters.FATALITY_PROBABILITY)
-                    this.healthStatus = Constants.RECOVERED;
-                else {
-                    healthStatus = Constants.DEAD;
-                }
+                time_to_resolution = ((ebolaSim.random.nextGaussian()*Parameters.FATALITY_PERIOD_STDEV)+Parameters.FATALITY_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
+            }
+            else if(time_to_resolution == -1)
+            {
+                //decide when to recover
+                time_to_resolution = ((ebolaSim.random.nextGaussian()*Parameters.RECOVERY_PERIOD_STDEV)+Parameters.RECOVERY_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
+            }
+            else if(time_to_resolution <= 0)
+            {
+                if(doomed_to_die)
+                    setHealthStatus(Constants.DEAD);
+                else
+                    setHealthStatus(Constants.RECOVERED);
             }
             else
-            {
-                //decide whether to recover
-                double rand = ebolaSim.random.nextDouble();
-                if (rand < Parameters.RECOVERY_PROBABILITY)
-                    this.healthStatus = Constants.RECOVERED;
-                else {
-                    healthStatus = Constants.RECOVERED;
-                }
-            }
+                time_to_resolution--;
 
             //now infect nearby people
             Bag nearByPeople = ebolaSim.world.getNeighborsWithinDistance(new Double2D(location), 1);

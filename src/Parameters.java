@@ -195,9 +195,14 @@ public class Parameters
     }
 
     //Ebola Disease Model Parameters
-    public static double SUSCEPTIBLE_TO_EXPOSED = 0.5/24.0 * Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
-    public static double EXPOSED_TO_INFECTIOUS = (1.0/9.0)/24.0*Parameters.TEMPORAL_RESOLUTION;//adjusted for our temporal resolution, as reported by Who Ebola Resonse Team source: http://www.nejm.org/doi/full/10.1056/NEJMoa1411100?rss=mostCited&
+    public static double SUSCEPTIBLE_TO_EXPOSED = 0.05 * Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
+    public static double INCUBATION_PERIOD_AVERAGE = 9.0;//as reported by Who Ebola Resonse Team source: http://www.nejm.org/doi/full/10.1056/NEJMoa1411100?rss=mostCited&
+    public static double INCUBATION_PERIOD_STDEV = 1.0;//Standard deviation from reports above
     public static double CASE_FATALITY_RATIO = 0.70;//number of cases resulting in death
-    public static double RECOVERY_PROBABILITY = 1.0/15.0 / 24 *Parameters.TEMPORAL_RESOLUTION;
-    public static double FATALITY_PROBABILITY = 1.0/8.0 / 24 *Parameters.TEMPORAL_RESOLUTION;
+    public static double RECOVERY_PERIOD_AVERAGE = 15.0;
+    public static double RECOVERY_PERIOD_STDEV = 1.0;
+
+    public static double FATALITY_PERIOD_AVERAGE = 8.0;
+    public static double FATALITY_PERIOD_STDEV = 1.0;
+
 }
