@@ -38,9 +38,10 @@ public class Resident implements Steppable
     private int dailyWorkHours;
 
     private int healthStatus;
-    private double deathTimer = Parameters.RECOVERY_DAYS*24;//in hours
 
     private boolean isMoving = false;
+
+    boolean doomed_to_die = false;
 
     public Resident(Int2D location, Household household, int sex, int age, boolean isUrban)
     {
@@ -71,37 +72,51 @@ public class Resident implements Steppable
             //update the hotspots
             if(ebolaSim.hotSpotsGrid.getObjectsAtLocation(location.getX()/10, location.getY()/10) == null)
                 ebolaSim.hotSpotsGrid.setObjectLocation(new Object(), location.getX()/10, location.getY()/10);
+            //decide whether you will die or stay alive
+            rand = ebolaSim.random.nextDouble();
+            if(rand < Parameters.CASE_FATALITY_RATIO)
+                doomed_to_die = true;//this case will die
+            else
+                doomed_to_die = false;//this case will recover
         }
         else if(healthStatus == Constants.INFECTIOUS)//infect everyone!!!
         {
-            if(deathTimer < 0)
+            if(doomed_to_die)
             {
                 //decide to kill or be recovered
                 double rand = ebolaSim.random.nextDouble();
-                if(rand < Parameters.RECOVERABLE_CHANCE)
+                if (rand < Parameters.FATALITY_PROBABILITY)
                     this.healthStatus = Constants.RECOVERED;
-                else
-                {
+                else {
                     healthStatus = Constants.DEAD;
                 }
             }
             else
             {
-                deathTimer -= Parameters.TEMPORAL_RESOLUTION;//closer to death!
-                Bag nearByPeople = ebolaSim.world.getNeighborsWithinDistance(new Double2D(location), 1);
-                if(nearByPeople == null)//if you are nearby no one just return
-                    return;
-                for(Object o: nearByPeople)
-                {
-                    Resident resident = (Resident)o;
-                    if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
-                    {
-                        double rand = ebolaSim.random.nextDouble();
-                        if(rand < Parameters.TRANSMISSIBILITY)//infect this agent
-                            resident.setHealthStatus(Constants.EXPOSED);
-                    }
+                //decide whether to recover
+                double rand = ebolaSim.random.nextDouble();
+                if (rand < Parameters.RECOVERY_PROBABILITY)
+                    this.healthStatus = Constants.RECOVERED;
+                else {
+                    healthStatus = Constants.RECOVERED;
                 }
             }
+
+            //now infect nearby people
+            Bag nearByPeople = ebolaSim.world.getNeighborsWithinDistance(new Double2D(location), 1);
+            if(nearByPeople == null)//if you are nearby no one just return
+                return;
+            for(Object o: nearByPeople)
+            {
+                Resident resident = (Resident)o;
+                if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
+                {
+                    double rand = ebolaSim.random.nextDouble();
+                    if(rand < Parameters.SUSCEPTIBLE_TO_EXPOSED)//infect this agent
+                        resident.setHealthStatus(Constants.EXPOSED);
+                }
+            }
+
         }
         if(workDayDestination == null)
             return;

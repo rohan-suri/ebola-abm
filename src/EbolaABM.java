@@ -159,6 +159,8 @@ public class EbolaABM extends SimState
 
         Steppable movementManager = new Steppable()
         {
+            private long lastTime;
+
             @Override
             public void step(SimState simState)
             {
@@ -166,14 +168,17 @@ public class EbolaABM extends SimState
                 if(cStep % Math.round(24.0/Parameters.TEMPORAL_RESOLUTION) == 0)//only do this on the daily
                 {
                     long now = System.currentTimeMillis();
+                    if(lastTime != 0)
+                        System.out.println("Step " + cStep + "[" + (now-lastTime)/1000 + " secs ]");
+                    lastTime = now;
                     EbolaABM ebolaSim = (EbolaABM)simState;
-                    System.out.println("GIN");
+                    //System.out.println("GIN");
                     moveResidents(ebolaSim.movementPatternMapGIN, ebolaSim.admin_id_gin_residents, ebolaSim.random, ebolaSim);
-                    System.out.println("SLE");
+                    //System.out.println("SLE");
                     moveResidents(ebolaSim.movementPatternMapSLE, ebolaSim.admin_id_sle_residents, ebolaSim.random, ebolaSim);
-                    System.out.println("LIB");
+                    //System.out.println("LIB");
                     moveResidents(ebolaSim.movementPatternMapLIB, ebolaSim.admin_id_lib_residents, ebolaSim.random, ebolaSim);
-                    System.out.println("Managing population flow [" + (System.currentTimeMillis()-now)/1000 + " sec]");
+                    //System.out.println("Managing population flow [" + (System.currentTimeMillis()-now)/1000 + " sec]");
                 }
             }
             private void moveResidents(Map<Integer, List<MovementPattern>> movementPatternMap, Map<Integer, Bag> admin_id_residents, MersenneTwisterFast random, EbolaABM ebolaSim)
