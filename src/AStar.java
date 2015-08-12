@@ -46,14 +46,15 @@ public class AStar {
         startNode.fx = heuristic(start, goal);
 
         // A* containers: allRoadNodes to be investigated, allRoadNodes that have been investigated
-        HashSet<AStarNodeWrapper> closedSet = new HashSet<>(),
-                openSet = new HashSet<>();
+        HashSet<AStarNodeWrapper> closedSet = new HashSet<>(10000),
+                openSet = new HashSet<>(10000);
+        PriorityQueue<AStarNodeWrapper> openSetQueue = new PriorityQueue<>(10000);
         openSet.add(startNode);
-
-
+        openSetQueue.add(startNode);
         while(openSet.size() > 0){ // while there are reachable allRoadNodes to investigate
 
-            AStarNodeWrapper x = findMin(openSet); // find the shortest path so far
+            //AStarNodeWrapper x = findMin(openSet); // find the shortest path so far
+            AStarNodeWrapper x = openSetQueue.peek();
             if(x == null)
             {
                 AStarNodeWrapper n = findMin(openSet);
@@ -63,6 +64,7 @@ public class AStar {
                 return reconstructRoute(goalNode, startNode, goalNode, speed);
             }
             openSet.remove(x); // maintain the lists
+            openSetQueue.remove();
             closedSet.add(x);
 
             // check all the neighbors of this location
@@ -90,6 +92,7 @@ public class AStar {
 
                 if(! openSet.contains(nextNode)){
                     openSet.add(nextNode);
+                    openSetQueue.add(nextNode);
                     nextNode.hx = heuristic(n, goal);
                     better = true;
                 }
@@ -150,12 +153,16 @@ public class AStar {
         // A* containers: allRoadNodes to be investigated, allRoadNodes that have been investigated
         HashSet<AStarNodeWrapper> closedSet = new HashSet<>(),
                 openSet = new HashSet<>();
-        openSet.add(startNode);
+        PriorityQueue<AStarNodeWrapper> openSetQueue = new PriorityQueue<>(10000);
 
+
+        openSet.add(startNode);
+        openSetQueue.add(startNode)
 
         while(openSet.size() > 0){ // while there are reachable allRoadNodes to investigate
 
-            AStarNodeWrapper x = findMin(openSet); // find the shortest path so far
+            //AStarNodeWrapper x = findMin(openSet); // find the shortest path so far
+            AStarNodeWrapper x = openSetQueue.peek();
             //check if we have reached maximum route distance
             if(x.hx > max_distance)
                 return null;
@@ -173,6 +180,7 @@ public class AStar {
                     return reconstructRoute(x, startNode, x, speed);
             }
             openSet.remove(x); // maintain the lists
+            openSetQueue.remove();
             closedSet.add(x);
 
             // check all the neighbors of this location
@@ -200,6 +208,7 @@ public class AStar {
 
                 if(! openSet.contains(nextNode)){
                     openSet.add(nextNode);
+                    openSetQueue.add(nextNode);
                     nextNode.hx = heuristic(x.node, nextNode.node) + x.hx;
                     better = true;
                 }
@@ -258,12 +267,16 @@ public class AStar {
         // A* containers: allRoadNodes to be investigated, allRoadNodes that have been investigated
         HashSet<AStarNodeWrapper> closedSet = new HashSet<>(),
                 openSet = new HashSet<>();
-        openSet.add(startNode);
+        PriorityQueue<AStarNodeWrapper> openSetQueue = new PriorityQueue<>(10000);
 
+        openSet.add(startNode);
+        openSetQueue.add(startNode);
 
         while(openSet.size() > 0){ // while there are reachable allRoadNodes to investigate
 
-            AStarNodeWrapper x = findMin(openSet); // find the shortest path so far
+            //AStarNodeWrapper x = findMin(openSet); // find the shortest path so far
+            AStarNodeWrapper x = openSetQueue.peek();
+
             //check if we have reached maximum route distance
             if(x.hx > distance)////we are at the distance!!!
             {
@@ -274,6 +287,7 @@ public class AStar {
                 AStarNodeWrapper n = findMin(openSet);
             }
             openSet.remove(x); // maintain the lists
+            openSetQueue.remove();
             closedSet.add(x);
 
             // check all the neighbors of this location
@@ -301,6 +315,7 @@ public class AStar {
 
                 if(! openSet.contains(nextNode)){
                     openSet.add(nextNode);
+                    openSetQueue.add(nextNode);
                     nextNode.hx = heuristic(x.node, nextNode.node) + x.hx;
                     better = true;
                 }
@@ -415,7 +430,7 @@ public class AStar {
      * A wrapper to contain the A* meta information about the Nodes
      *
      */
-    static class AStarNodeWrapper {
+    static class AStarNodeWrapper implements Comparable<AStarNodeWrapper>{
 
         // the underlying Node associated with the metainformation
         EbolaBuilder.Node node;
@@ -429,6 +444,11 @@ public class AStar {
             hx = 0;
             fx = 0;
             cameFrom = null;
+        }
+
+        @Override
+        public int compareTo(AStarNodeWrapper aStarNodeWrapper) {
+            return Double.compare(this.hx, aStarNodeWrapper.hx);
         }
     }
 }

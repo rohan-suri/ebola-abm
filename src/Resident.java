@@ -429,7 +429,7 @@ public class Resident implements Steppable
         newHousehold.getNearestNode().links.add(e);
         newHousehold.setNearestNode(newNode);
 
-        if(workDayDestination == null || newHousehold.getRoute(this.household, 20.0) == null)
+        if(workDayDestination == null || newHousehold.getRoute(this.household, 50.0) == null)
         {
             //bail out we can't get to it
             //but first we must remove the link we just made
@@ -475,9 +475,8 @@ public class Resident implements Steppable
         ebolaSim.householdGrid.setObjectLocation(newHousehold, newHousehold.getLocation());
 
         //update goal
-        setGoal(this.getHousehold(), newHousehold, 0, 20.0);
+        setGoal(this.getHousehold(), newHousehold, 0, 50.0);
         setHousehold(newHousehold);
-
         return true;
     }
 

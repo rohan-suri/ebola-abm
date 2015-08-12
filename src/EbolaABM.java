@@ -152,7 +152,7 @@ public class EbolaABM extends SimState
                     }
 
                     //update health chart
-                    totalsusceptibleSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_sus);//every hour
+                    //totalsusceptibleSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_sus);//every hour
                     totalInfectedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_infectious);//every hour
                     totalDeadSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_dead);//every hour
                     totalExposedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_exposed);//every hour
@@ -246,6 +246,8 @@ public class EbolaABM extends SimState
                     return false;
                 double rand = ebolaSim.random.nextDouble();
                 if(rand < 0.2 && !resident.getIsUrban())
+                    return false;
+                if(resident.getHealthStatus() == Constants.DEAD)
                     return false;
                 return true;
             }
