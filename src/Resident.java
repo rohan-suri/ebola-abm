@@ -68,6 +68,9 @@ public class Resident implements Steppable
             double rand = ebolaSim.random.nextDouble();
             if(rand < Parameters.EXPOSED_TO_INFECTIOUS)//assume constant rate
                 setHealthStatus(Constants.INFECTIOUS);//now become infectious
+            //update the hotspots
+            if(ebolaSim.hotSpotsGrid.getObjectsAtLocation(location.getX()/10, location.getY()/10) == null)
+                ebolaSim.hotSpotsGrid.setObjectLocation(new Object(), location.getX()/10, location.getY()/10);
         }
         else if(healthStatus == Constants.INFECTIOUS)//infect everyone!!!
         {
@@ -85,7 +88,9 @@ public class Resident implements Steppable
             else
             {
                 deathTimer -= Parameters.TEMPORAL_RESOLUTION;//closer to death!
-                Bag nearByPeople = ebolaSim.world.getObjectsAtLocation(this.location);
+                Bag nearByPeople = ebolaSim.world.getNeighborsWithinDistance(new Double2D(location), 1);
+                if(nearByPeople == null)//if you are nearby no one just return
+                    return;
                 for(Object o: nearByPeople)
                 {
                     Resident resident = (Resident)o;
@@ -102,24 +107,20 @@ public class Resident implements Steppable
             return;
 
 
-        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation && isMoving())
-            ebolaSim.firstResidentHash = this.hashCode();
-        if(this.hashCode() == ebolaSim.firstResidentHash)
-            System.out.println("FOUDN ASLKDFJASFJ");
+//        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation && isMoving())
+//            ebolaSim.firstResidentHash = this.hashCode();
+//        if(this.hashCode() == ebolaSim.firstResidentHash)
+//            System.out.println("FOUDN ASLKDFJASFJ");
 
         //check if we have a goal
         if(goal == null)//calc goal
         {
-            if(this.hashCode() == ebolaSim.firstResidentHash)
-                System.out.println("FOUDN ASLKDFJASFJ");
             calcGoal(cStep, ebolaSim);
         }
         if(goal != null)
         {
             if(this.location.distance(goal.getLocation()) == 0)//we are at goal
             {
-                if(this.hashCode() == ebolaSim.firstResidentHash)
-                    System.out.println("FOUDN ASLKDFJASFJ");
                 if(this.location.distance(household.getLocation()) != 0)//make sure we are not at home
                 {
                     if (atGoalLength < 0) {
@@ -433,8 +434,8 @@ public class Resident implements Steppable
             residents.add(this);
         }
         isMoving = true;
-        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation && isMoving())
-            ebolaSim.firstResidentHash = this.hashCode();
+//        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation && isMoving())
+//            ebolaSim.firstResidentHash = this.hashCode();
 
         //be sure to add teh household to the grid
         ebolaSim.householdGrid.setObjectLocation(newHousehold, newHousehold.getLocation());

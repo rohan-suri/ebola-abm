@@ -214,6 +214,11 @@ public class EbolaWithUI extends GUIState
 //        urbanPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
 //        display.attach(urbanPortrayal, "Urban Area");
 
+        FieldPortrayal2D hotspotsPortrayal = new SparseGridPortrayal2D();
+        hotspotsPortrayal.setField(((EbolaABM)state).hotSpotsGrid);
+        hotspotsPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
+        display.attach(hotspotsPortrayal, "Urban Area");
+
 //        FieldPortrayal2D roadPortrayal = new SparseGridPortrayal2D();
 //        roadPortrayal.setField(((EbolaABM)state).allRoadNodes);
 //        roadPortrayal.setPortrayalForAll(new OvalPortrayal2D(new Color(255, 64, 240), 1.0, true));

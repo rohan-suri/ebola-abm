@@ -83,7 +83,7 @@ public class EbolaBuilder
             long now = System.currentTimeMillis();
             System.out.print("Reading in road_cost ");
             readInRoadCost();
-            System.out.println("[" + (System.currentTimeMillis()-now)/1000 + " secs ]");
+            System.out.println("[" + (System.currentTimeMillis() - now) / 1000 + " secs ]");
         }
         catch(FileNotFoundException e)
         {
@@ -715,6 +715,7 @@ public class EbolaBuilder
             //instantiate grid to hold houses
             ebolaSim.householdGrid = new SparseGrid2D((int)(width*Parameters.WORLD_TO_POP_SCALE), (int)(height*Parameters.WORLD_TO_POP_SCALE));
             ebolaSim.urbanAreasGrid = new SparseGrid2D((int)(width), (int)(height));
+            ebolaSim.hotSpotsGrid = new SparseGrid2D((int)width, (int)height);
 
             for(int i = 0; i < 4; i++)//skip the next couple of lines (contain useless metadata)
                 pop_reader.readLine();

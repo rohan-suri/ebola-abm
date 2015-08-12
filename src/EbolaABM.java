@@ -32,6 +32,7 @@ public class EbolaABM extends SimState
     public Continuous2D world;
     public SparseGrid2D householdGrid;
     public SparseGrid2D urbanAreasGrid;
+    public SparseGrid2D hotSpotsGrid;
     public SparseGrid2D schoolGrid;
     public SparseGrid2D farmGrid;
     public Network roadNetwork = new Network();
