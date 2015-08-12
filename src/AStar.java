@@ -218,7 +218,7 @@ public class AStar {
 //            if(foundNodes.size()%10000 == 0)
 //                System.out.println("Time = " + System.currentTimeMillis());
         }
-        System.out.println("Searched " + foundNodes.size() + " nodes but could not find it");
+        //System.out.println("Searched " + foundNodes.size() + " nodes but could not find it");
         return null;
     }
 
@@ -319,7 +319,7 @@ public class AStar {
 //            if(foundNodes.size()%10000 == 0)
 //                System.out.println("Time = " + System.currentTimeMillis());
         }
-        System.out.println("Searched " + foundNodes.size() + " nodes but could not find it");
+        //System.out.println("Searched " + foundNodes.size() + " nodes but could not find it");
         return null;
     }
 

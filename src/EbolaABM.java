@@ -184,7 +184,7 @@ public class EbolaABM extends SimState
                     List<MovementPattern> list = movementPatternMap.get(key);
                     for(MovementPattern mp: list)
                     {
-                        Poisson poisson = new Poisson(mp.annual_amnt/365.0, random);
+                        Poisson poisson = new Poisson(mp.annual_amnt/365.0*Parameters.POPULATION_FLOW_SCALE, random);
                         int move_num = poisson.nextInt();
                         //System.out.println("Moving " + move_num + " people w/ mean of " + mp.annual_amnt/365.0);
                         if(move_num > 0)

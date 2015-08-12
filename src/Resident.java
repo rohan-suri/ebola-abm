@@ -1,6 +1,7 @@
 import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import sim.engine.SimState;
 import sim.engine.Steppable;
+import sim.field.network.Edge;
 import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.Int2D;
@@ -101,20 +102,24 @@ public class Resident implements Steppable
             return;
 
 
-//        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation)
-//            ebolaSim.firstResidentHash = this.hashCode();
-//        if(this.hashCode() == ebolaSim.firstResidentHash)
-//            System.out.println("FOUDN ASLKDFJASFJ");
+        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation && isMoving())
+            ebolaSim.firstResidentHash = this.hashCode();
+        if(this.hashCode() == ebolaSim.firstResidentHash)
+            System.out.println("FOUDN ASLKDFJASFJ");
 
         //check if we have a goal
         if(goal == null)//calc goal
         {
+            if(this.hashCode() == ebolaSim.firstResidentHash)
+                System.out.println("FOUDN ASLKDFJASFJ");
             calcGoal(cStep, ebolaSim);
         }
         if(goal != null)
         {
             if(this.location.distance(goal.getLocation()) == 0)//we are at goal
             {
+                if(this.hashCode() == ebolaSim.firstResidentHash)
+                    System.out.println("FOUDN ASLKDFJASFJ");
                 if(this.location.distance(household.getLocation()) != 0)//make sure we are not at home
                 {
                     if (atGoalLength < 0) {
@@ -370,7 +375,7 @@ public class Resident implements Steppable
         //pick a random urban location
         if(urban_locations == null )
         {
-            System.out.println("NO URBAN LOCATIONS!!!");
+            System.out.println("NO URBAN LOCATIONS!!! on id " + newAdminId);
             return true;
         }
         Int2D urban_location = urban_locations.get(ebolaSim.random.nextInt(urban_locations.size()));
@@ -382,12 +387,20 @@ public class Resident implements Steppable
         newHousehold.setCountry(household.getCountry());
         newHousehold.setAdmin_id(newAdminId);
 
+        //addNearestNode to the network
+        EbolaBuilder.Node newNode = new EbolaBuilder.Node(newHousehold.location);
+        Edge e = new Edge(newNode, newHousehold.getNearestNode(), (int)newNode.location.distance(newHousehold.getNearestNode().location));
+        newNode.links.add(e);
+        newHousehold.getNearestNode().links.add(e);
+        newHousehold.setNearestNode(newNode);
+
         if(workDayDestination == null || newHousehold.getRoute(this.household) == null)
+        {
+            //bail out we can't get to it
+            //but first we must remove the link we just made
+            household.getNearestNode().links.remove(e);
             return false;
-
-        setHousehold(newHousehold);
-        ebolaSim.householdGrid.setObjectLocation(newHousehold, newHousehold.getLocation());
-
+        }
         //find work near your new household
         if(isEmployed())
             EbolaBuilder.setWorkDestination(this);
@@ -420,6 +433,16 @@ public class Resident implements Steppable
             residents.add(this);
         }
         isMoving = true;
+        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation && isMoving())
+            ebolaSim.firstResidentHash = this.hashCode();
+
+        //be sure to add teh household to the grid
+        ebolaSim.householdGrid.setObjectLocation(newHousehold, newHousehold.getLocation());
+
+        //update goal
+        setGoal(this.getHousehold(), newHousehold, 0);
+        setHousehold(newHousehold);
+
         return true;
     }
 
