@@ -118,6 +118,8 @@ public class EbolaABM extends SimState
 
     public Bag residents;
 
+    boolean started_index_case = false;
+
     public EbolaABM(long seed)
     {
         super(seed);
@@ -138,8 +140,19 @@ public class EbolaABM extends SimState
             @Override
             public void step(SimState simState)
             {
+
                 long cStep = simState.schedule.getSteps();
-                if(cStep % Math.round(24.0/Parameters.TEMPORAL_RESOLUTION) == 0)//only do this on the daily)
+
+                if(!started_index_case && cStep == 0)
+                {
+                    //start the index case
+                    Bag residents = world.getNeighborsWithinDistance(new Double2D(6045, 4935), 6);
+                    Resident resident = (Resident)residents.get(random.nextInt(residents.size()));
+                    resident.setHealthStatus(Constants.INFECTIOUS);
+                    started_index_case = true;
+                }
+
+                    if(cStep % Math.round(24.0/Parameters.TEMPORAL_RESOLUTION) == 0)//only do this on the daily)
                 {
 //                    Bag allResidents = world.getAllObjects();
 //                    int total_sus = 0;

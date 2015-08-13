@@ -1,4 +1,4 @@
-git import sim.engine.SimState;
+import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.field.network.Edge;
 import sim.util.Bag;
