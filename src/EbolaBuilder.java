@@ -1,6 +1,3 @@
-import com.sun.org.apache.bcel.internal.generic.ASTORE;
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
-import com.sun.xml.internal.ws.api.pipe.FiberContextSwitchInterceptor;
 import com.vividsolutions.jts.geom.*;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomGridField;
