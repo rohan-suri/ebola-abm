@@ -313,7 +313,7 @@ public class EbolaABM extends SimState
 
     private void readInActualCases(List<Double2D> cases, String file)
     {
-        int date_started = 0;
+        int date_started = 30;
 
         //start out with 0,0
         cases.add(new Double2D(0,0));

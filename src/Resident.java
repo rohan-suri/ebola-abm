@@ -110,7 +110,7 @@ public class Resident implements Steppable
                 else
                     setHealthStatus(Constants.RECOVERED);
             }
-            else
+            else if(!isMoving())
                 time_to_resolution--;
 
             //now infect nearby people
@@ -123,7 +123,7 @@ public class Resident implements Steppable
                 if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
                 {
                     double rand = ebolaSim.random.nextDouble();
-                    if(rand < Parameters.SUSCEPTIBLE_TO_EXPOSED)//infect this agent
+                    if(rand < (resident.isMoving()?Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS:Parameters.SUSCEPTIBLE_TO_EXPOSED))//infect this agent
                     {
                         resident.setHealthStatus(Constants.EXPOSED);
                         if(resident.getHousehold().getCountry() == Parameters.LIBERIA)
