@@ -4,7 +4,7 @@
 public class Parameters
 {
     public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
-    public static double POPULATION_FLOW_SCALE = 1;//scale of how many people move around
+    public static double POPULATION_FLOW_SCALE = 0.1;//scale of how many people move around
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
     public static double POP_BLOCK_METERS = 926.1;//Height and width of one population block. (http://www.esri.com/news/arcuser/0400/wdside.html)
@@ -24,7 +24,7 @@ public class Parameters
     public static String FARMS_PATH = "data/farms_shapefile/all_farms.shp";
     public static String HOSPITALS_PATH = "data/hospitals_shapefile/all_hospitals.shp";//Path to shapefile that has location of all health facilities
     public static String ADMIN_ID_PATH = "data/admin_id.asc";//Path to file that contains the id for each county in each of the three countries, unique within each country but not between countries
-    public static String MOVEMENT_PATH = "data/movement/movement_within.csv";//Path to file containing movement data within each country
+    public static String MOVEMENT_PATH = "data/movement/population_flow.csv";//Path to file containing movement data within each country
     public static String ACTUAL_CASES_GUINEA = "data/actual_cases/guinea_actual.csv";//path to csv file containing actual cases for guinea
     public static String ACTUAL_CASES_LIBERIA = "data/actual_cases/liberia_actual.csv";//path to csv file containing actual cases for liberia
     public static String ACTUAL_CASES_SIERRA_LEONE = "data/actual_cases/sierra_leone_actual.csv";//path to csv file containing actual cases for sierra leone
@@ -198,12 +198,14 @@ public class Parameters
     }
 
     //Ebola Disease Model Parameters
-    public static double SUSCEPTIBLE_TO_EXPOSED = 0.001* Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
+    public static double SUSCEPTIBLE_TO_EXPOSED = 0.003* Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
     public static double INCUBATION_PERIOD_AVERAGE = 12.0;//as reported by Who Ebola Resonse Team source: http://www.nejm.org/doi/full/10.1056/NEJMoa1411100?rss=mostCited&
     public static double INCUBATION_PERIOD_STDEV = 1.0;//Standard deviation from reports above
     public static double CASE_FATALITY_RATIO = 0.70;//number of cases resulting in death
     public static double RECOVERY_PERIOD_AVERAGE = 14.0;
     public static double RECOVERY_PERIOD_STDEV = 1.0;
+
+    public static double SUSCEPTIBLE_TO_EXPOSED_TRAVELERS = 0.05 * Parameters.TEMPORAL_RESOLUTION;//special for travellers
 
     public static double FATALITY_PERIOD_AVERAGE = 8.0;
     public static double FATALITY_PERIOD_STDEV = 1.0;

@@ -396,15 +396,15 @@ public class Resident implements Steppable
      * @param ebolaSim
      * @return true when route is not null, if route is null this person cannot move and stays and returns false
      */
-    public boolean moveResidency(int newAdminId, EbolaABM ebolaSim)
+    public boolean moveResidency(int newAdminId, int to_country, EbolaABM ebolaSim)
     {
         //first pick a location for the new house
         List<Int2D> urban_locations = null;
-        if(household.getCountry() == Parameters.GUINEA)
+        if(to_country == Parameters.GUINEA)
             urban_locations = ebolaSim.admin_id_gin_urban.get(newAdminId);
-        else if(household.getCountry() == Parameters.SL)
+        else if(to_country == Parameters.SL)
             urban_locations = ebolaSim.admin_id_sle_urban.get(newAdminId);
-        else if(household.getCountry() == Parameters.LIBERIA)
+        else if(to_country == Parameters.LIBERIA)
             urban_locations = ebolaSim.admin_id_lib_urban.get(newAdminId);
 
         //pick a random urban location
@@ -419,7 +419,7 @@ public class Resident implements Steppable
         Int2D newHouseholdLocation = new Int2D(urban_location.getX()*Parameters.WORLD_TO_POP_SCALE + ebolaSim.random.nextInt(Parameters.WORLD_TO_POP_SCALE), urban_location.getY()*Parameters.WORLD_TO_POP_SCALE + ebolaSim.random.nextInt(Parameters.WORLD_TO_POP_SCALE));
         Household newHousehold = new Household(newHouseholdLocation);
         newHousehold.setNearestNode(EbolaBuilder.getNearestNode(newHouseholdLocation.getX(), newHouseholdLocation.getY()));
-        newHousehold.setCountry(household.getCountry());
+        newHousehold.setCountry(to_country);
         newHousehold.setAdmin_id(newAdminId);
 
         //addNearestNode to the network

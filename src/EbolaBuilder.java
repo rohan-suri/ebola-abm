@@ -1234,43 +1234,51 @@ public class EbolaBuilder
             while(!line.isEmpty())
             {
                 EbolaABM.MovementPattern mp = new EbolaABM.MovementPattern();
-                int from = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(0)).intValue();
-                int to = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(1)).intValue();
 
-                double x = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(8)).intValue();
-                double y = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(9)).intValue();
+                String from = line.get(0);
+                String to = line.get(1);
+
+                int from_admin_id = NumberFormat.getNumberInstance(java.util.Locale.US).parse(from.substring(0, from.length()-3)).intValue();
+                int from_country = convertCountryStringToInt(from.substring(from.length() - 3));
+
+                int to_admin_id = NumberFormat.getNumberInstance(java.util.Locale.US).parse(from.substring(0, from.length()-3)).intValue();
+                int to_country = convertCountryStringToInt(from.substring(from.length() - 3));
+
+                double x = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(9)).intValue();
+                double y = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(10)).intValue();
                 Int2D location = convertToWorld(x, y);
 
-                double amount = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(12)).intValue();
+                double amount = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(15)).intValue();
 
-                mp.source_admin = from;
-                mp.to_admin = to;
+                mp.source_admin = from_admin_id;
+                mp.to_admin = to_admin_id;
                 mp.annual_amnt = amount;
                 mp.destination = location;
+                mp.source_country = from_country;
+                mp.to_country = to_country;
 
-                String country = line.get(3);
-                if(country.equals("SLE"))
+                if(from_country == Parameters.SL)
                 {
                     List list;
-                    if(!ebolaSim.movementPatternMapSLE.containsKey(from))
-                        ebolaSim.movementPatternMapSLE.put(from, new LinkedList<EbolaABM.MovementPattern>());
-                    list = ebolaSim.movementPatternMapSLE.get(from);
+                    if(!ebolaSim.movementPatternMapSLE.containsKey(from_admin_id))
+                        ebolaSim.movementPatternMapSLE.put(from_admin_id, new LinkedList<EbolaABM.MovementPattern>());
+                    list = ebolaSim.movementPatternMapSLE.get(from_admin_id);
                     list.add(mp);
                 }
-                else if(country.equals("LBR"))
+                else if(from_country == Parameters.LIBERIA)
                 {
                     List list;
-                    if(!ebolaSim.movementPatternMapLIB.containsKey(from))
-                        ebolaSim.movementPatternMapLIB.put(from, new LinkedList<EbolaABM.MovementPattern>());
-                    list = ebolaSim.movementPatternMapLIB.get(from);
+                    if(!ebolaSim.movementPatternMapLIB.containsKey(from_admin_id))
+                        ebolaSim.movementPatternMapLIB.put(from_admin_id, new LinkedList<EbolaABM.MovementPattern>());
+                    list = ebolaSim.movementPatternMapLIB.get(from_admin_id);
                     list.add(mp);
                 }
-                else if(country.equals("GIN"))
+                else if(from_country == Parameters.GUINEA)
                 {
                     List list;
-                    if(!ebolaSim.movementPatternMapGIN.containsKey(from))
-                        ebolaSim.movementPatternMapGIN.put(from, new LinkedList<EbolaABM.MovementPattern>());
-                    list = ebolaSim.movementPatternMapGIN.get(from);
+                    if(!ebolaSim.movementPatternMapGIN.containsKey(from_admin_id))
+                        ebolaSim.movementPatternMapGIN.put(from_admin_id, new LinkedList<EbolaABM.MovementPattern>());
+                    list = ebolaSim.movementPatternMapGIN.get(from_admin_id);
                     list.add(mp);
                 }
 
@@ -1289,6 +1297,24 @@ public class EbolaBuilder
         {
             e.printStackTrace();
         }
+    }
+
+    private static int convertCountryStringToInt(String countryString)
+    {
+        if(countryString.equals("SLE"))
+        {
+            return Parameters.SL;
+        }
+        else if(countryString.equals("LBR"))
+        {
+            return Parameters.LIBERIA;
+        }
+        else if(countryString.equals("GIN"))
+        {
+            return Parameters.GUINEA;
+        }
+        System.out.println("ERROR ERROR countryString invalid");
+        return -1;
     }
 
     /**

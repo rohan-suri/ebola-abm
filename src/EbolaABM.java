@@ -182,17 +182,17 @@ public class EbolaABM extends SimState
                     totalSierra_Leone.add(cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION), totalSierra_LeoneInt);
 
                     //update actual
-                    if(actualGuineaCases.get(0).getX() == cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION))
+                    if(!actualGuineaCases.isEmpty() && actualGuineaCases.get(0).getX() == cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION))
                     {
                         totalGuineaActual.add(actualGuineaCases.get(0).getX(), actualGuineaCases.get(0).getY());
                         actualGuineaCases.remove(0);
                     }
-                    if(actualLiberiaCases.get(0).getX() == cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION))
+                    if(!actualLiberiaCases.isEmpty() && actualLiberiaCases.get(0).getX() == cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION))
                     {
                         totalLiberiaActual.add(actualLiberiaCases.get(0).getX(), actualLiberiaCases.get(0).getY());
                         actualLiberiaCases.remove(0);
                     }
-                    if(actualSierraLeoneCases.get(0).getX() == cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION))
+                    if(!actualSierraLeoneCases.isEmpty() && actualSierraLeoneCases.get(0).getX() == cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION))
                     {
                         totalSierraLeoneActual.add(actualSierraLeoneCases.get(0).getX(), actualSierraLeoneCases.get(0).getY());
                         actualSierraLeoneCases.remove(0);
@@ -257,11 +257,11 @@ public class EbolaABM extends SimState
                                     count++;
                                     if(count > 1000)//timeout to ensure we don't infinitely loop
                                         return;
-                                }while(!residentGood(randomResident, ebolaSim) && !randomResident.moveResidency(mp.to_admin, ebolaSim));
+                                }while(!residentGood(randomResident, ebolaSim) && !randomResident.moveResidency(mp.to_admin, mp.to_country, ebolaSim));
                                 if(randomResident != null)
                                 {
                                     residents.remove(randomResident);
-                                    randomResident.moveResidency(mp.to_admin, ebolaSim);
+                                    //randomResident.moveResidency(mp.to_admin, ebolaSim);
                                 }
                                 move_num--;
                             }
@@ -304,7 +304,9 @@ public class EbolaABM extends SimState
     public static class MovementPattern
     {
         public int source_admin;
+        public int source_country;
         public int to_admin;
+        public int to_country;
         public double annual_amnt;
         public Int2D destination;
     }
