@@ -1,5 +1,4 @@
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
-import sim.engine.SimState;
+git import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.field.network.Edge;
 import sim.util.Bag;
