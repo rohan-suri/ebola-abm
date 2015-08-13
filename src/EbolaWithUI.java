@@ -99,7 +99,7 @@ public class EbolaWithUI extends GUIState
         charSeriesCumalative = new TimeSeriesChartGenerator();
         charSeriesCumalative.createFrame();
         charSeriesCumalative.setSize(dm);
-        charSeriesCumalative.setTitle("Cumalative Actual Cases");
+        charSeriesCumalative.setTitle("Cumulative Cases");
         charSeriesCumalative.setRangeAxisLabel("Number of People");
         charSeriesCumalative.setDomainAxisLabel("Days");
         charSeriesCumalative.setMaximumSize(dm);
@@ -111,6 +111,8 @@ public class EbolaWithUI extends GUIState
         charSeriesCumalative.addSeries(((EbolaABM) this.state).totalGuinea , null);
         charSeriesCumalative.addSeries(((EbolaABM) this.state).totalSierra_Leone, null);
         charSeriesCumalative.addSeries(((EbolaABM) this.state).totalGuineaActual, null);
+        charSeriesCumalative.addSeries(((EbolaABM) this.state).totalLiberiaActual, null);
+        charSeriesCumalative.addSeries(((EbolaABM) this.state).totalSierraLeoneActual, null);
 
         JFrame frameSeries = healthStatus.createFrame(this);
         frameSeries.pack();
@@ -135,6 +137,8 @@ public class EbolaWithUI extends GUIState
 //        chartSeriesCholera.setPreferredChartSize(400, 300); // lets it be small
 
         charSeriesCumulativeActual.addSeries(((EbolaABM) this.state).totalGuineaActual, null);
+        charSeriesCumulativeActual.addSeries(((EbolaABM) this.state).totalLiberiaActual, null);
+        charSeriesCumulativeActual.addSeries(((EbolaABM) this.state).totalSierraLeoneActual, null);
 
         JFrame frameSeriesActual = charSeriesCumulativeActual.createFrame(this);
         frameSeriesActual.pack();

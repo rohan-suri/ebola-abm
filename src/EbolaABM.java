@@ -101,6 +101,9 @@ public class EbolaABM extends SimState
 
     //xy series for actual cases
     public XYSeries totalGuineaActual = new XYSeries("Guinea Actual");
+    public XYSeries totalLiberiaActual = new XYSeries("Liberia Actual");
+    public XYSeries totalSierraLeoneActual = new XYSeries("Sierra Leone Actual");
+
 
     public int totalLiberiaInt = 0;
     public int totalGuineaInt = 0;
@@ -112,6 +115,8 @@ public class EbolaABM extends SimState
 
     //List of all actual cases
     List<Double2D> actualGuineaCases = new LinkedList<>();
+    List<Double2D> actualLiberiaCases = new LinkedList<>();
+    List<Double2D> actualSierraLeoneCases = new LinkedList<>();
 
     public Bag residents;
 
@@ -127,6 +132,9 @@ public class EbolaABM extends SimState
         residents = new Bag();
         EbolaBuilder.initializeWorld(this, Parameters.POP_PATH, Parameters.ADMIN_PATH, Parameters.AGE_DIST_PATH);
         readInActualCases(actualGuineaCases, Parameters.ACTUAL_CASES_GUINEA);
+        readInActualCases(actualLiberiaCases, Parameters.ACTUAL_CASES_LIBERIA);
+        readInActualCases(actualSierraLeoneCases, Parameters.ACTUAL_CASES_SIERRA_LEONE);
+
         Steppable chartUpdater = new Steppable()
         {
             @Override
@@ -178,6 +186,16 @@ public class EbolaABM extends SimState
                     {
                         totalGuineaActual.add(actualGuineaCases.get(0).getX(), actualGuineaCases.get(0).getY());
                         actualGuineaCases.remove(0);
+                    }
+                    if(actualLiberiaCases.get(0).getX() == cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION))
+                    {
+                        totalLiberiaActual.add(actualLiberiaCases.get(0).getX(), actualLiberiaCases.get(0).getY());
+                        actualLiberiaCases.remove(0);
+                    }
+                    if(actualSierraLeoneCases.get(0).getX() == cStep / Math.round(24.0/Parameters.TEMPORAL_RESOLUTION))
+                    {
+                        totalSierraLeoneActual.add(actualSierraLeoneCases.get(0).getX(), actualSierraLeoneCases.get(0).getY());
+                        actualSierraLeoneCases.remove(0);
                     }
                 }
             }
@@ -294,6 +312,10 @@ public class EbolaABM extends SimState
     private void readInActualCases(List<Double2D> cases, String file)
     {
         int date_started = 0;
+
+        //start out with 0,0
+        cases.add(new Double2D(0,0));
+
         try
         {
             // buffer reader for age distribution data
