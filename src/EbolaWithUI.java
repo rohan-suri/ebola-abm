@@ -129,8 +129,8 @@ public class EbolaWithUI extends GUIState
         charSeriesCumulativeActual.createFrame();
         charSeriesCumulativeActual.setSize(dm);
         charSeriesCumulativeActual.setTitle("Cumulative Actual Cases");
-        charSeriesCumulativeActual.setRangeAxisLabel("Number of People");
-        charSeriesCumulativeActual.setDomainAxisLabel("Days");
+        charSeriesCumulativeActual.setRangeAxisLabel("Number of Cases");
+        charSeriesCumulativeActual.setDomainAxisLabel("Days since start");
         charSeriesCumulativeActual.setMaximumSize(dm);
         charSeriesCumulativeActual.setMinimumSize(dmn);
 //        chartSeriesCholera.setMinimumChartDrawSize(400, 300); // makes it scale at small sizes
@@ -252,15 +252,16 @@ public class EbolaWithUI extends GUIState
         });
         display.attach(householdortrayal, "Household");
 
-//        FieldPortrayal2D urbanPortrayal = new SparseGridPortrayal2D();
-//        urbanPortrayal.setField(((EbolaABM)state).urbanAreasGrid);
-//        urbanPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
-//        display.attach(urbanPortrayal, "Urban Area");
+        FieldPortrayal2D urbanPortrayal = new SparseGridPortrayal2D();
+        urbanPortrayal.setField(((EbolaABM)state).urbanAreasGrid);
+        urbanPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
+        display.attach(urbanPortrayal, "Urban Area");
 
-        FieldPortrayal2D hotspotsPortrayal = new SparseGridPortrayal2D();
-        hotspotsPortrayal.setField(((EbolaABM)state).hotSpotsGrid);
-        hotspotsPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
-        display.attach(hotspotsPortrayal, "Urban Area");
+        //---------------------Adding the road portrayal------------------------------
+        GeomVectorFieldPortrayal roadLinkPortrayal = new GeomVectorFieldPortrayal();
+        roadLinkPortrayal.setField(((EbolaABM) state).roadLinks);
+        roadLinkPortrayal.setPortrayalForAll(new GeomPortrayal(new Color(0.42f, 0.42f, 0.42f, 0.5f), 2.0, true));
+        display.attach(roadLinkPortrayal, "Roads");
 
 //        FieldPortrayal2D roadPortrayal = new SparseGridPortrayal2D();
 //        roadPortrayal.setField(((EbolaABM)state).allRoadNodes);
@@ -297,12 +298,6 @@ public class EbolaWithUI extends GUIState
         });
         display.attach(farmPortrayal, "Work Locations");
 
-        //---------------------Adding the road portrayal------------------------------
-        GeomVectorFieldPortrayal roadLinkPortrayal = new GeomVectorFieldPortrayal();
-        roadLinkPortrayal.setField(((EbolaABM) state).roadLinks);
-        roadLinkPortrayal.setPortrayalForAll(new GeomPortrayal(Color.BLACK, 2.0, true));
-        display.attach(roadLinkPortrayal, "Roads");
-
 //        NetworkPortrayal2D roadNetworkPortrayal = new NetworkPortrayal2D();
 //        roadNetworkPortrayal.setField(new SpatialNetwork2D(((EbolaABM)state).allRoadNodes, ((EbolaABM)state).roadNetwork));
 //        roadNetworkPortrayal.setPortrayalForAll(new SimpleEdgePortrayal2D());
@@ -338,6 +333,11 @@ public class EbolaWithUI extends GUIState
             }
         });
         display.attach(residentPortrayal, "Residents");
+
+        FieldPortrayal2D hotspotsPortrayal = new SparseGridPortrayal2D();
+        hotspotsPortrayal.setField(((EbolaABM)state).hotSpotsGrid);
+        hotspotsPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
+        display.attach(hotspotsPortrayal, "Hotspot Area");
     }
 
     @Override

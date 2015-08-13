@@ -148,6 +148,7 @@ public class EbolaABM extends SimState
                     //start the index case
                     Bag residents = world.getNeighborsWithinDistance(new Double2D(6045, 4935), 6);
                     Resident resident = (Resident)residents.get(random.nextInt(residents.size()));
+                    resident.setWorkDayDestination(null);//effectively make them a toddler
                     resident.setHealthStatus(Constants.INFECTIOUS);
                     started_index_case = true;
                 }
