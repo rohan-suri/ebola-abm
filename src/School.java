@@ -10,8 +10,6 @@ public class School extends WorkLocation {
 
     public School(Int2D location) {
         super(location, Constants.EDUCATION);
-
-        members = new Bag();
     }
 
     public int getSize() {

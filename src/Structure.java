@@ -1,10 +1,7 @@
 import sim.util.Bag;
 import sim.util.Int2D;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by rohansuri on 7/24/15.
@@ -13,7 +10,7 @@ public class Structure
 {
     protected Int2D location;
     protected EbolaBuilder.Node nearestNode;
-    protected Bag members;//all people that go to this structure on the daily.  Could be students, household members, hospital staff, etc
+    protected HashSet<Resident> members;//all people that go to this structure on the daily.  Could be students, household members, hospital staff, etc
     protected HashMap<Structure, Route> cachedPaths;
     int currentMembers;
     protected int capacity;
@@ -22,7 +19,7 @@ public class Structure
     public Structure(Int2D location)
     {
         this.location = location;
-        members = new Bag();
+        members = new HashSet<>();
         cachedPaths = new HashMap<>();
     }
 
@@ -56,7 +53,7 @@ public class Structure
         members.add(r);
     }
 
-    public Bag getMembers()
+    public HashSet<Resident> getMembers()
     {
         return members;
     }

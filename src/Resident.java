@@ -114,6 +114,14 @@ public class Resident implements Steppable
 
             //now infect nearby people
             Bag nearByPeople = ebolaSim.world.getNeighborsWithinDistance(new Double2D(location), 1);
+
+            //Determine current structure
+            Structure currentStructure = null;//null if traveling
+            if(location.equals(household.getLocation()))
+                currentStructure = household;
+            else if(workDayDestination != null && location.equals(workDayDestination.getLocation()))
+                currentStructure = workDayDestination;
+
             if(nearByPeople == null)//if you are nearby no one just return
                 return;
             for(Object o: nearByPeople)
@@ -121,16 +129,19 @@ public class Resident implements Steppable
                 Resident resident = (Resident)o;
                 if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
                 {
-                    double rand = ebolaSim.random.nextDouble();
-                    if(rand < (resident.isMoving()?Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS:Parameters.SUSCEPTIBLE_TO_EXPOSED))//infect this agent
+                    if(!Parameters.INFECT_ONLY_YOUR_STRUCTURE || (currentStructure != null && currentStructure.getMembers().contains(resident)))
                     {
-                        resident.setHealthStatus(Constants.EXPOSED);
-                        if(resident.getHousehold().getCountry() == Parameters.LIBERIA)
-                            ebolaSim.totalLiberiaInt++;
-                        else if(resident.getHousehold().getCountry() == Parameters.SL)
-                            ebolaSim.totalSierra_LeoneInt++;
-                        else if(resident.getHousehold().getCountry() == Parameters.GUINEA)
-                            ebolaSim.totalGuineaInt++;
+                        double rand = ebolaSim.random.nextDouble();
+                        if(rand < (resident.isMoving()?Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS:Parameters.SUSCEPTIBLE_TO_EXPOSED))//infect this agent
+                        {
+                            resident.setHealthStatus(Constants.EXPOSED);
+                            if(resident.getHousehold().getCountry() == Parameters.LIBERIA)
+                                ebolaSim.totalLiberiaInt++;
+                            else if(resident.getHousehold().getCountry() == Parameters.SL)
+                                ebolaSim.totalSierra_LeoneInt++;
+                            else if(resident.getHousehold().getCountry() == Parameters.GUINEA)
+                                ebolaSim.totalGuineaInt++;
+                        }
                     }
                 }
             }
