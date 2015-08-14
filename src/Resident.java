@@ -163,9 +163,9 @@ public class Resident implements Steppable
         }
         if(goal != null)
         {
-            if(this.location.distance(goal.getLocation()) == 0)//we are at goal
+            if(this.location.equals(goal.getLocation()))//we are at goal
             {
-                if(this.location.distance(household.getLocation()) != 0)//make sure we are not at home
+                if(this.location.equals(household.getLocation()))//make sure we are not at home
                 {
                     if (atGoalLength < 0) {
                         //go back home
@@ -284,6 +284,7 @@ public class Resident implements Steppable
         double randX = ebolaSim.random.nextDouble();
         double randY = ebolaSim.random.nextDouble();
         ebolaSim.world.setObjectLocation(this, new Double2D(location.getX() + randX, location.getY() + randY));
+        ebolaSim.worldPopResolution.setObjectLocation(this, location.getX()/10, location.getY()/10);
     }
 
 

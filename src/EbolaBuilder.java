@@ -712,6 +712,7 @@ public class EbolaBuilder
             //instantiate grid to hold houses
             ebolaSim.householdGrid = new SparseGrid2D((int)(width*Parameters.WORLD_TO_POP_SCALE), (int)(height*Parameters.WORLD_TO_POP_SCALE));
             ebolaSim.urbanAreasGrid = new SparseGrid2D((int)(width), (int)(height));
+            ebolaSim.worldPopResolution = new SparseGrid2D((int)(width), (int)(height));
             ebolaSim.hotSpotsGrid = new SparseGrid2D((int)width, (int)height);
 
             for(int i = 0; i < 4; i++)//skip the next couple of lines (contain useless metadata)
@@ -882,6 +883,7 @@ public class EbolaBuilder
 //                                {
 //                                    nearest_school.addMember(r);
 //                                }
+                                ebolaSim.worldPopResolution.setObjectLocation(r, j, i);
                                 ebolaSim.world.setObjectLocation(r, new Double2D(x_coord, y_coord));
                                 h.addMember(r);//add the member to the houshold
                             }

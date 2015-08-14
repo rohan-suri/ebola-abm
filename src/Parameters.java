@@ -33,6 +33,9 @@ public class Parameters
     public static double MIN_POP_SURROUNDING = 1000;//287.73;//Minimum surrounding population density per 926 meters.  An urban district must be surrounded by
                                                       //by an total of this minimum density.  Source: http://cber.cba.ua.edu/asdc/urban_rural.html
 
+    //population flow parameters
+    public static double fromUrban = 0.0;//the percent of residents picked to move that need to be from an urban location
+
     //Contains id ranges (inclusive) for each county in Sierra Leone, Guinea, and Liberia - used to identify country and country specific statistics
     public static int MIN_LIB_COUNTY_ID = 1508;
     public static int MAX_LIB_COUNTY_ID = 1522;

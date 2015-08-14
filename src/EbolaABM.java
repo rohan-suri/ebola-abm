@@ -27,6 +27,7 @@ import java.util.*;
 public class EbolaABM extends SimState
 {
     public Continuous2D world;
+    public SparseGrid2D worldPopResolution;//all agents within each km grid cell
     public SparseGrid2D householdGrid;
     public SparseGrid2D urbanAreasGrid;
     public SparseGrid2D hotSpotsGrid;
@@ -230,15 +231,15 @@ public class EbolaABM extends SimState
                     lastTime = now;
                     EbolaABM ebolaSim = (EbolaABM)simState;
                     //System.out.println("GIN");
-                    moveResidents(ebolaSim.movementPatternMapGIN, ebolaSim.admin_id_gin_residents, ebolaSim.random, ebolaSim);
+                    moveResidents(ebolaSim.movementPatternMapGIN, ebolaSim.admin_id_gin_residents, ebolaSim.random, ebolaSim, ebolaSim.admin_id_gin_urban);
                     //System.out.println("SLE");
-                    moveResidents(ebolaSim.movementPatternMapSLE, ebolaSim.admin_id_sle_residents, ebolaSim.random, ebolaSim);
+                    moveResidents(ebolaSim.movementPatternMapSLE, ebolaSim.admin_id_sle_residents, ebolaSim.random, ebolaSim, ebolaSim.admin_id_sle_urban);
                     //System.out.println("LIB");
-                    moveResidents(ebolaSim.movementPatternMapLIB, ebolaSim.admin_id_lib_residents, ebolaSim.random, ebolaSim);
+                    moveResidents(ebolaSim.movementPatternMapLIB, ebolaSim.admin_id_lib_residents, ebolaSim.random, ebolaSim, ebolaSim.admin_id_lib_urban);
                     //System.out.println("Managing population flow [" + (System.currentTimeMillis()-now)/1000 + " sec]");
                 }
             }
-            private void moveResidents(Map<Integer, List<MovementPattern>> movementPatternMap, Map<Integer, Bag> admin_id_residents, MersenneTwisterFast random, EbolaABM ebolaSim)
+            private void moveResidents(Map<Integer, List<MovementPattern>> movementPatternMap, Map<Integer, Bag> admin_id_residents, MersenneTwisterFast random, EbolaABM ebolaSim, Map<Integer, List<Int2D>> urbanLocations)
             {
                 Iterator<Integer> it = movementPatternMap.keySet().iterator();
                 while(it.hasNext())
@@ -253,10 +254,15 @@ public class EbolaABM extends SimState
                         if(move_num > 0)
                         {
                             //System.out.println(mp.source_admin + " " + key);
-                            Bag residents = admin_id_residents.get(mp.source_admin);
+                            Bag residents;
+                            if(random.nextDouble() < Parameters.fromUrban)//this person must be from an urban center
+                                residents = ebolaSim.worldPopResolution.getObjectsAtLocation(urbanLocations.get(mp.source_admin));
+                            else
+                                residents = admin_id_residents.get(mp.source_admin);
+
                             if(residents == null)
                             {
-                                System.out.println("NO RESIDENTS IN DISTRICT " + mp.source_admin);
+                                //System.out.println("NO RESIDENTS IN DISTRICT " + mp.source_admin);
                                 return;
                             }
                             while(move_num > 0)
