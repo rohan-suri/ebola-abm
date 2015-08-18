@@ -1,5 +1,4 @@
 import com.vividsolutions.jts.geom.*;
-import org.geotools.data.DataAccessFactory;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomGridField;
 import sim.field.geo.GeomVectorField;
@@ -10,13 +9,11 @@ import sim.io.geo.*;
 import sim.util.*;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.*;
 import java.util.*;
 
 import net.sf.csv4j.*;
-import sim.util.distribution.Poisson;
 import sim.util.geo.MasonGeometry;
 
 /**
@@ -51,6 +48,7 @@ public class EbolaBuilder
         GeomVectorField hospitals_vector = new GeomVectorField();
         ebolaSim.schoolGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
         ebolaSim.farmGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
+        ebolaSim.hospitalGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
 
         //initialize node map for all work locations
         for(int i = 0; i < Parameters.WORK_SIZE_BY_SECTOR.length; i++)
@@ -99,20 +97,24 @@ public class EbolaBuilder
         readInStructures(schools_vector, ebolaSim.schoolGrid, ebolaSim.schools, new School(null));
 
         //add farms from vectorfield
-        //readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, new WorkLocation(null, Constants.AGRICULTURE));
+        readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, new WorkLocation(null, Constants.AGRICULTURE));
 
         //add hospitals from vectorfield
-        readInStructures(hospitals_vector, ebolaSim.farmGrid, new Bag(), new WorkLocation(null, Constants.HEALTH));
+        readInStructures(hospitals_vector, ebolaSim.hospitalGrid, new Bag(), new WorkLocation(null, Constants.HEALTH));
 
         //assignNearest Nodes to all facilities except households
         assignNearestNode(ebolaSim.schoolGrid, ebolaSim.workNodeStructureMap.get(Constants.EDUCATION));
         assignNearestNode(ebolaSim.farmGrid, ebolaSim.workNodeStructureMap.get(Constants.AGRICULTURE));
+        assignNearestNode(ebolaSim.hospitalGrid, ebolaSim.workNodeStructureMap.get(Constants.HEALTH));
 
         //read in csv that gives the distribution of ages for the three countries from landscan data
         setUpAgeDist(age_dist_file);
 
         //Create the population - note, this call assumes all structures have been read in
         addHousesAndResidents(pop_file, admin_file);
+
+        //now give each resident a sector_id and worklocatino
+        setWorkLocationsForAllResidents(ebolaSim.allWorkLocations, ebolaSim.world.getAllObjects());
 
         // set up the locations and nearest node capability
         long time = System.currentTimeMillis();
@@ -284,10 +286,15 @@ public class EbolaBuilder
             int xint = (int) Math.floor(xcols * (x - xmin) / (xmax - xmin)), yint = (int) (ycols - Math.floor(ycols * (y - ymin) / (ymax - ymin))); // REMEMBER TO FLIP THE Y VALUE
             Structure structure;
             if(type instanceof School)
+            {
                 structure = new School(new Int2D(xint, yint));
+                ebolaSim.allWorkLocations.add((WorkLocation)structure);
+            }
             else if(type instanceof WorkLocation)
             {
                 structure = new WorkLocation(new Int2D(xint, yint), ((WorkLocation) type).getSector_id());
+                ebolaSim.allWorkLocations.add((WorkLocation)structure);
+
 //                if(structure.getCapacity() < farmDistanceFrequency.length)
 //                    farmDistanceFrequency[structure.getCapacity()]++;
 //                else
@@ -838,6 +845,7 @@ public class EbolaBuilder
                             h.setNearestNode(newNode);
 
                             ebolaSim.householdGrid.setObjectLocation(h, new Int2D(x_coord, y_coord));
+                            ebolaSim.householdNodes.put(h.getNearestNode(), h);
 
                             int household_size  = pickHouseholdSize(country);//use log normal distribution to pick correct household size
 
@@ -981,14 +989,14 @@ public class EbolaBuilder
             if(sex == Constants.MALE)//urban male
             {
                 setWorkDemographics(resident, Parameters.URBAN_MALE_LF_BY_AGE, Parameters.URBAN_MALE_INACTIVE_SCHOOL, Parameters.URBAN_MALE_UNEMPLOYMENT, Parameters.URBAN_MALE_SECTORS);
-                setDailyWorkHours(resident, Parameters.MALE_WEEKLY_HOURS_BY_SECTOR);
+                //setDailyWorkHours(resident, Parameters.MALE_WEEKLY_HOURS_BY_SECTOR);
                 if(resident.isEmployed())
                     ebolaSim.urban_male_employed++;
             }
             else//urban female
             {
                 setWorkDemographics(resident, Parameters.URBAN_FEMALE_LF_BY_AGE, Parameters.URBAN_FEMALE_INACTIVE_SCHOOL, Parameters.URBAN_FEMALE_UNEMPLOYMENT, Parameters.URBAN_FEMALE_SECTORS);
-                setDailyWorkHours(resident, Parameters.FEMALE_WEEKLY_HOURS_BY_SECTOR);
+                //setDailyWorkHours(resident, Parameters.FEMALE_WEEKLY_HOURS_BY_SECTOR);
                 if(resident.isEmployed())
                     ebolaSim.urban_female_employed++;
             }
@@ -998,28 +1006,29 @@ public class EbolaBuilder
             if(sex == Constants.MALE)//rural male
             {
                 setWorkDemographics(resident, Parameters.RURAL_MALE_LF_BY_AGE, Parameters.RURAL_MALE_INACTIVE_SCHOOL, Parameters.RURAL_MALE_UNEMPLOYMENT, Parameters.RURAL_MALE_SECTORS);
-                setDailyWorkHours(resident, Parameters.MALE_WEEKLY_HOURS_BY_SECTOR);
+                //setDailyWorkHours(resident, Parameters.MALE_WEEKLY_HOURS_BY_SECTOR);
                 if(resident.isEmployed())
                     ebolaSim.rural_male_employed++;
             }
             else//rural female
             {
                 setWorkDemographics(resident, Parameters.RURAL_FEMALE_LF_BY_AGE, Parameters.RURAL_FEMALE_INACTIVE_SCHOOL, Parameters.RURAL_FEMALE_UNEMPLOYMENT, Parameters.RURAL_FEMALE_SECTORS);
-                setDailyWorkHours(resident, Parameters.FEMALE_WEEKLY_HOURS_BY_SECTOR);
+                //setDailyWorkHours(resident, Parameters.FEMALE_WEEKLY_HOURS_BY_SECTOR);
                 if(resident.isEmployed())
                     ebolaSim.rural_female_employed++;
             }
         }
 
         //now we have to set the daily destination
-        if(resident.isEmployed())
-            setWorkDestination(resident);
+        //don't set work destination because that will be done later
+//        if(resident.isEmployed())
+//            setWorkDestination(resident);
 
         return resident;
     }
 
     /**
-     * Modifies the resident to set inactivity, unemployment, and economic sector.
+     * Modifies the resident to set inactivity, unemployment
      * @param resident Resident to be modified
      * @param labour_force_by_age Percent participating in labour force by age.  All not in the labour force are considered inactive.
      * @param inactive_school Percent that are inactive because they go to school.
@@ -1076,23 +1085,29 @@ public class EbolaBuilder
                 {
                     resident.setEmployed(true);
                     //now decide whate economic sector
-                    rand = ebolaSim.random.nextDouble();
-                    double sum = 0;
-                    for(int i = 0; i < economic_sectors.length; i++)
-                    {
-                        sum += economic_sectors[i];
-                        if(rand < sum)//set the sector
-                        {
-                            resident.setSector_id(i);
-                            break;
-                        }
-                    }
+                    //setSectorId(resident, economic_sectors);
                 }
             }
         }
     }
 
-    private static void setDailyWorkHours(Resident resident, double[][] weekly_hours_by_sector)
+    private static void setSectorId(Resident resident, double[] economic_sectors)
+    {
+        double rand = ebolaSim.random.nextDouble();
+        double sum = 0;
+        for(int i = 0; i < economic_sectors.length; i++)
+        {
+            sum += economic_sectors[i];
+            if(rand < sum)//set the sector
+            {
+                resident.setSector_id(i);
+                break;
+            }
+        }
+        System.out.println("No sector id fits!!!!");
+    }
+
+    private static void setDailyWorkHours(Resident resident, int sector_id, double[][] weekly_hours_by_sector)
     {
         if(resident.isInactive())
         {
@@ -1164,6 +1179,27 @@ public class EbolaBuilder
                 resident.setWorkDayDestination(workLocation);
                 workLocation.addMember(resident);
             }
+        }
+    }
+
+    private static void setWorkLocationsForAllResidents(Set<WorkLocation> existingLocations, Bag residents)
+    {
+        //let us start by filling up existing locations
+        for(WorkLocation workLocation: existingLocations)
+        {
+            fillMembers(workLocation);
+        }
+
+        for(Object o: residents)
+        {
+            Resident resident = (Resident)o;
+            if(resident.isEmployed() && resident.getWorkDayDestination() == null)
+            {
+                setSectorId(resident, resident.getIsUrban()?(resident.getSex() == Constants.MALE?Parameters.URBAN_MALE_SECTORS:Parameters.URBAN_FEMALE_SECTORS):(resident.getSex() == Constants.MALE?Parameters.RURAL_MALE_SECTORS:Parameters.RURAL_FEMALE_SECTORS));
+                setWorkDestination(resident);
+                fillMembers((WorkLocation)resident.getWorkDayDestination());
+            }
+            setDailyWorkHours(resident, resident.getSector_id(), resident.getSex() == Constants.MALE?Parameters.MALE_WEEKLY_HOURS_BY_SECTOR:Parameters.FEMALE_WEEKLY_HOURS_BY_SECTOR);
         }
     }
 

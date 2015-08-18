@@ -267,9 +267,10 @@ public class AStar {
         startNode.fx = 0;
 
         // A* containers: allRoadNodes to be investigated, allRoadNodes that have been investigated
+        //was ArrayList
         HashSet<AStarNodeWrapper> closedSet = new HashSet<>(),
                 openSet = new HashSet<>();
-        PriorityQueue<AStarNodeWrapper> openSetQueue = new PriorityQueue<>(10000);
+        PriorityQueue<AStarNodeWrapper> openSetQueue = new PriorityQueue<>(10000);//added
 
 
         openSet.add(startNode);
@@ -344,7 +345,7 @@ public class AStar {
 //                System.out.println("Time = " + System.currentTimeMillis());
         }
         //System.out.println("Searched " + foundNodes.size() + " nodes but could not find it");
-        return null;
+        return nodesToReturn;
     }
 
     /**

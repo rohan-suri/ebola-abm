@@ -1,3 +1,4 @@
+import com.sun.xml.internal.ws.api.pipe.FiberContextSwitchInterceptor;
 import ec.util.MersenneTwisterFast;
 import net.sf.csv4j.CSVReader;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -33,6 +34,7 @@ public class EbolaABM extends SimState
     public SparseGrid2D hotSpotsGrid;
     public SparseGrid2D schoolGrid;
     public SparseGrid2D farmGrid;
+    public SparseGrid2D hospitalGrid;
     public Network roadNetwork = new Network();
     public GeomVectorField roadLinks;
     public SparseGrid2D allRoadNodes;
@@ -57,6 +59,7 @@ public class EbolaABM extends SimState
     public Map<Integer, List<Int2D>> admin_id_lib_urban = new HashMap<>();
     public Map<Integer, List<Int2D>> admin_id_gin_urban = new HashMap<>();
 
+    public Set<WorkLocation> allWorkLocations = new HashSet<>(10000);
 
     double max_distance = 0;
     double distance_sum = 0;
