@@ -43,8 +43,8 @@ public class EbolaABM extends SimState
 
     public Bag schools = new Bag();
     public Bag farms = new Bag();
-    public ArrayList<Map<EbolaBuilder.Node, Structure>> workNodeStructureMap = new ArrayList<>();
-    public Map<EbolaBuilder.Node, Structure> householdNodes = new HashMap<>(10000);
+    public ArrayList<Map<EbolaBuilder.Node, Structure>> workNodeStructureMap = new ArrayList<>();//TODO change to multiple structures per node since places can have the same location
+    public Map<EbolaBuilder.Node, Household> householdNodes = new HashMap<>(10000);
     public Map<Integer, List<MovementPattern>> movementPatternMapSLE = new HashMap<>();
     public Map<Integer, List<MovementPattern>> movementPatternMapLIB = new HashMap<>();
     public Map<Integer, List<MovementPattern>> movementPatternMapGIN = new HashMap<>();
@@ -68,6 +68,8 @@ public class EbolaABM extends SimState
     public int world_width;
     public int world_height;
     public int total_scaled_pop = 0; //number of agents in the model (scaled from total_pop)
+    public int total_scaled_urban_pop = 0;
+    public int total_scaled_rural_pop = 0;
     public long total_pop = 0; //actual population (not scaled)
     int total_urban_pop = 0;
     int lib_urban_pop = 0;
@@ -77,6 +79,11 @@ public class EbolaABM extends SimState
     int total_sl_pop = 0;
     int total_guinea_pop = 0;
     int total_no_school_count = 0;
+    public int urban_male_employed = 0;
+    public int urban_female_employed = 0;
+    public int rural_male_employed = 0;
+    public int rural_female_employed = 0;
+
 
     double route_distance_count;
     double route_distance_sum;

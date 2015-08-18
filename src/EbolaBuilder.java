@@ -1,4 +1,5 @@
 import com.vividsolutions.jts.geom.*;
+import org.geotools.data.DataAccessFactory;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomGridField;
 import sim.field.geo.GeomVectorField;
@@ -773,6 +774,7 @@ public class EbolaBuilder
                         {
                             ebolaSim.urbanAreasGrid.setObjectLocation(new Object(), j, i);
                             ebolaSim.total_urban_pop += num_people;
+                            ebolaSim.total_scaled_urban_pop += scaled_num_people;
                             isUrban = true;
                             if(country == Parameters.GUINEA)
                                 ebolaSim.guinea_urban_pop += num_people;
@@ -781,6 +783,8 @@ public class EbolaBuilder
                             else
                                 ebolaSim.sl_urban_pop += num_people;
                         }
+                        else
+                            ebolaSim.total_scaled_rural_pop += num_people;
 
                         //add urban center to maps
                         if(isUrban)
@@ -978,11 +982,15 @@ public class EbolaBuilder
             {
                 setWorkDemographics(resident, Parameters.URBAN_MALE_LF_BY_AGE, Parameters.URBAN_MALE_INACTIVE_SCHOOL, Parameters.URBAN_MALE_UNEMPLOYMENT, Parameters.URBAN_MALE_SECTORS);
                 setDailyWorkHours(resident, Parameters.MALE_WEEKLY_HOURS_BY_SECTOR);
+                if(resident.isEmployed())
+                    ebolaSim.urban_male_employed++;
             }
             else//urban female
             {
                 setWorkDemographics(resident, Parameters.URBAN_FEMALE_LF_BY_AGE, Parameters.URBAN_FEMALE_INACTIVE_SCHOOL, Parameters.URBAN_FEMALE_UNEMPLOYMENT, Parameters.URBAN_FEMALE_SECTORS);
                 setDailyWorkHours(resident, Parameters.FEMALE_WEEKLY_HOURS_BY_SECTOR);
+                if(resident.isEmployed())
+                    ebolaSim.urban_female_employed++;
             }
         }
         else//rural
@@ -991,12 +999,15 @@ public class EbolaBuilder
             {
                 setWorkDemographics(resident, Parameters.RURAL_MALE_LF_BY_AGE, Parameters.RURAL_MALE_INACTIVE_SCHOOL, Parameters.RURAL_MALE_UNEMPLOYMENT, Parameters.RURAL_MALE_SECTORS);
                 setDailyWorkHours(resident, Parameters.MALE_WEEKLY_HOURS_BY_SECTOR);
-
+                if(resident.isEmployed())
+                    ebolaSim.rural_male_employed++;
             }
             else//rural female
             {
                 setWorkDemographics(resident, Parameters.RURAL_FEMALE_LF_BY_AGE, Parameters.RURAL_FEMALE_INACTIVE_SCHOOL, Parameters.RURAL_FEMALE_UNEMPLOYMENT, Parameters.RURAL_FEMALE_SECTORS);
                 setDailyWorkHours(resident, Parameters.FEMALE_WEEKLY_HOURS_BY_SECTOR);
+                if(resident.isEmployed())
+                    ebolaSim.rural_female_employed++;
             }
         }
 
@@ -1045,7 +1056,7 @@ public class EbolaBuilder
         else//resident is a part of the labour force
         {
             //decide if employed or not
-            if(resident.getAge() < 15)//different statistics for 15+ and <15
+            if(resident.getAge() < 15)//different statistics for 15+ and <15//TODO Incoroporate child labour
             {
 
             }
@@ -1154,6 +1165,76 @@ public class EbolaBuilder
                 workLocation.addMember(resident);
             }
         }
+    }
+
+    /**
+     * Tries to fill up the worklocation to needed capacity.
+     * Assumes agents and households have already been placed with age labour force particiaption, and employement assigned.
+     * Sex should not be assigned to any agent during this process as it will be assigned here.
+     * @param workLocation
+     */
+    private static void fillMembers(WorkLocation workLocation)
+    {
+        if(workLocation.getMembers().size() >= workLocation.getCapacity())
+            return;//no need to add more members, capacity reached
+        double max_distance = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), ebolaSim.random.nextGaussian());
+        max_distance = Parameters.convertFromKilometers(max_distance);//convert back to world units
+
+        List<Node> nearByNodes = AStar.getNodesWithinDistance(workLocation.getNearestNode(), ebolaSim.householdNodes, max_distance, Parameters.WALKING_SPEED);
+        ListIterator listIterator = nearByNodes.listIterator();
+
+        while(listIterator.hasNext())
+        {
+            Household household = ebolaSim.householdNodes.get(listIterator.next());
+            for(Resident resident: household.getMembers())//at this point the resident is guarenteed to have all work demographics but not a workday destination
+                if(resident.isEmployed() && resident.getWorkDayDestination() == null)//only look at employed persons and people who have not already been assigned a place
+                {
+                    //first set their work location to this one
+                    resident.setWorkDayDestination(workLocation);
+                    resident.setSector_id(workLocation.getSector_id());
+
+                    //at this point the resident should know if they are urban/rural and we need to set the sex
+//                    setSexBasedOnSector(resident, resident.getSector_id(), resident.getIsUrban() ? Parameters.URBAN_MALE_SECTORS : Parameters.RURAL_MALE_SECTORS,
+//                            resident.getIsUrban() ? Parameters.URBAN_FEMALE_SECTORS : Parameters.RURAL_FEMALE_SECTORS);
+
+                    //now change the previous parameter values to reduce chance of getting this sector other areas.
+                    if(resident.getIsUrban())
+                        if(resident.getSex() == Constants.MALE)
+                            reduceProbability(Parameters.URBAN_MALE_SECTORS, workLocation.getSector_id(), ebolaSim.urban_male_employed);
+                        else
+                            reduceProbability(Parameters.URBAN_FEMALE_SECTORS, workLocation.getSector_id(), ebolaSim.urban_female_employed);
+                    else
+                        if(resident.getSex() == Constants.MALE)
+                            reduceProbability(Parameters.RURAL_MALE_SECTORS, workLocation.getSector_id(), ebolaSim.rural_male_employed);
+                        else
+                            reduceProbability(Parameters.RURAL_FEMALE_SECTORS, workLocation.getSector_id(), ebolaSim.rural_female_employed);
+
+                    //add this resident to the workLocation
+                    workLocation.addMember(resident);
+
+                    //return if the workLocation is filled up
+                    if(workLocation.getMembers().size() >= workLocation.getCapacity())
+                        return;
+                }
+        }
+    }
+
+    private static void setSexBasedOnSector(Resident resident, int sector_id, double[] maleBySectorId, double[] femaleBySectorId)
+    {
+        //we should know urban/rural
+        //let's first decide if their sex (use Bayes Rule)
+        double probability_male = (maleBySectorId[sector_id] * 0.5) / ((maleBySectorId[sector_id] * 0.5) + femaleBySectorId[sector_id] * 0.5);
+        if(ebolaSim.random.nextDouble() < probability_male)
+            resident.setSex(Constants.MALE);
+        else
+            resident.setSex(Constants.FEMALE);
+    }
+
+    private static void reduceProbability(double[] sectorProbabilities, int index, int total)
+    {
+        sectorProbabilities[index] = (sectorProbabilities[index]*total-1)/(total-1);
+        if(sectorProbabilities[index] < 0)
+            System.out.println("Sector Id dropped below zero for sector " + index);
     }
 
     private static WorkLocation createWorkLocation(Resident resident, double on_road_distance, double off_road_distance, Map<Node, Structure> nodeStructureMap, SparseGrid2D grid)
