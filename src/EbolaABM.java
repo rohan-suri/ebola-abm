@@ -1,4 +1,3 @@
-import com.sun.xml.internal.ws.api.pipe.FiberContextSwitchInterceptor;
 import ec.util.MersenneTwisterFast;
 import net.sf.csv4j.CSVReader;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -10,7 +9,6 @@ import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomVectorField;
 import sim.field.grid.DoubleGrid2D;
 import sim.field.grid.IntGrid2D;
-import sim.field.grid.ObjectGrid2D;
 import sim.field.grid.SparseGrid2D;
 import sim.field.network.Network;
 import sim.util.Bag;

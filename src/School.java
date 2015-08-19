@@ -1,5 +1,3 @@
-import com.sun.corba.se.impl.orbutil.closure.Constant;
-import sim.util.Bag;
 import sim.util.Int2D;
 
 /**
