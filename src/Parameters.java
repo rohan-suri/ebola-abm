@@ -210,7 +210,7 @@ public class Parameters
 
     public static double SUSCEPTIBLE_TO_EXPOSED_TRAVELERS = 0.1 * Parameters.TEMPORAL_RESOLUTION;//special for travellers
 
-    public static double FATALITY_PERIOD_AVERAGE = 8.0;
+    public static  double FATALITY_PERIOD_AVERAGE = 8.0;
     public static double FATALITY_PERIOD_STDEV = 1.0;
     public static boolean INFECT_ONLY_YOUR_STRUCTURE = false;
 }

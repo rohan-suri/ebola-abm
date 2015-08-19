@@ -114,7 +114,7 @@ public class EbolaBuilder
         addHousesAndResidents(pop_file, admin_file);
 
         //now give each resident a sector_id and worklocatino
-        //setWorkLocationsForAllResidents(new HashSet<WorkLocation>(), ebolaSim.world.getAllObjects());
+        setWorkLocationsForAllResidents(new HashSet<WorkLocation>(), ebolaSim.world.getAllObjects());
 
         // set up the locations and nearest node capability
         long time = System.currentTimeMillis();
@@ -1023,8 +1023,8 @@ public class EbolaBuilder
 
         //now we have to set the daily destination
         //don't set work destination because that will be done later
-        if(resident.isEmployed())
-            setWorkDestination(resident);
+//        if(resident.isEmployed())
+//            setWorkDestination(resident);
 
         return resident;
     }
@@ -1087,7 +1087,7 @@ public class EbolaBuilder
                 {
                     resident.setEmployed(true);
                     //now decide whate economic sector
-                    setSectorId(resident, economic_sectors);//COMMENT FOR FILLING WORKLOCATION TO CAPCITY
+                    //setSectorId(resident, economic_sectors);//COMMENT FOR FILLING WORKLOCATION TO CAPCITY
                 }
             }
         }
