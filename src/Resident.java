@@ -165,7 +165,7 @@ public class Resident implements Steppable
         {
             if(this.location.equals(goal.getLocation()))//we are at goal
             {
-                if(this.location.equals(household.getLocation()))//make sure we are not at home
+                if(!this.location.equals(household.getLocation()))//make sure we are not at home
                 {
                     if (atGoalLength < 0) {
                         //go back home

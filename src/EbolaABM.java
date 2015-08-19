@@ -263,9 +263,9 @@ public class EbolaABM extends SimState
                         {
                             //System.out.println(mp.source_admin + " " + key);
                             Bag residents;
-                            if(random.nextDouble() < Parameters.fromUrban)//this person must be from an urban center
-                                residents = ebolaSim.worldPopResolution.getObjectsAtLocation(urbanLocations.get(mp.source_admin));
-                            else
+//                            if(random.nextDouble() < Parameters.fromUrban)//this person must be from an urban center
+//                                residents = ebolaSim.worldPopResolution.getObjectsAtLocation(urbanLocations.get(mp.source_admin));
+//                            else
                                 residents = admin_id_residents.get(mp.source_admin);
 
                             if(residents == null)

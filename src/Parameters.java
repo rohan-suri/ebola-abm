@@ -29,8 +29,8 @@ public class Parameters
     public static String ACTUAL_CASES_LIBERIA = "data/actual_cases/liberia_actual.csv";//path to csv file containing actual cases for liberia
     public static String ACTUAL_CASES_SIERRA_LEONE = "data/actual_cases/sierra_leone_actual.csv";//path to csv file containing actual cases for sierra leone
 
-    public static double MIN_POP_URBAN = 1000;//575.45;//Minimum population density per 926 meters or 1000 people per square mile to be urban. Source: http://cber.cba.ua.edu/asdc/urban_rural.html
-    public static double MIN_POP_SURROUNDING = 1000;//287.73;//Minimum surrounding population density per 926 meters.  An urban district must be surrounded by
+    public static double MIN_POP_URBAN = 575.45;//Minimum population density per 926 meters or 1000 people per square mile to be urban. Source: http://cber.cba.ua.edu/asdc/urban_rural.html
+    public static double MIN_POP_SURROUNDING = 287.73;//Minimum surrounding population density per 926 meters.  An urban district must be surrounded by
                                                       //by an total of this minimum density.  Source: http://cber.cba.ua.edu/asdc/urban_rural.html
 
     //population flow parameters
@@ -201,7 +201,7 @@ public class Parameters
     }
 
     //Ebola Disease Model Parameters
-    public static double SUSCEPTIBLE_TO_EXPOSED = 0.005 * Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
+    public static double SUSCEPTIBLE_TO_EXPOSED = 0.1 * Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
     public static double INCUBATION_PERIOD_AVERAGE = 13.0;//as reported by Who Ebola Resonse Team source: http://www.nejm.org/doi/full/10.1056/NEJMoa1411100?rss=mostCited&
     public static double INCUBATION_PERIOD_STDEV = 1.0;//Standard deviation from reports above
     public static double CASE_FATALITY_RATIO = 0.70;//number of cases resulting in death
@@ -212,5 +212,5 @@ public class Parameters
 
     public static double FATALITY_PERIOD_AVERAGE = 8.0;
     public static double FATALITY_PERIOD_STDEV = 1.0;
-    public static boolean INFECT_ONLY_YOUR_STRUCTURE = true;
+    public static boolean INFECT_ONLY_YOUR_STRUCTURE = false;
 }

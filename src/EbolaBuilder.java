@@ -691,6 +691,8 @@ public class EbolaBuilder
     {
         try
         {
+            System.out.print("Adding houses ");
+            long time = System.currentTimeMillis();
             // buffer reader - read ascii file for population data
             BufferedReader pop_reader = new BufferedReader(new FileReader(pop_file));
             String pop_line;
@@ -732,7 +734,7 @@ public class EbolaBuilder
             pop_line = pop_reader.readLine();
             pop_line = pop_line.substring(1);
             curr_tokens = pop_line.split("\\s+");
-            System.out.println(curr_tokens.length);
+            //System.out.println(curr_tokens.length);
             for(int i = 0; i < height; i++)
             {
                 if(i != 0)//store three lines at a time so you can check surrounding cells
@@ -855,8 +857,8 @@ public class EbolaBuilder
                             //add members to the household
                             for(int m = 0; m < household_size; m++)
                             {
-                                if(scaled_num_people == 0)
-                                    break;
+//                                if(scaled_num_people == 0)
+//                                    break;
                                 scaled_num_people--;
                                 Resident r = createResident(new Int2D(x_coord, y_coord), h, isUrban, county_id);
                                 ebolaSim.schedule.scheduleRepeating(r);
@@ -903,7 +905,7 @@ public class EbolaBuilder
                     }
                 }
             }
-
+            System.out.println("[" + (System.currentTimeMillis()-time)/1000 + " secs]");
             System.out.println("total scaled pop = " + ebolaSim.total_scaled_pop);
             System.out.println("total pop = " + ebolaSim.total_pop);
             System.out.println("expected scaled pop = " + ebolaSim.total_pop*1.0*Parameters.SCALE);
