@@ -9,11 +9,11 @@ This is the first spatially expilicit, agent based model for the spread of Ebola
 
 ##Getting Started
 1. To run the model start by cloning this repo.<br></br>
-	```bash
+	```
         git clone https://github.com/rohan-suri/ebola-abm
 	```
 2. Run the 'run' script. (Note script is in bash and uses curl)<br></br>
-	```bash
+	```
 	./run
 	```
 
