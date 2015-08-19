@@ -855,7 +855,7 @@ public class EbolaBuilder
                             //add members to the household
                             for(int m = 0; m < household_size; m++)
                             {
-                                if(num_people == 0)
+                                if(scaled_num_people == 0)
                                     break;
                                 scaled_num_people--;
                                 Resident r = createResident(new Int2D(x_coord, y_coord), h, isUrban, county_id);
