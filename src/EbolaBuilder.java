@@ -97,15 +97,15 @@ public class EbolaBuilder
         readInStructures(schools_vector, ebolaSim.schoolGrid, ebolaSim.schools, new School(null));
 
         //add farms from vectorfield
-        readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, new WorkLocation(null, Constants.AGRICULTURE));
+        //readInStructures(farms_vector, ebolaSim.farmGrid, ebolaSim.farms, new WorkLocation(null, Constants.AGRICULTURE));
 
         //add hospitals from vectorfield
-        readInStructures(hospitals_vector, ebolaSim.hospitalGrid, new Bag(), new WorkLocation(null, Constants.HEALTH));
+        //readInStructures(hospitals_vector, ebolaSim.hospitalGrid, new Bag(), new WorkLocation(null, Constants.HEALTH));
 
         //assignNearest Nodes to all facilities except households
         assignNearestNode(ebolaSim.schoolGrid, ebolaSim.workNodeStructureMap.get(Constants.EDUCATION));
-        assignNearestNode(ebolaSim.farmGrid, ebolaSim.workNodeStructureMap.get(Constants.AGRICULTURE));
-        assignNearestNode(ebolaSim.hospitalGrid, ebolaSim.workNodeStructureMap.get(Constants.HEALTH));
+        //assignNearestNode(ebolaSim.farmGrid, ebolaSim.workNodeStructureMap.get(Constants.AGRICULTURE));
+        //assignNearestNode(ebolaSim.hospitalGrid, ebolaSim.workNodeStructureMap.get(Constants.HEALTH));
 
         //read in csv that gives the distribution of ages for the three countries from landscan data
         setUpAgeDist(age_dist_file);
@@ -114,7 +114,7 @@ public class EbolaBuilder
         addHousesAndResidents(pop_file, admin_file);
 
         //now give each resident a sector_id and worklocatino
-        setWorkLocationsForAllResidents(ebolaSim.allWorkLocations, ebolaSim.world.getAllObjects());
+        setWorkLocationsForAllResidents(new HashSet<WorkLocation>(), ebolaSim.world.getAllObjects());
 
         // set up the locations and nearest node capability
         long time = System.currentTimeMillis();
@@ -1101,7 +1101,7 @@ public class EbolaBuilder
             if(rand < sum)//set the sector
             {
                 resident.setSector_id(i);
-                break;
+                return;
             }
         }
         System.out.println("No sector id fits!!!!");
@@ -1236,14 +1236,14 @@ public class EbolaBuilder
                     //now change the previous parameter values to reduce chance of getting this sector other areas.
                     if(resident.getIsUrban())
                         if(resident.getSex() == Constants.MALE)
-                            reduceProbability(Parameters.URBAN_MALE_SECTORS, workLocation.getSector_id(), ebolaSim.urban_male_employed);
+                            reduceProbability(Parameters.URBAN_MALE_SECTORS, workLocation.getSector_id(), ebolaSim.urban_male_employed--);
                         else
-                            reduceProbability(Parameters.URBAN_FEMALE_SECTORS, workLocation.getSector_id(), ebolaSim.urban_female_employed);
+                            reduceProbability(Parameters.URBAN_FEMALE_SECTORS, workLocation.getSector_id(), ebolaSim.urban_female_employed--);
                     else
                         if(resident.getSex() == Constants.MALE)
-                            reduceProbability(Parameters.RURAL_MALE_SECTORS, workLocation.getSector_id(), ebolaSim.rural_male_employed);
+                            reduceProbability(Parameters.RURAL_MALE_SECTORS, workLocation.getSector_id(), ebolaSim.rural_male_employed--);
                         else
-                            reduceProbability(Parameters.RURAL_FEMALE_SECTORS, workLocation.getSector_id(), ebolaSim.rural_female_employed);
+                            reduceProbability(Parameters.RURAL_FEMALE_SECTORS, workLocation.getSector_id(), ebolaSim.rural_female_employed--);
 
                     //add this resident to the workLocation
                     workLocation.addMember(resident);
