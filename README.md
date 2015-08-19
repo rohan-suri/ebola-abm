@@ -1,10 +1,12 @@
 # ebola-abm
 This is the first spatially expilicit, agent based model for the spread of Ebola in Guinea, Sierra Leone, and Liberia. For questions email rohan[at]surilabs.com
+
 ##System Requirements
 - At least 16 GB of RAM
 - At least 1 GB of space for additional files
 - Java installed
 - Bash and curl
+
 ##Getting Started
 1. To run the model start by cloning this repo.
 ```
