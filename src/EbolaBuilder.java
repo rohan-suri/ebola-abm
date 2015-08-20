@@ -1086,7 +1086,7 @@ public class EbolaBuilder
                 else//employment
                 {
                     resident.setEmployed(true);
-                    //now decide whate economic sector
+                    //now decide what economic sector
                     //setSectorId(resident, economic_sectors);//COMMENT FOR FILLING WORKLOCATION TO CAPCITY
                 }
             }
@@ -1149,6 +1149,11 @@ public class EbolaBuilder
     }
 
     private static int[] farmDistanceFrequency = new int[101];
+
+    /**
+     * Sets teh workday destination for a resident.  If agent is at an isolated node, workdayDestination is set to null
+     * @param resident
+     */
     public static void setWorkDestination(Resident resident)
     {
         double max_distance = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), ebolaSim.random.nextGaussian());
@@ -1180,7 +1185,7 @@ public class EbolaBuilder
             {
                 resident.setWorkDayDestination(workLocation);
                 workLocation.addMember(resident);
-            }
+            }//TODO why are we getting zeroed out parameters?? look into null pointer exception
         }
     }
 
@@ -1199,7 +1204,8 @@ public class EbolaBuilder
             {
                 setSectorId(resident, resident.getIsUrban()?(resident.getSex() == Constants.MALE?Parameters.URBAN_MALE_SECTORS:Parameters.URBAN_FEMALE_SECTORS):(resident.getSex() == Constants.MALE?Parameters.RURAL_MALE_SECTORS:Parameters.RURAL_FEMALE_SECTORS));
                 setWorkDestination(resident);
-                fillMembers((WorkLocation)resident.getWorkDayDestination());
+                if(resident.getWorkDayDestination() != null)
+                    fillMembers((WorkLocation)resident.getWorkDayDestination());
             }
             setDailyWorkHours(resident, resident.getSector_id(), resident.getSex() == Constants.MALE?Parameters.MALE_WEEKLY_HOURS_BY_SECTOR:Parameters.FEMALE_WEEKLY_HOURS_BY_SECTOR);
         }
@@ -1215,6 +1221,7 @@ public class EbolaBuilder
     {
         if(workLocation.getMembers().size() >= workLocation.getCapacity())
             return;//no need to add more members, capacity reached
+
         double max_distance = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), ebolaSim.random.nextGaussian());
         max_distance = Parameters.convertFromKilometers(max_distance);//convert back to world units
 
@@ -1227,6 +1234,34 @@ public class EbolaBuilder
             for(Resident resident: household.getMembers())//at this point the resident is guarenteed to have all work demographics but not a workday destination
                 if(resident.isEmployed() && resident.getWorkDayDestination() == null)//only look at employed persons and people who have not already been assigned a place
                 {
+                    double[] economic_sector_probabilities;
+                    int total;
+                    if(resident.getIsUrban())
+                        if(resident.getSex() == Constants.MALE)
+                        {
+                            economic_sector_probabilities = Parameters.URBAN_MALE_SECTORS;
+                            total = ebolaSim.urban_male_employed;
+                        }
+                        else
+                        {
+                            economic_sector_probabilities = Parameters.URBAN_FEMALE_SECTORS;
+                            total = ebolaSim.urban_female_employed;
+                        }
+                    else
+                    if(resident.getSex() == Constants.MALE)
+                    {
+                        economic_sector_probabilities = Parameters.RURAL_MALE_SECTORS;
+                        total = ebolaSim.rural_male_employed;
+                    }
+                    else
+                    {
+                        economic_sector_probabilities = Parameters.RURAL_FEMALE_SECTORS;
+                        total = ebolaSim.rural_female_employed;
+                    }
+
+                    //abort if probability is below zero
+                    if(economic_sector_probabilities[workLocation.getSector_id()] < 0)
+                        continue;
                     //first set their work location to this one
                     resident.setWorkDayDestination(workLocation);
                     resident.setSector_id(workLocation.getSector_id());
@@ -1236,16 +1271,7 @@ public class EbolaBuilder
 //                            resident.getIsUrban() ? Parameters.URBAN_FEMALE_SECTORS : Parameters.RURAL_FEMALE_SECTORS);
 
                     //now change the previous parameter values to reduce chance of getting this sector other areas.
-                    if(resident.getIsUrban())
-                        if(resident.getSex() == Constants.MALE)
-                            reduceProbability(Parameters.URBAN_MALE_SECTORS, workLocation.getSector_id(), ebolaSim.urban_male_employed--);
-                        else
-                            reduceProbability(Parameters.URBAN_FEMALE_SECTORS, workLocation.getSector_id(), ebolaSim.urban_female_employed--);
-                    else
-                        if(resident.getSex() == Constants.MALE)
-                            reduceProbability(Parameters.RURAL_MALE_SECTORS, workLocation.getSector_id(), ebolaSim.rural_male_employed--);
-                        else
-                            reduceProbability(Parameters.RURAL_FEMALE_SECTORS, workLocation.getSector_id(), ebolaSim.rural_female_employed--);
+                    reduceProbability(economic_sector_probabilities, workLocation.getSector_id(), total);
 
                     //add this resident to the workLocation
                     workLocation.addMember(resident);
@@ -1270,7 +1296,12 @@ public class EbolaBuilder
 
     private static void reduceProbability(double[] sectorProbabilities, int index, int total)
     {
-        sectorProbabilities[index] = (sectorProbabilities[index]*total-1)/(total-1);
+        double newValue = ((sectorProbabilities[index]*total)-1)/(total-1);
+        for(int i = 0; i < sectorProbabilities.length; i++)
+            if(i == index)
+                sectorProbabilities[i] = newValue;
+            else
+                sectorProbabilities[i] = ((sectorProbabilities[i]*total))/(total-1);
         if(sectorProbabilities[index] < 0)
             System.out.println("Sector Id dropped below zero for sector " + index);
     }

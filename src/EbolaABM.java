@@ -235,7 +235,7 @@ public class EbolaABM extends SimState
                 {
                     long now = System.currentTimeMillis();
                     if(lastTime != 0)
-                        System.out.println("Step " + cStep + "[" + (now-lastTime)/1000 + " secs ]");
+                        System.out.println("Day " + cStep/24 + "[" + (now-lastTime)/1000 + " secs ]");
                     lastTime = now;
                     EbolaABM ebolaSim = (EbolaABM)simState;
                     //System.out.println("GIN");
