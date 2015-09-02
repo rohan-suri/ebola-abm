@@ -52,7 +52,7 @@ public class EbolaBuilder
 
         //initialize node map for all work locations
         for(int i = 0; i < Parameters.WORK_SIZE_BY_SECTOR.length; i++)
-            ebolaSim.workNodeStructureMap.add(new HashMap<Node, Structure>(10000, 0.75f));
+            ebolaSim.workNodeStructureMap.add(new HashMap<Node, List<Structure>>(10000, 0.75f));
 
         try
         {
@@ -312,7 +312,7 @@ public class EbolaBuilder
      * Function will assign each structure in the SparseGrid a nearest node on the road network found in allRoadNodes at sim state.
      * @param grid a sparsegrid that contains strctures.
      */
-    static void assignNearestNode(SparseGrid2D grid, Map<Node, Structure> nodeStructureMap)
+    static void assignNearestNode(SparseGrid2D grid, Map<Node, List<Structure>> nodeStructureMap)
     {
         double max_distance = 0;
         int count = 0;
@@ -325,7 +325,6 @@ public class EbolaBuilder
             if(node != null)
             {
                 structure.setNearestNode(node);
-                nodeStructureMap.put(node, structure);
 
                 //create a node on the road network that connects this structure to the road network
                 Node newNode = new Node(structure.location);
@@ -333,8 +332,7 @@ public class EbolaBuilder
                 newNode.links.add(e);
                 node.links.add(e);
                 structure.setNearestNode(newNode);
-                nodeStructureMap.remove(node);
-                nodeStructureMap.put(newNode, structure);
+                addToListInMap(nodeStructureMap, newNode, structure);
 
                 double distance = structure.getLocation().distance(node.location);
                 distance *= (Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE)/1000.0;
@@ -351,6 +349,16 @@ public class EbolaBuilder
         System.out.println("\nAverage distance = " + sum/count + " km");
         System.out.println("Max distance household to node = " + max_distance + " kilometers");
     }
+
+    private static void addToListInMap(Map map, Object key, Object value)
+    {
+        List list;
+        if(!map.containsKey(key))
+            map.put(key, new LinkedList<Structure>());
+        list = (List)map.get(key);
+        list.add(value);
+    }
+
     private static int[] frequency = new int[300];
     /**
      *
@@ -847,7 +855,7 @@ public class EbolaBuilder
                             h.setNearestNode(newNode);
 
                             ebolaSim.householdGrid.setObjectLocation(h, new Int2D(x_coord, y_coord));
-                            ebolaSim.householdNodes.put(h.getNearestNode(), h);
+                            addToListInMap(ebolaSim.householdNodes, h.getNearestNode(), h);
 
                             int household_size  = pickHouseholdSize(country);//use log normal distribution to pick correct household size
 
@@ -1230,56 +1238,57 @@ public class EbolaBuilder
 
         while(listIterator.hasNext())
         {
-            Household household = ebolaSim.householdNodes.get(listIterator.next());
-            for(Resident resident: household.getMembers())//at this point the resident is guarenteed to have all work demographics but not a workday destination
-                if(resident.isEmployed() && resident.getWorkDayDestination() == null)//only look at employed persons and people who have not already been assigned a place
-                {
-                    double[] economic_sector_probabilities;
-                    int total;
-                    if(resident.getIsUrban())
+            List<Household> households = ebolaSim.householdNodes.get(listIterator.next());
+            for(Household household: households)
+                for(Resident resident: household.getMembers())//at this point the resident is guarenteed to have all work demographics but not a workday destination
+                    if(resident.isEmployed() && resident.getWorkDayDestination() == null)//only look at employed persons and people who have not already been assigned a place
+                    {
+                        double[] economic_sector_probabilities;
+                        int total;
+                        if(resident.getIsUrban())
+                            if(resident.getSex() == Constants.MALE)
+                            {
+                                economic_sector_probabilities = Parameters.URBAN_MALE_SECTORS;
+                                total = ebolaSim.urban_male_employed;
+                            }
+                            else
+                            {
+                                economic_sector_probabilities = Parameters.URBAN_FEMALE_SECTORS;
+                                total = ebolaSim.urban_female_employed;
+                            }
+                        else
                         if(resident.getSex() == Constants.MALE)
                         {
-                            economic_sector_probabilities = Parameters.URBAN_MALE_SECTORS;
-                            total = ebolaSim.urban_male_employed;
+                            economic_sector_probabilities = Parameters.RURAL_MALE_SECTORS;
+                            total = ebolaSim.rural_male_employed;
                         }
                         else
                         {
-                            economic_sector_probabilities = Parameters.URBAN_FEMALE_SECTORS;
-                            total = ebolaSim.urban_female_employed;
+                            economic_sector_probabilities = Parameters.RURAL_FEMALE_SECTORS;
+                            total = ebolaSim.rural_female_employed;
                         }
-                    else
-                    if(resident.getSex() == Constants.MALE)
-                    {
-                        economic_sector_probabilities = Parameters.RURAL_MALE_SECTORS;
-                        total = ebolaSim.rural_male_employed;
+
+                        //abort if probability is below zero
+                        if(economic_sector_probabilities[workLocation.getSector_id()] < 0)
+                            continue;
+                        //first set their work location to this one
+                        resident.setWorkDayDestination(workLocation);
+                        resident.setSector_id(workLocation.getSector_id());
+
+                        //at this point the resident should know if they are urban/rural and we need to set the sex
+    //                    setSexBasedOnSector(resident, resident.getSector_id(), resident.getIsUrban() ? Parameters.URBAN_MALE_SECTORS : Parameters.RURAL_MALE_SECTORS,
+    //                            resident.getIsUrban() ? Parameters.URBAN_FEMALE_SECTORS : Parameters.RURAL_FEMALE_SECTORS);
+
+                        //now change the previous parameter values to reduce chance of getting this sector other areas.
+                        reduceProbability(economic_sector_probabilities, workLocation.getSector_id(), total);
+
+                        //add this resident to the workLocation
+                        workLocation.addMember(resident);
+
+                        //return if the workLocation is filled up
+                        if(workLocation.getMembers().size() >= workLocation.getCapacity())
+                            return;
                     }
-                    else
-                    {
-                        economic_sector_probabilities = Parameters.RURAL_FEMALE_SECTORS;
-                        total = ebolaSim.rural_female_employed;
-                    }
-
-                    //abort if probability is below zero
-                    if(economic_sector_probabilities[workLocation.getSector_id()] < 0)
-                        continue;
-                    //first set their work location to this one
-                    resident.setWorkDayDestination(workLocation);
-                    resident.setSector_id(workLocation.getSector_id());
-
-                    //at this point the resident should know if they are urban/rural and we need to set the sex
-//                    setSexBasedOnSector(resident, resident.getSector_id(), resident.getIsUrban() ? Parameters.URBAN_MALE_SECTORS : Parameters.RURAL_MALE_SECTORS,
-//                            resident.getIsUrban() ? Parameters.URBAN_FEMALE_SECTORS : Parameters.RURAL_FEMALE_SECTORS);
-
-                    //now change the previous parameter values to reduce chance of getting this sector other areas.
-                    reduceProbability(economic_sector_probabilities, workLocation.getSector_id(), total);
-
-                    //add this resident to the workLocation
-                    workLocation.addMember(resident);
-
-                    //return if the workLocation is filled up
-                    if(workLocation.getMembers().size() >= workLocation.getCapacity())
-                        return;
-                }
         }
     }
 
@@ -1306,7 +1315,7 @@ public class EbolaBuilder
             System.out.println("Sector Id dropped below zero for sector " + index);
     }
 
-    private static WorkLocation createWorkLocation(Resident resident, double on_road_distance, double off_road_distance, Map<Node, Structure> nodeStructureMap, SparseGrid2D grid)
+    private static WorkLocation createWorkLocation(Resident resident, double on_road_distance, double off_road_distance, Map<Node, List<Structure>> nodeStructureMap, SparseGrid2D grid)
     {
         Route route = AStar.getNodeAtDistance(resident.getHousehold().getNearestNode(), on_road_distance, Parameters.WALKING_SPEED);
         if(route != null)
@@ -1330,7 +1339,7 @@ public class EbolaBuilder
             workLocation.setNearestNode(endNode);
 
             //add the node to the structure map so that it can be found
-            nodeStructureMap.put(endNode, workLocation);
+            addToListInMap(nodeStructureMap, endNode, workLocation);
 
             //cache the route
             resident.getHousehold().cacheRoute(route, workLocation);
@@ -1482,7 +1491,7 @@ public class EbolaBuilder
         return new Int2D(xint, yint);
     }
 
-    private static Structure getNearestStructureByRoute(Structure start, Map<Node, Structure> endNodes, double max_distance, boolean check_capacity)
+    private static Structure getNearestStructureByRoute(Structure start, Map<Node, List<Structure>> endNodes, double max_distance, boolean check_capacity)
     {
         //first check if route is cached TODO: Assumes that all cached paths are closest to the structure
         Iterator<Structure> it = start.getCachedRoutes().keySet().iterator();
@@ -1499,10 +1508,12 @@ public class EbolaBuilder
             return null;
 
         //cache the path with the end structure
-        Structure destination = endNodes.get(route.getEnd());
-        start.cacheRoute(route, destination);
+        List<Structure> structureList = endNodes.get(route.getEnd());
+        for(Structure destination: structureList)
+            start.cacheRoute(route, destination);
 
-        return destination;
+        //pick a random structure to return for all that are at the same location
+        return structureList.get(ebolaSim.random.nextInt(structureList.size()));
     }
 
     private static School getNearestSchool(int x, int y)

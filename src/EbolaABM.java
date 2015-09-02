@@ -43,8 +43,8 @@ public class EbolaABM extends SimState
 
     public Bag schools = new Bag();
     public Bag farms = new Bag();
-    public ArrayList<Map<EbolaBuilder.Node, Structure>> workNodeStructureMap = new ArrayList<>();//TODO change to multiple structures per node since places can have the same location
-    public Map<EbolaBuilder.Node, Household> householdNodes = new HashMap<>(10000);
+    public ArrayList<Map<EbolaBuilder.Node, List<Structure>>> workNodeStructureMap = new ArrayList<>();//TODO change to multiple structures per node since places can have the same location
+    public Map<EbolaBuilder.Node, List<Household>> householdNodes = new HashMap<>(10000);
     public Map<Integer, List<MovementPattern>> movementPatternMapSLE = new HashMap<>();
     public Map<Integer, List<MovementPattern>> movementPatternMapLIB = new HashMap<>();
     public Map<Integer, List<MovementPattern>> movementPatternMapGIN = new HashMap<>();

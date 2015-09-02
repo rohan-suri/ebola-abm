@@ -124,7 +124,7 @@ public class AStar {
      * @param check_capacity determines whether we chceck the capacity of Structure
      * @return
      */
-    public static Route getNearestNode(EbolaBuilder.Node start, Map<EbolaBuilder.Node, Structure> endNodes, double max_distance, boolean check_capacity, double speed)
+    public static Route getNearestNode(EbolaBuilder.Node start, Map<EbolaBuilder.Node, List<Structure>> endNodes, double max_distance, boolean check_capacity, double speed)
     {
         //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
@@ -174,8 +174,9 @@ public class AStar {
             if(endNodes.containsKey(x.node)){ // we have found the shortest possible path to the goal!
                 if(check_capacity)//check if this structure is already full!
                 {
-                    if(!(endNodes.get(x.node).getMembers().size() >= endNodes.get(x.node).getCapacity()))//means it is not full
-                        return reconstructRoute(x, startNode, x, speed);
+                    for(Structure structure: endNodes.get(x.node))
+                        if(!(structure.getMembers().size() >= structure.getCapacity()))//means it is not full
+                            return reconstructRoute(x, startNode, x, speed);
                 }
                 else // Reconstruct the path and send it back.
                     return reconstructRoute(x, startNode, x, speed);
@@ -239,7 +240,7 @@ public class AStar {
      * @param max_distance the maximum distance you want to search in the road network
      * @return A list of nodes within the maximum distance sorted in ascending order by distance to start (index 0 means closest)
      */
-    public static List<EbolaBuilder.Node> getNodesWithinDistance(EbolaBuilder.Node start, Map<EbolaBuilder.Node, ? extends Structure> endNodes, double max_distance, double speed)
+    public static List<EbolaBuilder.Node> getNodesWithinDistance(EbolaBuilder.Node start, Map<EbolaBuilder.Node, List<? extends Structure>> endNodes, double max_distance, double speed)
     {
         //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
