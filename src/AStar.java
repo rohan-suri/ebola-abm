@@ -240,7 +240,7 @@ public class AStar {
      * @param max_distance the maximum distance you want to search in the road network
      * @return A list of nodes within the maximum distance sorted in ascending order by distance to start (index 0 means closest)
      */
-    public static List<EbolaBuilder.Node> getNodesWithinDistance(EbolaBuilder.Node start, Map<EbolaBuilder.Node, List<? extends Structure>> endNodes, double max_distance, double speed)
+    public static List<EbolaBuilder.Node> getNodesWithinDistance(EbolaBuilder.Node start, Map endNodes, double max_distance, double speed)
     {
         //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
