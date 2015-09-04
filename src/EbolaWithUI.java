@@ -62,7 +62,7 @@ public class EbolaWithUI extends GUIState
         // set the range axis to display integers only...
         NumberAxis rangeAxis4 = (NumberAxis) p4.getRangeAxis();
         rangeAxis4.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        //rangeAxis4.setRange(0, ((EbolaABM) this.state).allRoadNodes.getAllObjects().size());
+        //rangeAxis4.setRange(0, ((EbolaABM) this.state).max);
 
         ChartFrame frame4 = new ChartFrame("Road Network Distribution", roadNetworkChart);
         frame4.setVisible(false);

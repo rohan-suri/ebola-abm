@@ -46,9 +46,13 @@ public class EbolaBuilder
         GeomVectorField schools_vector = new GeomVectorField();
         GeomVectorField farms_vector = new GeomVectorField();
         GeomVectorField hospitals_vector = new GeomVectorField();
+        GeomVectorField places_vector = new GeomVectorField();
+
         ebolaSim.schoolGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
         ebolaSim.farmGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
         ebolaSim.hospitalGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
+        ebolaSim.placesGrid = new SparseGrid2D(ebolaSim.world_width, ebolaSim.world_height);
+
 
         //initialize node map for all work locations
         for(int i = 0; i < Parameters.WORK_SIZE_BY_SECTOR.length; i++)
@@ -56,8 +60,8 @@ public class EbolaBuilder
 
         try
         {
-            String[] files = {Parameters.ROADS_SHAPE_PATH, Parameters.SCHOOLS_PATH, Parameters.FARMS_PATH, Parameters.HOSPITALS_PATH};//all the files we want to read in
-            GeomVectorField[] vectorFields = {ebolaSim.roadLinks, schools_vector, farms_vector, hospitals_vector};//all the vector fields we want to fill
+            String[] files = {Parameters.ROADS_SHAPE_PATH, Parameters.SCHOOLS_PATH, Parameters.FARMS_PATH, Parameters.HOSPITALS_PATH, "data/places_shapefile/all_places.shp"};//all the files we want to read in
+            GeomVectorField[] vectorFields = {ebolaSim.roadLinks, schools_vector, farms_vector, hospitals_vector, places_vector};//all the vector fields we want to fill
             readInShapefile(files, vectorFields);
 
             System.out.println("Done getting information, now analyzing.");
@@ -102,10 +106,14 @@ public class EbolaBuilder
         //add hospitals from vectorfield
         //readInStructures(hospitals_vector, ebolaSim.hospitalGrid, new Bag(), new WorkLocation(null, Constants.HEALTH));
 
+        //add all places from vectorfield
+        readInStructures(places_vector, ebolaSim.placesGrid, new Bag(), new Structure(null));
+
         //assignNearest Nodes to all facilities except households
         assignNearestNode(ebolaSim.schoolGrid, ebolaSim.workNodeStructureMap.get(Constants.EDUCATION));
         //assignNearestNode(ebolaSim.farmGrid, ebolaSim.workNodeStructureMap.get(Constants.AGRICULTURE));
         //assignNearestNode(ebolaSim.hospitalGrid, ebolaSim.workNodeStructureMap.get(Constants.HEALTH));
+        assignNearestNode(ebolaSim.placesGrid, ebolaSim.placesNodes);
 
         //read in csv that gives the distribution of ages for the three countries from landscan data
         setUpAgeDist(age_dist_file);
@@ -946,14 +954,16 @@ public class EbolaBuilder
             for(Object o: allResidents)
             {
                 Resident resident = (Resident)o;
-//                Route route = AStar.getNearestNode(resident.getHousehold().getNearestNode(), ebolaSim.workNodeStructureMap.get(Constants.HEALTH), Parameters.convertFromKilometers(100), false);
-//                double distance;// = 50;
-//                if(route != null)
-//                {
-//                    distance = route.getTotalDistance();
-//                    if(Math.round(distance) < farmDistanceFrequency.length)
-//                        farmDistanceFrequency[(int)Math.round(distance)]++;
-//                }
+                Route route = AStar.getNearestNode(resident.getHousehold().getNearestNode(), ebolaSim.placesNodes, Parameters.convertFromKilometers(100), false, Parameters.WALKING_SPEED);
+                double distance;// = 50;
+                if(route != null)
+                {
+                    distance = route.getTotalDistance();
+                    if(Math.round(distance) < farmDistanceFrequency.length)
+                        farmDistanceFrequency[(int)Math.round(distance)]++;
+                }
+
+                //stats for printing
                 if(resident.isEmployed() && resident.getWorkDayDestination() == null)
                     go_nowhere++;
                 if(resident.isEmployed())
@@ -964,6 +974,8 @@ public class EbolaBuilder
             for(int i = 0; i < farmDistanceFrequency.length; i++)
             {
                 ebolaSim.distribution.addValue((Number)(farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop), "All distances", i);
+                if((farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop * 100) > ebolaSim.max)
+                    ebolaSim.max = (farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop * 100);
                 System.out.print(farmDistanceFrequency[i] * 1.0 * 1.0 / ebolaSim.total_scaled_pop * 100 + "%" + "\t\t");
             }
             System.out.println("");

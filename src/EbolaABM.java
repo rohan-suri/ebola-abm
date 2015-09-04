@@ -33,6 +33,7 @@ public class EbolaABM extends SimState
     public SparseGrid2D schoolGrid;
     public SparseGrid2D farmGrid;
     public SparseGrid2D hospitalGrid;
+    public SparseGrid2D placesGrid;
     public Network roadNetwork = new Network();
     public GeomVectorField roadLinks;
     public SparseGrid2D allRoadNodes;
@@ -40,11 +41,13 @@ public class EbolaABM extends SimState
     public IntGrid2D admin_id;//contains id for each location (939 x 990)
 
     DefaultCategoryDataset distribution = new DefaultCategoryDataset(); //dataset for seeing age groups of infected
+    double max;
 
     public Bag schools = new Bag();
     public Bag farms = new Bag();
     public ArrayList<Map<EbolaBuilder.Node, List<Structure>>> workNodeStructureMap = new ArrayList<>();//TODO change to multiple structures per node since places can have the same location
     public Map<EbolaBuilder.Node, List<Household>> householdNodes = new HashMap<>(10000);
+    public Map<EbolaBuilder.Node, List<Structure>> placesNodes = new HashMap<>(10000);
     public Map<Integer, List<MovementPattern>> movementPatternMapSLE = new HashMap<>();
     public Map<Integer, List<MovementPattern>> movementPatternMapLIB = new HashMap<>();
     public Map<Integer, List<MovementPattern>> movementPatternMapGIN = new HashMap<>();
