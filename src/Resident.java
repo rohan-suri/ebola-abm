@@ -44,6 +44,8 @@ public class Resident implements Steppable
     double time_to_resolution = -1;
     double time_to_infectious = -1;
 
+    private int religion;
+
     public Resident(Int2D location, Household household, int sex, int age, boolean isUrban)
     {
         this.location = location;
@@ -400,6 +402,14 @@ public class Resident implements Steppable
 
     public void setHealthStatus(int healthStatus) {
         this.healthStatus = healthStatus;
+    }
+
+    public int getReligion() {
+        return religion;
+    }
+
+    public void setReligion(int religion) {
+        this.religion = religion;
     }
 
     /**

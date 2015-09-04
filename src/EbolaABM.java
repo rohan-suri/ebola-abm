@@ -271,7 +271,7 @@ public class EbolaABM extends SimState
 //                            else
                                 residents = admin_id_residents.get(mp.source_admin);
 
-                            if(residents == null)
+                            if(residents == null || residents.size() == 0)
                             {
                                 //System.out.println("NO RESIDENTS IN DISTRICT " + mp.source_admin);
                                 return;

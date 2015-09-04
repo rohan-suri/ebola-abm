@@ -34,4 +34,9 @@ public class Constants
     public static int INFECTIOUS = 2;
     public static int RECOVERED = 3;
     public static int DEAD = 4;
+
+    public static int MUSLIM = 0;
+    public static int CHRISTIAN = 1;
+    public static int TRADITIONAL = 2;
+    public static int NO_RELIGION = 3;
 }

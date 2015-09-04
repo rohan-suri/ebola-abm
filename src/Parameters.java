@@ -180,6 +180,14 @@ public class Parameters
                                                     {0.156,0.168,0.199,0.094,0.129,0.254}};
     public static int STUDENT_DAILY_HOURS = 7;
 
+    //Parameters for relgions in each of the countries.
+    //follows indecis as defined in CONSTANTS class. Muslim = 0, Christian = 1, ... etc.
+    //Source: CIA World Factbook
+    // Links: https://www.cia.gov/library/publications/the-world-factbook/geos/gv.html, https://www.cia.gov/library/publications/the-world-factbook/geos/sl.html, https://www.cia.gov/library/publications/the-world-factbook/geos/gv.html
+    public static double[] LIB_RELIGIONS = {0.122, 0.856, 0.06, 1.6};
+    public static double[] GIN_RELIGIONS = {0.85, 0.08, 0.07, 0};
+    public static double[] SLE_RELIGIONS = {0.6, 0.1, 03, 0};
+
     //Commuting parameters for farms.  Uses a log normal distribution
     public static double AVERAGE_FARM_DISTANCE = 2;//kilometers
     public static double STDEV_FARM_DISTANCE = 1.5;//kilometers
@@ -208,7 +216,7 @@ public class Parameters
     public static double RECOVERY_PERIOD_AVERAGE = 14.0;
     public static double RECOVERY_PERIOD_STDEV = 1.0;
 
-    public static double SUSCEPTIBLE_TO_EXPOSED_TRAVELERS = 0.3 * Parameters.TEMPORAL_RESOLUTION;//special for travellers
+    public static double SUSCEPTIBLE_TO_EXPOSED_TRAVELERS = 0.8 * Parameters.TEMPORAL_RESOLUTION;//special for travellers
 
     public static  double FATALITY_PERIOD_AVERAGE = 8.0;
     public static double FATALITY_PERIOD_STDEV = 1.0;

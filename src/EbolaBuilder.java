@@ -1,4 +1,5 @@
 import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.geom.Point;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomGridField;
 import sim.field.geo.GeomVectorField;
@@ -8,10 +9,12 @@ import sim.field.network.Network;
 import sim.io.geo.*;
 import sim.util.*;
 
+import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import java.text.*;
 import java.util.*;
+import java.util.List;
 
 import net.sf.csv4j.*;
 import sim.util.geo.MasonGeometry;
@@ -1046,7 +1049,30 @@ public class EbolaBuilder
 //        if(resident.isEmployed())
 //            setWorkDestination(resident);
 
+        //set the religion
+        resident.setReligion(pickReligion(resident, resident.getHousehold().getCountry()));
+
         return resident;
+    }
+
+    private static int pickReligion(Resident resident, int country)
+    {
+        double[] probs;
+        if(country == Parameters.SL)
+            probs = Parameters.SLE_RELIGIONS;
+        else if(country == Parameters.LIBERIA)
+            probs = Parameters.LIB_RELIGIONS;
+        else
+            probs = Parameters.GIN_RELIGIONS;
+        double rand = ebolaSim.random.nextDouble();
+        double sum = 0;
+        for(int i = 0; i < probs.length; i++)
+        {
+            sum += probs[i];
+            if(rand < sum)
+                return i;
+        }
+        return -1;
     }
 
     /**
