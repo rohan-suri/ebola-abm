@@ -436,25 +436,16 @@ public class Resident implements Steppable
         }
         Int2D urban_location = urban_locations.get(ebolaSim.random.nextInt(urban_locations.size()));
 
-        //convert to world scale and randomize
-        Int2D newHouseholdLocation = new Int2D(urban_location.getX()*Parameters.WORLD_TO_POP_SCALE + ebolaSim.random.nextInt(Parameters.WORLD_TO_POP_SCALE), urban_location.getY()*Parameters.WORLD_TO_POP_SCALE + ebolaSim.random.nextInt(Parameters.WORLD_TO_POP_SCALE));
-        Household newHousehold = new Household(newHouseholdLocation);
-        newHousehold.setNearestNode(EbolaBuilder.getNearestNode(newHouseholdLocation.getX(), newHouseholdLocation.getY()));
-        newHousehold.setCountry(to_country);
-        newHousehold.setAdmin_id(newAdminId);
-
-        //addNearestNode to the network
-        EbolaBuilder.Node newNode = new EbolaBuilder.Node(newHousehold.location);
-        Edge e = new Edge(newNode, newHousehold.getNearestNode(), (int)newNode.location.distance(newHousehold.getNearestNode().location));
-        newNode.links.add(e);
-        newHousehold.getNearestNode().links.add(e);
-        newHousehold.setNearestNode(newNode);
+        //now that we have determined an urban location pick a resident in this location to live with
+        Bag residentsInUrbanArea = ebolaSim.worldPopResolution.getObjectsAtLocation(urban_location);
+        //randomly pick someone
+        Resident residentToMoveInWith = (Resident)residentsInUrbanArea.get(ebolaSim.random.nextInt(residentsInUrbanArea.size()));
+        Household newHousehold = residentToMoveInWith.getHousehold();
 
         if(workDayDestination == null || newHousehold.getRoute(this.household, 50.0) == null)
         {
             //bail out we can't get to it
             //but first we must remove the link we just made
-            household.getNearestNode().links.remove(e);
             return false;
         }
         //find work near your new household
