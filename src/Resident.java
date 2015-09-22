@@ -5,6 +5,7 @@ import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.Int2D;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -90,18 +91,17 @@ public class Resident implements Steppable
             }
             else
                 time_to_infectious--;
-
         }
         else if(healthStatus == Constants.INFECTIOUS)//infect everyone!!!
         {
             if(doomed_to_die && time_to_resolution == -1)
             {
-                //decide to kill or be recovered
+                //decide how long until you die
                 time_to_resolution = ((ebolaSim.random.nextGaussian()*Parameters.FATALITY_PERIOD_STDEV)+Parameters.FATALITY_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
             }
             else if(time_to_resolution == -1)
             {
-                //decide when to recover
+                //decide how long until you recover
                 time_to_resolution = ((ebolaSim.random.nextGaussian()*Parameters.RECOVERY_PERIOD_STDEV)+Parameters.RECOVERY_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
             }
             else if(time_to_resolution <= 0)
@@ -124,6 +124,9 @@ public class Resident implements Steppable
             else if(workDayDestination != null && location.equals(workDayDestination.getLocation()))
                 currentStructure = workDayDestination;
 
+
+            if(currentStructure == null)//cannot infect people while you are travelling (only when in a structure)
+                return;
             if(nearByPeople == null)//if you are nearby no one just return
                 return;
             for(Object o: nearByPeople)
@@ -412,6 +415,11 @@ public class Resident implements Steppable
         this.religion = religion;
     }
 
+    public List<Household> getRelatives()
+    {
+        return this.getHousehold().getRelatives();
+    }
+
     /**
      * @param newAdminId
      * @param ebolaSim
@@ -491,8 +499,6 @@ public class Resident implements Steppable
         setHousehold(newHousehold);
         return true;
     }
-
-
 
     public boolean isMoving()
     {

@@ -208,6 +208,10 @@ public class Parameters
         return (val*1000.0)/(Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE);
     }
 
+    //Relatives definition parameters
+    public static double NUM_HOUSEHOLD_RELATIVES = 2;
+    public static double MAX_RELATIVE_DISTANCE = 50;//kilometers
+
     //Ebola Disease Model Parameters
     public static double SUSCEPTIBLE_TO_EXPOSED = 0.1 * Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
     public static double INCUBATION_PERIOD_AVERAGE = 13.0;//as reported by Who Ebola Resonse Team source: http://www.nejm.org/doi/full/10.1056/NEJMoa1411100?rss=mostCited&

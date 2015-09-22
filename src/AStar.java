@@ -117,7 +117,7 @@ public class AStar {
     }
 
     /**
-     * Uses Djikstra to find the closest in the list of endNodes.  Returns the endNode that is closest.
+     * Uses BFS to find the closest in the list of endNodes.  Returns the endNode that is closest.
      * @param start
      * @param endNodes
      * @param max_distance the maximum distance you want to search in the road network
@@ -234,13 +234,13 @@ public class AStar {
     }
 
     /**
-     * Uses Djikstra to find all nodes within the distance that are a part of endNodes.  Returns the list of endNodes within the distance.
+     * Uses BFS to find all nodes within the distance that are a part of endNodes.  Returns the list of endNodes within the distance.
      * @param start
      * @param endNodes
      * @param max_distance the maximum distance you want to search in the road network
      * @return A list of nodes within the maximum distance sorted in ascending order by distance to start (index 0 means closest)
      */
-    public static List<EbolaBuilder.Node> getNodesWithinDistance(EbolaBuilder.Node start, Map endNodes, double max_distance, double speed)
+    public static List<EbolaBuilder.Node> getNodesWithinDistance(EbolaBuilder.Node start, Map endNodes, double max_distance, double min_distance, double speed)
     {
         //        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
 //        if (cache.containsKey(cacheKey))
@@ -294,7 +294,8 @@ public class AStar {
                 AStarNodeWrapper n = findMin(openSet);
             }
             if(endNodes.containsKey(x.node)){ // we have found the shortest possible path to the goal!
-                listIterator.add(x.node);
+                if(x.hx > min_distance)
+                    listIterator.add(x.node);
             }
 
             openSet.remove(x); // maintain the lists
@@ -350,7 +351,7 @@ public class AStar {
     }
 
     /**
-     * Uses Djikstra to find the closest in the list of endNodes.  Returns the endNode that is closest.
+     * Uses BFS to find the closest in the list of endNodes.  Returns the endNode that is closest.
      * @param start
      * @param distance the target distance to stop
      * @return
@@ -462,7 +463,7 @@ public class AStar {
      * @param n the end point of the path
      * @return an Route from start to goal
      */
-    static Route reconstructRoute(AStarNodeWrapper n, AStarNodeWrapper start, AStarNodeWrapper end, double speed)
+    private static Route reconstructRoute(AStarNodeWrapper n, AStarNodeWrapper start, AStarNodeWrapper end, double speed)
     {
         List<Int2D> result = new ArrayList<>(20);
 
@@ -513,7 +514,7 @@ public class AStar {
      * @param percent the percent along the line you want to get.  Must be less than 1
      * @return
      */
-    public static Int2D getPointAlongLine(Int2D start, Int2D end, double percent)
+    private static Int2D getPointAlongLine(Int2D start, Int2D end, double percent)
     {
         return new Int2D((int)Math.round((end.getX()-start.getX())*percent + start.getX()), (int)Math.round((end.getY()-start.getY())*percent + start.getY()));
     }
@@ -522,7 +523,7 @@ public class AStar {
      * Measure of the estimated distance between two Nodes.
      * @return notional "distance" between the given allRoadNodes.
      */
-    static double heuristic(EbolaBuilder.Node x, EbolaBuilder.Node y) {
+    private static double heuristic(EbolaBuilder.Node x, EbolaBuilder.Node y) {
         return x.location.distance(y.location);
     }
 

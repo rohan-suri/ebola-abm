@@ -127,6 +127,8 @@ public class EbolaBuilder
         //now give each resident a sector_id and worklocatino
         setWorkLocationsForAllResidents(new HashSet<WorkLocation>(), ebolaSim.world.getAllObjects());
 
+        setRelativesForAllResidents(ebolaSim.householdGrid.allObjects);
+
         // set up the locations and nearest node capability
         long time = System.currentTimeMillis();
         System.out.println("Assigning nearestNodes...");
@@ -1257,6 +1259,32 @@ public class EbolaBuilder
         }
     }
 
+    private static void setRelativesForAllResidents(Bag households)
+    {
+        for(Object o: households)
+        {
+            Household household = (Household)o;
+            for(int i = household.getRelatives().size(); i < Parameters.NUM_HOUSEHOLD_RELATIVES; i++)
+            {
+                //TODO cash the route
+                //TODO make more efficient by not hardcoding max!
+                List<Node> nodes = AStar.getNodesWithinDistance(household.getNearestNode(), ebolaSim.householdNodes, Parameters.convertFromKilometers(100), ebolaSim.random.nextInt((int) Parameters.convertFromKilometers(Parameters.MAX_RELATIVE_DISTANCE)) + 1, Parameters.WALKING_SPEED);
+                if(!nodes.isEmpty())
+                {
+                    Node node = nodes.get(0);
+                    List<Household> targets = ebolaSim.householdNodes.get(node);
+                    Household target = targets.get(ebolaSim.random.nextInt(targets.size()));
+
+                    //now that we have picked a house we need to add it to the relatives.
+                    household.addRelatives(target);
+                    target.addRelatives(household);
+                }
+                else
+                    System.out.println("No nodes found within range!!!");
+            }
+        }
+    }
+
     /**
      * Tries to fill up the worklocation to needed capacity.
      * Assumes agents and households have already been placed with age labour force particiaption, and employement assigned.
@@ -1271,7 +1299,7 @@ public class EbolaBuilder
         double max_distance = Stats.normalToLognormal(Stats.calcLognormalMu(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), Stats.calcLognormalSigma(Parameters.AVERAGE_FARM_MAX, Parameters.STDEV_FARM_MAX), ebolaSim.random.nextGaussian());
         max_distance = Parameters.convertFromKilometers(max_distance);//convert back to world units
 
-        List<Node> nearByNodes = AStar.getNodesWithinDistance(workLocation.getNearestNode(), ebolaSim.householdNodes, max_distance, Parameters.WALKING_SPEED);
+        List<Node> nearByNodes = AStar.getNodesWithinDistance(workLocation.getNearestNode(), ebolaSim.householdNodes, max_distance, 0, Parameters.WALKING_SPEED);
         ListIterator listIterator = nearByNodes.listIterator();
 
         while(listIterator.hasNext())
