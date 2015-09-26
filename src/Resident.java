@@ -438,6 +438,12 @@ public class Resident implements Steppable
 
         //now that we have determined an urban location pick a resident in this location to live with
         Bag residentsInUrbanArea = ebolaSim.worldPopResolution.getObjectsAtLocation(urban_location);
+        if(residentsInUrbanArea == null)
+        {
+            System.out.println("Looking at urban area = " + urban_location);
+            System.out.println("Couldn't find anyone in this urban_location!");
+            return false;
+        }
         //randomly pick someone
         Resident residentToMoveInWith = (Resident)residentsInUrbanArea.get(ebolaSim.random.nextInt(residentsInUrbanArea.size()));
         Household newHousehold = residentToMoveInWith.getHousehold();

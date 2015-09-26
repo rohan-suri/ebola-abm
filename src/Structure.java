@@ -74,7 +74,11 @@ public class Structure
             //check if the route has already been cached for the other way (destination -> here)
             if(destination.getCachedRoutes().containsKey(this))
             {
-                Route route = destination.getRoute(this, speed).reverse();//be sure to reverse the route
+                Route route;
+                if(destination.getRoute(this, speed) != null)
+                    route = destination.getRoute(this, speed).reverse();//be sure to reverse the route
+                else
+                    route = null;
                 cachedPaths.put(destination, route);
                 return route;
             }

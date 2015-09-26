@@ -271,7 +271,7 @@ public class EbolaABM extends SimState
 //                            else
                                 residents = admin_id_residents.get(mp.source_admin);
 
-                            if(residents == null || residents.size() == 0)
+                            if(residents == null || residents.size() == 0)//this means there is no one in this area
                             {
                                 //System.out.println("NO RESIDENTS IN DISTRICT " + mp.source_admin);
                                 return;
@@ -290,6 +290,11 @@ public class EbolaABM extends SimState
                                 if(randomResident != null)
                                 {
                                     residents.remove(randomResident);
+                                    if(residents.isEmpty())
+                                    {
+                                        System.out.println("Moved everyone we could in this area, returning");
+                                        return;//this means we have moved everyone we can in this area
+                                    }
                                     //randomResident.moveResidency(mp.to_admin, ebolaSim);
                                 }
                                 move_num--;
