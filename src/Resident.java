@@ -89,7 +89,7 @@ public class Resident implements Steppable
             {
                 this.setHealthStatus(Constants.INFECTIOUS);
             }
-            else
+            else if(!isMoving())
                 time_to_infectious--;
 
         }
