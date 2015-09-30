@@ -84,7 +84,15 @@ public class Structure
             }
             else
             {
-                Route route = AStar.astarPath(this.getNearestNode(), destination.getNearestNode(), speed);
+                Route route;
+                if(false)//this.getLocation().distance(destination.getLocation()) > Parameters.convertFromKilometers(80))
+                {
+                    ArrayList<Int2D> path = new ArrayList<>();
+                    path.add(destination.getLocation());
+                    route = new Route(path, this.getLocation().distance(destination.getLocation()), this.getNearestNode(), destination.getNearestNode(), 10000);
+                }
+                else
+                    route = AStar.astarPath(this.getNearestNode(), destination.getNearestNode(), speed);
                 cachedPaths.put(destination, route);
                 return route;
             }

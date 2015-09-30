@@ -1,13 +1,11 @@
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import sim.engine.SimState;
 import sim.engine.Steppable;
-import sim.field.network.Edge;
 import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.Int2D;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -193,7 +191,16 @@ public class Resident implements Steppable
                             {
                                 if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
                                     if(ebolaSim.random.nextDouble() < Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS)
+                                    {
+                                        System.out.println("TRAVELING AGENT INFECTED SOMEONE in " + this.getHousehold().getAdmin_id() + " admin and " + this.getHousehold().getCountry() + " country");
                                         resident.setHealthStatus(Constants.EXPOSED);
+                                        if(resident.getHousehold().getCountry() == Parameters.LIBERIA)
+                                            ebolaSim.totalLiberiaInt++;
+                                        else if(resident.getHousehold().getCountry() == Parameters.SL)
+                                            ebolaSim.totalSierra_LeoneInt++;
+                                        else if(resident.getHousehold().getCountry() == Parameters.GUINEA)
+                                            ebolaSim.totalGuineaInt++;
+                                    }
                             }
                         }
                         isMoving = false;
@@ -203,6 +210,8 @@ public class Resident implements Steppable
             }
             else//if we aren't at goal just move towards it
             {
+                if(route == null)
+                    return;
                 if(routePosition < route.getNumSteps())
                 {
                     Int2D nextStep = route.getLocation(routePosition++);
@@ -296,7 +305,8 @@ public class Resident implements Steppable
     {
         this.goal = to;
         this.atGoalLength = stayDuration;
-        this.route = from.getRoute(to, speed);
+        if(speed < 20)
+            this.route = from.getRoute(to, speed);
         this.routePosition = 0;
     }
 
@@ -468,7 +478,7 @@ public class Resident implements Steppable
         Resident residentToMoveInWith = (Resident)residentsInUrbanArea.get(ebolaSim.random.nextInt(residentsInUrbanArea.size()));
         Household newHousehold = residentToMoveInWith.getHousehold();
 
-        if(workDayDestination == null || newHousehold.getRoute(this.household, 50.0) == null)
+        if(workDayDestination == null)// || newHousehold.getRoute(this.household, 50.0) == null)
         {
             //bail out we can't get to it
             //but first we must remove the link we just made
@@ -498,6 +508,9 @@ public class Resident implements Steppable
 
         //update goal
         setGoal(this.getHousehold(), newHousehold, 0, 50.0);
+        ArrayList<Int2D> path = new ArrayList<>();
+        path.add(newHousehold.getLocation());
+        this.route = new Route(path, this.getLocation().distance(this.getHousehold().getLocation()), getHousehold().getNearestNode(), newHousehold.getNearestNode(), 10000);
         setHousehold(newHousehold);
         return true;
     }

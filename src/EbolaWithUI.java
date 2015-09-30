@@ -231,10 +231,7 @@ public class EbolaWithUI extends GUIState
 
     public void setupPortrayals()
     {
-        GeomVectorFieldPortrayal boundaryPortrayal = new GeomVectorFieldPortrayal();
-        boundaryPortrayal.setField(((EbolaABM)state).adminBoundaries);
-        boundaryPortrayal.setPortrayalForAll(new GeomPortrayal(Color.BLACK, true));
-        display.attach(boundaryPortrayal, "Boundaries");
+
 
         FieldPortrayal2D householdortrayal = new SparseGridPortrayal2D();
         householdortrayal.setField(((EbolaABM)state).householdGrid);
@@ -344,6 +341,11 @@ public class EbolaWithUI extends GUIState
         hotspotsPortrayal.setField(((EbolaABM)state).hotSpotsGrid);
         hotspotsPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(1.0f, 0.0f, 0.09f, 0.5f), 3.0, true));
         display.attach(hotspotsPortrayal, "Hotspot Area");
+
+        GeomVectorFieldPortrayal boundaryPortrayal = new GeomVectorFieldPortrayal();
+        boundaryPortrayal.setField(((EbolaABM)state).adminBoundaries);
+        boundaryPortrayal.setPortrayalForAll(new GeomPortrayal(Color.BLACK, true));
+        display.attach(boundaryPortrayal, "Boundaries");
     }
 
     @Override

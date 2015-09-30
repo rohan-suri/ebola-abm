@@ -309,10 +309,12 @@ public class EbolaABM extends SimState
                                 }while(!residentGood(randomResident, ebolaSim) && !randomResident.moveResidency(mp.to_admin, mp.to_country, ebolaSim));
                                 if(randomResident != null)
                                 {
+                                    if(randomResident.getHealthStatus() == Constants.EXPOSED || randomResident.getHealthStatus() == Constants.INFECTIOUS)
+                                        System.out.println("MOVED AN E/I PATIENT TO " + mp.to_admin + " admin and " + mp.to_country + " country");
                                     residents.remove(randomResident);
                                     if(residents.isEmpty())
                                     {
-                                        System.out.println("Moved everyone we could in this district, returning");
+                                        //System.out.println("Moved everyone we could in this district, returning");
                                         move_num = 0;
                                         break;//this means we have moved everyone we can in this area
                                     }
