@@ -1460,8 +1460,8 @@ public class EbolaBuilder
                 int from_admin_id = NumberFormat.getNumberInstance(java.util.Locale.US).parse(from.substring(0, from.length()-3)).intValue();
                 int from_country = convertCountryStringToInt(from.substring(from.length() - 3));
 
-                int to_admin_id = NumberFormat.getNumberInstance(java.util.Locale.US).parse(from.substring(0, from.length()-3)).intValue();
-                int to_country = convertCountryStringToInt(from.substring(from.length() - 3));
+                int to_admin_id = NumberFormat.getNumberInstance(java.util.Locale.US).parse(to.substring(0, to.length()-3)).intValue();
+                int to_country = convertCountryStringToInt(to.substring(to.length() - 3));
 
                 double x = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(9)).intValue();
                 double y = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(10)).intValue();
