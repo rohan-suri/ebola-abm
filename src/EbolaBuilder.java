@@ -884,6 +884,7 @@ public class EbolaBuilder
                                 r.setPop_density(scaled_num_people);
 
                                 //used for movement flow
+                                //add the residents to each id, so we can get all residents in a district later
                                 if(country == Parameters.SL)
                                 {
                                     Bag residents;
@@ -891,6 +892,13 @@ public class EbolaBuilder
                                         residents = ebolaSim.admin_id_sle_residents.put(r.getHousehold().getAdmin_id(), new Bag());
                                     residents = ebolaSim.admin_id_sle_residents.get(r.getHousehold().getAdmin_id());
                                     residents.add(r);
+                                    if(r.getIsUrban())//do the same thing for the urban id
+                                    {
+                                        if(!ebolaSim.admin_id_sle_urban_residents.containsKey(r.getHousehold().getAdmin_id()))
+                                            residents = ebolaSim.admin_id_sle_urban_residents.put(r.getHousehold().getAdmin_id(), new Bag());
+                                        residents = ebolaSim.admin_id_sle_urban_residents.get(r.getHousehold().getAdmin_id());
+                                        residents.add(r);
+                                    }
                                 }
                                 else if(country == Parameters.GUINEA)
                                 {
@@ -899,6 +907,13 @@ public class EbolaBuilder
                                         residents = ebolaSim.admin_id_gin_residents.put(r.getHousehold().getAdmin_id(), new Bag());
                                     residents = ebolaSim.admin_id_gin_residents.get(r.getHousehold().getAdmin_id());
                                     residents.add(r);
+                                    if(r.getIsUrban())//do the same thing for the urban id
+                                    {
+                                        if(!ebolaSim.admin_id_gin_urban_residents.containsKey(r.getHousehold().getAdmin_id()))
+                                            residents = ebolaSim.admin_id_gin_urban_residents.put(r.getHousehold().getAdmin_id(), new Bag());
+                                        residents = ebolaSim.admin_id_gin_urban_residents.get(r.getHousehold().getAdmin_id());
+                                        residents.add(r);
+                                    }
                                 }
                                 else if(country == Parameters.LIBERIA)
                                 {
@@ -907,6 +922,13 @@ public class EbolaBuilder
                                         residents = ebolaSim.admin_id_lib_residents.put(r.getHousehold().getAdmin_id(), new Bag());
                                     residents = ebolaSim.admin_id_lib_residents.get(r.getHousehold().getAdmin_id());
                                     residents.add(r);
+                                    if(r.getIsUrban())//do the same thing for the urban id
+                                    {
+                                        if(!ebolaSim.admin_id_lib_urban_residents.containsKey(r.getHousehold().getAdmin_id()))
+                                            residents = ebolaSim.admin_id_lib_urban_residents.put(r.getHousehold().getAdmin_id(), new Bag());
+                                        residents = ebolaSim.admin_id_lib_urban_residents.get(r.getHousehold().getAdmin_id());
+                                        residents.add(r);
+                                    }
                                 }
 //                                if(nearest_school != null)
 //                                    r.setNearestSchool(nearest_school);

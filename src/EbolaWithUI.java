@@ -336,7 +336,7 @@ public class EbolaWithUI extends GUIState
 
         FieldPortrayal2D hotspotsPortrayal = new SparseGridPortrayal2D();
         hotspotsPortrayal.setField(((EbolaABM)state).hotSpotsGrid);
-        hotspotsPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19, 0.4f), 4.0, true));
+        hotspotsPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(1.0f, 0.0f, 0.09f, 0.5f), 3.0, true));
         display.attach(hotspotsPortrayal, "Hotspot Area");
     }
 

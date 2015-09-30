@@ -52,9 +52,15 @@ public class EbolaABM extends SimState
     public Map<Integer, List<MovementPattern>> movementPatternMapLIB = new HashMap<>();
     public Map<Integer, List<MovementPattern>> movementPatternMapGIN = new HashMap<>();
 
+    //keys are the admin id for each country and the bag has all the residents in that admin area
     public Map<Integer, Bag> admin_id_sle_residents = new HashMap<>();
     public Map<Integer, Bag> admin_id_lib_residents = new HashMap<>();
     public Map<Integer, Bag> admin_id_gin_residents = new HashMap<>();
+
+    //keys are admin id for each country and the value is a bag that has all residents in the area that are urban
+    public Map<Integer, Bag> admin_id_sle_urban_residents = new HashMap<>();
+    public Map<Integer, Bag> admin_id_lib_urban_residents = new HashMap<>();
+    public Map<Integer, Bag> admin_id_gin_urban_residents = new HashMap<>();
 
     public Map<Integer, List<Int2D>> admin_id_sle_urban = new HashMap<>();
     public Map<Integer, List<Int2D>> admin_id_lib_urban = new HashMap<>();
@@ -242,39 +248,48 @@ public class EbolaABM extends SimState
                     lastTime = now;
                     EbolaABM ebolaSim = (EbolaABM)simState;
                     //System.out.println("GIN");
-                    moveResidents(ebolaSim.movementPatternMapGIN, ebolaSim.admin_id_gin_residents, ebolaSim.random, ebolaSim, ebolaSim.admin_id_gin_urban);
+                    moveResidents(ebolaSim.movementPatternMapGIN, ebolaSim.admin_id_gin_residents, ebolaSim.random, ebolaSim, ebolaSim.admin_id_gin_urban_residents);
                     //System.out.println("SLE");
-                    moveResidents(ebolaSim.movementPatternMapSLE, ebolaSim.admin_id_sle_residents, ebolaSim.random, ebolaSim, ebolaSim.admin_id_sle_urban);
+                    moveResidents(ebolaSim.movementPatternMapSLE, ebolaSim.admin_id_sle_residents, ebolaSim.random, ebolaSim, ebolaSim.admin_id_sle_urban_residents);
                     //System.out.println("LIB");
-                    moveResidents(ebolaSim.movementPatternMapLIB, ebolaSim.admin_id_lib_residents, ebolaSim.random, ebolaSim, ebolaSim.admin_id_lib_urban);
+                    moveResidents(ebolaSim.movementPatternMapLIB, ebolaSim.admin_id_lib_residents, ebolaSim.random, ebolaSim, ebolaSim.admin_id_lib_urban_residents);
                     //System.out.println("Managing population flow [" + (System.currentTimeMillis()-now)/1000 + " sec]");
                 }
             }
-            private void moveResidents(Map<Integer, List<MovementPattern>> movementPatternMap, Map<Integer, Bag> admin_id_residents, MersenneTwisterFast random, EbolaABM ebolaSim, Map<Integer, List<Int2D>> urbanLocations)
+
+            /**
+             * Moves the residents for a given country.  Decides the resident to move.
+             * @param movementPatternMap
+             * @param admin_id_residents A map that has keys as the admin_id and a bag containing all the residents in that admin area.  Each one is specific to each country.
+             * @param random
+             * @param ebolaSim
+             * @param admin_id_urban_residents A map that has keys as the admin_id and a value of bags that has all the urban resients int that admin area.  Each one is specific to each country
+             */
+            private void moveResidents(Map<Integer, List<MovementPattern>> movementPatternMap, Map<Integer, Bag> admin_id_residents, MersenneTwisterFast random, EbolaABM ebolaSim, Map<Integer, Bag> admin_id_urban_residents)
             {
                 Iterator<Integer> it = movementPatternMap.keySet().iterator();
                 while(it.hasNext())
                 {
                     int key = it.next();
                     List<MovementPattern> list = movementPatternMap.get(key);
-                    for(MovementPattern mp: list)
+                    for(MovementPattern mp: list)//move over each movement pattern
                     {
+                        //use poisson distribution to get the number of people that should move in a given day
                         Poisson poisson = new Poisson(mp.annual_amnt/365.0*Parameters.POPULATION_FLOW_SCALE, random);
                         int move_num = poisson.nextInt();
-                        //System.out.println("Moving " + move_num + " people w/ mean of " + mp.annual_amnt/365.0);
                         if(move_num > 0)
                         {
                             //System.out.println(mp.source_admin + " " + key);
                             Bag residents;
-//                            if(random.nextDouble() < Parameters.fromUrban)//this person must be from an urban center
-//                                residents = ebolaSim.worldPopResolution.getObjectsAtLocation(urbanLocations.get(mp.source_admin));
-//                            else
+                            if(random.nextDouble() < Parameters.fromUrban && admin_id_urban_residents.get(mp.source_admin) != null && admin_id_urban_residents.get(mp.source_admin).size() != 0)//this person must be from an urban center
+                                residents = admin_id_urban_residents.get(mp.source_admin);
+                            else//just pick anyone from random
                                 residents = admin_id_residents.get(mp.source_admin);
 
                             if(residents == null || residents.size() == 0)//this means there is no one in this area
                             {
                                 //System.out.println("NO RESIDENTS IN DISTRICT " + mp.source_admin);
-                                return;
+                                continue;
                             }
                             while(move_num > 0)
                             {
@@ -285,15 +300,20 @@ public class EbolaABM extends SimState
                                     randomResident = (Resident)residents.get(random.nextInt(residents.size()));
                                     count++;
                                     if(count > 1000)//timeout to ensure we don't infinitely loop
-                                        return;
+                                    {
+                                        //System.out.println("Could not find a suitable person in size of " + residents.size());
+                                        randomResident.moveResidency(mp.to_admin, mp.to_country, ebolaSim);
+                                        break;
+                                    }
                                 }while(!residentGood(randomResident, ebolaSim) && !randomResident.moveResidency(mp.to_admin, mp.to_country, ebolaSim));
                                 if(randomResident != null)
                                 {
                                     residents.remove(randomResident);
                                     if(residents.isEmpty())
                                     {
-                                        System.out.println("Moved everyone we could in this area, returning");
-                                        return;//this means we have moved everyone we can in this area
+                                        System.out.println("Moved everyone we could in this district, returning");
+                                        move_num = 0;
+                                        break;//this means we have moved everyone we can in this area
                                     }
                                     //randomResident.moveResidency(mp.to_admin, ebolaSim);
                                 }
@@ -309,7 +329,10 @@ public class EbolaABM extends SimState
                 if(resident.getAge() < 15)
                     return false;
                 double rand = ebolaSim.random.nextDouble();
-                if(rand < 0.2 && !resident.getIsUrban())
+                if(rand < 0.3 && !resident.getIsUrban())
+                    return false;
+                //this is for instroducing bias if they are infected
+                if(ebolaSim.random.nextDouble() < Parameters.BIAS_INFECTED && resident.getHealthStatus() != Constants.INFECTIOUS)
                     return false;
                 if(resident.getHealthStatus() == Constants.DEAD)
                     return false;
@@ -317,7 +340,6 @@ public class EbolaABM extends SimState
             }
 
         };
-
 
 
         this.schedule.scheduleRepeating(movementManager);

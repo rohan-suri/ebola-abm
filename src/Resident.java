@@ -39,6 +39,7 @@ public class Resident implements Steppable
     private int healthStatus;
 
     private boolean isMoving = false;
+    private int isMovingCountdown = 1;
 
     boolean doomed_to_die = false;
     double time_to_resolution = -1;
@@ -158,6 +159,9 @@ public class Resident implements Steppable
 //        if(this.hashCode() == ebolaSim.firstResidentHash)
 //            System.out.println("FOUDN ASLKDFJASFJ");
 
+        if(isMovingCountdown == 0)
+            isMoving = false;
+
         //check if we have a goal
         if(goal == null)//calc goal
         {
@@ -178,7 +182,7 @@ public class Resident implements Steppable
                 else
                 {
                     if(isMoving)
-                        isMoving = false;
+                        isMovingCountdown--;
                     goal = null;
                 }
             }
@@ -420,6 +424,7 @@ public class Resident implements Steppable
     public boolean moveResidency(int newAdminId, int to_country, EbolaABM ebolaSim)
     {
         //first pick a location for the new house
+        int old_country = this.getHousehold().getCountry();
         List<Int2D> urban_locations = null;
         if(to_country == Parameters.GUINEA)
             urban_locations = ebolaSim.admin_id_gin_urban.get(newAdminId);
@@ -440,8 +445,8 @@ public class Resident implements Steppable
         Bag residentsInUrbanArea = ebolaSim.worldPopResolution.getObjectsAtLocation(urban_location);
         if(residentsInUrbanArea == null)
         {
-            System.out.println("Looking at urban area = " + urban_location);
-            System.out.println("Couldn't find anyone in this urban_location!");
+            //System.out.println("Looking at urban area = " + urban_location);
+            //System.out.println("Couldn't find anyone in this urban_location!");
             return false;
         }
         //randomly pick someone
@@ -459,33 +464,17 @@ public class Resident implements Steppable
             EbolaBuilder.setWorkDestination(this);
 
         //update bag
+        //TODO make urban/rural population ratio stay the same.  Since all people move to urban areas and only some people go from urban.  Net flow is towards urban areas.
         //used for movement flow
         int country = household.getCountry();
-        if(country == Parameters.SL)
-        {
-            Bag residents;
-            if(!ebolaSim.admin_id_sle_residents.containsKey(getHousehold().getAdmin_id()))
-                residents = ebolaSim.admin_id_sle_residents.put(getHousehold().getAdmin_id(), new Bag());
-            residents = ebolaSim.admin_id_sle_residents.get(getHousehold().getAdmin_id());
-            residents.add(this);
-        }
-        else if(country == Parameters.GUINEA)
-        {
-            Bag residents;
-            if(!ebolaSim.admin_id_gin_residents.containsKey(getHousehold().getAdmin_id()))
-                residents = ebolaSim.admin_id_gin_residents.put(getHousehold().getAdmin_id(), new Bag());
-            residents = ebolaSim.admin_id_gin_residents.get(getHousehold().getAdmin_id());
-            residents.add(this);
-        }
-        else if(country == Parameters.LIBERIA)
-        {
-            Bag residents;
-            if(!ebolaSim.admin_id_lib_residents.containsKey(getHousehold().getAdmin_id()))
-                residents = ebolaSim.admin_id_lib_residents.put(getHousehold().getAdmin_id(), new Bag());
-            residents = ebolaSim.admin_id_lib_residents.get(getHousehold().getAdmin_id());
-            residents.add(this);
-        }
+        addToAdminIdMap(ebolaSim, old_country, true);//remove yourself from the old one
+        addToAdminIdMap(ebolaSim, country, false);//add yourself to the new one
+        if(getIsUrban())
+            addToAdminIdMapUrban(ebolaSim, old_country, true);//remove from the old one (urban)
+        addToAdminIdMapUrban(ebolaSim, country, false);//add to the old one ()
+
         isMoving = true;
+        isMovingCountdown = 1;
 //        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation && isMoving())
 //            ebolaSim.firstResidentHash = this.hashCode();
 
@@ -498,7 +487,79 @@ public class Resident implements Steppable
         return true;
     }
 
+    public void addToAdminIdMap(EbolaABM ebolaSim, int country, boolean remove)
+    {
+        if(country == Parameters.SL)
+        {
+            Bag residents;
+            if(!ebolaSim.admin_id_sle_residents.containsKey(getHousehold().getAdmin_id()))
+                residents = ebolaSim.admin_id_sle_residents.put(getHousehold().getAdmin_id(), new Bag());
+            residents = ebolaSim.admin_id_sle_residents.get(getHousehold().getAdmin_id());
+            if(remove)
+                residents.remove(this);
+            else
+                residents.add(this);
+        }
+        else if(country == Parameters.GUINEA)
+        {
+            Bag residents;
+            if(!ebolaSim.admin_id_gin_residents.containsKey(getHousehold().getAdmin_id()))
+                residents = ebolaSim.admin_id_gin_residents.put(getHousehold().getAdmin_id(), new Bag());
+            residents = ebolaSim.admin_id_gin_residents.get(getHousehold().getAdmin_id());
+            if(remove)
+                residents.remove(this);
+            else
+                residents.add(this);
+        }
+        else if(country == Parameters.LIBERIA)
+        {
+            Bag residents;
+            if(!ebolaSim.admin_id_lib_residents.containsKey(getHousehold().getAdmin_id()))
+                residents = ebolaSim.admin_id_lib_residents.put(getHousehold().getAdmin_id(), new Bag());
+            residents = ebolaSim.admin_id_lib_residents.get(getHousehold().getAdmin_id());
+            if(remove)
+                residents.remove(this);
+            else
+                residents.add(this);
+        }
+    }
 
+    public void addToAdminIdMapUrban(EbolaABM ebolaSim, int country, boolean remove)
+    {
+        if(country == Parameters.SL)
+        {
+            Bag residents;
+            if(!ebolaSim.admin_id_sle_urban_residents.containsKey(getHousehold().getAdmin_id()))
+                residents = ebolaSim.admin_id_sle_residents.put(getHousehold().getAdmin_id(), new Bag());
+            residents = ebolaSim.admin_id_sle_residents.get(getHousehold().getAdmin_id());
+            if(remove)
+                residents.remove(this);
+            else
+                residents.add(this);
+        }
+        else if(country == Parameters.GUINEA)
+        {
+            Bag residents;
+            if(!ebolaSim.admin_id_gin_urban_residents.containsKey(getHousehold().getAdmin_id()))
+                residents = ebolaSim.admin_id_gin_urban_residents.put(getHousehold().getAdmin_id(), new Bag());
+            residents = ebolaSim.admin_id_gin_urban_residents.get(getHousehold().getAdmin_id());
+            if(remove)
+                residents.remove(this);
+            else
+                residents.add(this);
+        }
+        else if(country == Parameters.LIBERIA)
+        {
+            Bag residents;
+            if(!ebolaSim.admin_id_lib_urban_residents.containsKey(getHousehold().getAdmin_id()))
+                residents = ebolaSim.admin_id_lib_urban_residents.put(getHousehold().getAdmin_id(), new Bag());
+            residents = ebolaSim.admin_id_lib_urban_residents.get(getHousehold().getAdmin_id());
+            if(remove)
+                residents.remove(this);
+            else
+                residents.add(this);
+        }
+    }
 
     public boolean isMoving()
     {

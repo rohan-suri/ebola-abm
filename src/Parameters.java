@@ -4,7 +4,7 @@
 public class Parameters
 {
     public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
-    public static double POPULATION_FLOW_SCALE = 1.5;//scale of how many people move around
+    public static double POPULATION_FLOW_SCALE = 3.5;//scale of how many people move around
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
     public static double POP_BLOCK_METERS = 926.1;//Height and width of one population block. (http://www.esri.com/news/arcuser/0400/wdside.html)
@@ -34,7 +34,8 @@ public class Parameters
                                                       //by an total of this minimum density.  Source: http://cber.cba.ua.edu/asdc/urban_rural.html
 
     //population flow parameters
-    public static double fromUrban = 0.0;//the percent of residents picked to move that need to be from an urban location
+    public static double fromUrban = 0.9;//the percent of residents picked to move that need to be from an urban location
+    public static double BIAS_INFECTED = 0.0;//a bias in moving infected people.  A number 0-1 where 1 means more bias and 0 means none.
 
     //Contains id ranges (inclusive) for each county in Sierra Leone, Guinea, and Liberia - used to identify country and country specific statistics
     public static int MIN_LIB_COUNTY_ID = 1508;
@@ -209,14 +210,14 @@ public class Parameters
     }
 
     //Ebola Disease Model Parameters
-    public static double SUSCEPTIBLE_TO_EXPOSED = 0.03 * Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
-    public static double INCUBATION_PERIOD_AVERAGE = 13.0;//as reported by Who Ebola Resonse Team source: http://www.nejm.org/doi/full/10.1056/NEJMoa1411100?rss=mostCited&
+    public static double SUSCEPTIBLE_TO_EXPOSED = 0.005 * Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
+    public static double INCUBATION_PERIOD_AVERAGE = 15.0;//as reported by Who Ebola Resonse Team source: http://www.nejm.org/doi/full/10.1056/NEJMoa1411100?rss=mostCited&
     public static double INCUBATION_PERIOD_STDEV = 1.0;//Standard deviation from reports above
     public static double CASE_FATALITY_RATIO = 0.70;//number of cases resulting in death
     public static double RECOVERY_PERIOD_AVERAGE = 14.0;
     public static double RECOVERY_PERIOD_STDEV = 1.0;
 
-    public static double SUSCEPTIBLE_TO_EXPOSED_TRAVELERS = 0.8 * Parameters.TEMPORAL_RESOLUTION;//special for travellers
+    public static double SUSCEPTIBLE_TO_EXPOSED_TRAVELERS = 0.2 * Parameters.TEMPORAL_RESOLUTION;//special for travellers
 
     public static  double FATALITY_PERIOD_AVERAGE = 8.0;
     public static double FATALITY_PERIOD_STDEV = 1.0;
