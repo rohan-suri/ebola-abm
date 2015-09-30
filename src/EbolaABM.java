@@ -36,6 +36,7 @@ public class EbolaABM extends SimState
     public SparseGrid2D placesGrid;
     public Network roadNetwork = new Network();
     public GeomVectorField roadLinks;
+    public GeomVectorField adminBoundaries;
     public SparseGrid2D allRoadNodes;
     public DoubleGrid2D road_cost; //accumalated cost to get to nearest node on the road network
     public IntGrid2D admin_id;//contains id for each location (939 x 990)

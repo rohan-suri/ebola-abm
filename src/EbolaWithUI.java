@@ -9,6 +9,7 @@ import sim.display.Console;
 import sim.display.Controller;
 import sim.display.Display2D;
 import sim.display.GUIState;
+import sim.field.geo.GeomVectorField;
 import sim.portrayal.DrawInfo2D;
 import sim.portrayal.FieldPortrayal2D;
 import sim.portrayal.continuous.ContinuousPortrayal2D;
@@ -230,6 +231,11 @@ public class EbolaWithUI extends GUIState
 
     public void setupPortrayals()
     {
+        GeomVectorFieldPortrayal boundaryPortrayal = new GeomVectorFieldPortrayal();
+        boundaryPortrayal.setField(((EbolaABM)state).adminBoundaries);
+        boundaryPortrayal.setPortrayalForAll(new GeomPortrayal(Color.BLACK, true));
+        display.attach(boundaryPortrayal, "Boundaries");
+
         FieldPortrayal2D householdortrayal = new SparseGridPortrayal2D();
         householdortrayal.setField(((EbolaABM)state).householdGrid);
         householdortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(0, 128, 255), 1.0, false)
