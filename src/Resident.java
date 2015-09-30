@@ -1,3 +1,4 @@
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.field.network.Edge;
@@ -5,6 +6,7 @@ import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.Int2D;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -159,9 +161,6 @@ public class Resident implements Steppable
 //        if(this.hashCode() == ebolaSim.firstResidentHash)
 //            System.out.println("FOUDN ASLKDFJASFJ");
 
-        if(isMovingCountdown == 0)
-            isMoving = false;
-
         //check if we have a goal
         if(goal == null)//calc goal
         {
@@ -182,7 +181,23 @@ public class Resident implements Steppable
                 else
                 {
                     if(isMoving)
-                        isMovingCountdown--;
+                    {
+                        //arrived after traveling
+                        if(this.getHealthStatus() == Constants.EXPOSED && Parameters.TRAVELLING_SET_TO_INFECTIOUS)
+                            this.setHealthStatus(Constants.INFECTIOUS);
+                        if(this.getHealthStatus() == Constants.INFECTIOUS && Parameters.INFECT_HOUSEHOLD_ON_ARRIVAl)
+                        {
+                            //if the agent is infected we need to give a chance that he infects other members of the household
+                            HashSet<Resident> residents = this.getHousehold().getMembers();
+                            for(Resident resident: residents)
+                            {
+                                if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
+                                    if(ebolaSim.random.nextDouble() < Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS)
+                                        resident.setHealthStatus(Constants.EXPOSED);
+                            }
+                        }
+                        isMoving = false;
+                    }
                     goal = null;
                 }
             }

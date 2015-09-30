@@ -217,9 +217,11 @@ public class Parameters
     public static double RECOVERY_PERIOD_AVERAGE = 14.0;
     public static double RECOVERY_PERIOD_STDEV = 1.0;
 
-    public static double SUSCEPTIBLE_TO_EXPOSED_TRAVELERS = 0.3 * Parameters.TEMPORAL_RESOLUTION;//special for travellers
+    public static double SUSCEPTIBLE_TO_EXPOSED_TRAVELERS = 0.4 * Parameters.TEMPORAL_RESOLUTION;//special for travellers
 
-    public static  double FATALITY_PERIOD_AVERAGE = 8.0;
+    public static double FATALITY_PERIOD_AVERAGE = 8.0;
     public static double FATALITY_PERIOD_STDEV = 1.0;
     public static boolean INFECT_ONLY_YOUR_STRUCTURE = true;
+    public static boolean TRAVELLING_SET_TO_INFECTIOUS = true;//decides whether a traveling agent that is exposed should default to infectious on arrival in his new location
+    public static boolean INFECT_HOUSEHOLD_ON_ARRIVAl = true;//decides whether a travelling agent should be given a special chance to infect new family members upon arrival to new household.  This would usually be at a much higher rate.
 }
