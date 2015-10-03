@@ -255,10 +255,10 @@ public class EbolaWithUI extends GUIState
         });
         display.attach(householdortrayal, "Household");
 
-        FieldPortrayal2D urbanPortrayal = new SparseGridPortrayal2D();
-        urbanPortrayal.setField(((EbolaABM)state).urbanAreasGrid);
-        urbanPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
-        display.attach(urbanPortrayal, "Urban Area");
+//        FieldPortrayal2D urbanPortrayal = new SparseGridPortrayal2D();
+//        urbanPortrayal.setField(((EbolaABM)state).urbanAreasGrid);
+//        urbanPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(255, 21, 19), 1.0, false));
+//        display.attach(urbanPortrayal, "Urban Area");
 
         //---------------------Adding the road portrayal------------------------------
         GeomVectorFieldPortrayal roadLinkPortrayal = new GeomVectorFieldPortrayal();

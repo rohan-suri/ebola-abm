@@ -217,7 +217,7 @@ public class Parameters
     public static double RECOVERY_PERIOD_AVERAGE = 14.0;
     public static double RECOVERY_PERIOD_STDEV = 1.0;
 
-    public static double SUSCEPTIBLE_TO_EXPOSED_TRAVELERS = 0.4 * Parameters.TEMPORAL_RESOLUTION;//special for travellers
+    public static double SUSCEPTIBLE_TO_EXPOSED_TRAVELERS = 0.0 * Parameters.TEMPORAL_RESOLUTION;//special for travellers
 
     public static double FATALITY_PERIOD_AVERAGE = 8.0;
     public static double FATALITY_PERIOD_STDEV = 1.0;

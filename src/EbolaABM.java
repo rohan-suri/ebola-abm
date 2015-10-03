@@ -102,7 +102,7 @@ public class EbolaABM extends SimState
     int[] roadDistanceHistogram = new int[50];
     boolean updatedChart = false;
 
-    public int firstResidentHash;
+    public int firstResidentHash = 0;
 
     //xy series for health status
     public XYSeries totalsusceptibleSeries = new XYSeries("Susceptible"); // shows  number of Susceptible agents

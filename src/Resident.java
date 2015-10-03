@@ -154,7 +154,7 @@ public class Resident implements Steppable
             return;
 
 
-//        if(ebolaSim.firstResidentHash == 0  && workDayDestination instanceof WorkLocation && isMoving())
+//        if(ebolaSim.firstResidentHash == 0  && cStep > 3 && this.isMoving())
 //            ebolaSim.firstResidentHash = this.hashCode();
 //        if(this.hashCode() == ebolaSim.firstResidentHash)
 //            System.out.println("FOUDN ASLKDFJASFJ");
@@ -475,8 +475,21 @@ public class Resident implements Steppable
             return false;
         }
         //randomly pick someone
-        Resident residentToMoveInWith = (Resident)residentsInUrbanArea.get(ebolaSim.random.nextInt(residentsInUrbanArea.size()));
+        Resident residentToMoveInWith;
+        do
+        {
+            int ran = ebolaSim.random.nextInt(residentsInUrbanArea.size());
+            residentToMoveInWith = (Resident)residentsInUrbanArea.get(ran);
+            residentsInUrbanArea.remove(ran);
+
+        } while(residentToMoveInWith.getWorkDayDestination() == null && residentsInUrbanArea.size() > 0);
+
+        if(residentToMoveInWith.getWorkDayDestination() == null)
+            return false;
+
         Household newHousehold = residentToMoveInWith.getHousehold();
+
+
 
         if(workDayDestination == null)// || newHousehold.getRoute(this.household, 50.0) == null)
         {
