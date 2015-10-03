@@ -484,9 +484,6 @@ public class Resident implements Steppable
             //but first we must remove the link we just made
             return false;
         }
-        //find work near your new household
-        if(isEmployed())
-            EbolaBuilder.setWorkDestination(this);
 
         //update bag
         //TODO make urban/rural population ratio stay the same.  Since all people move to urban areas and only some people go from urban.  Net flow is towards urban areas.
@@ -512,6 +509,11 @@ public class Resident implements Steppable
         path.add(newHousehold.getLocation());
         this.route = new Route(path, this.getLocation().distance(this.getHousehold().getLocation()), getHousehold().getNearestNode(), newHousehold.getNearestNode(), 10000);
         setHousehold(newHousehold);
+
+        //find work near your new household
+        if(isEmployed())
+            EbolaBuilder.setWorkDestination(this);
+
         return true;
     }
 

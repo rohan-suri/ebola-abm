@@ -306,7 +306,9 @@ public class EbolaABM extends SimState
                                         randomResident.moveResidency(mp.to_admin, mp.to_country, ebolaSim);
                                         break;
                                     }
-                                }while(!residentGood(randomResident, ebolaSim) && !randomResident.moveResidency(mp.to_admin, mp.to_country, ebolaSim));
+                                    if(residentGood(randomResident, ebolaSim) && randomResident.moveResidency(mp.to_admin, mp.to_country, ebolaSim))
+                                        break;
+                                }while(true);
                                 if(randomResident != null)
                                 {
                                     if(randomResident.getHealthStatus() == Constants.EXPOSED || randomResident.getHealthStatus() == Constants.INFECTIOUS)
@@ -329,15 +331,24 @@ public class EbolaABM extends SimState
 
             private boolean residentGood(Resident resident, EbolaABM ebolaSim)
             {
+                //absolute criteria
+                if(resident.getWorkDayDestination() instanceof School)
+                    return false;
+                if(!resident.isEmployed())
+                    return false;
+                if(resident.getWorkDayDestination() == null)
+                    return false;
                 if(resident.getAge() < 15)
                     return false;
+                if(resident.getHealthStatus() == Constants.DEAD)
+                    return false;
+
+                //other probabilities and biases
                 double rand = ebolaSim.random.nextDouble();
                 if(rand < 0.3 && !resident.getIsUrban())
                     return false;
                 //this is for instroducing bias if they are infected
                 if(ebolaSim.random.nextDouble() < Parameters.BIAS_INFECTED && resident.getHealthStatus() != Constants.INFECTIOUS)
-                    return false;
-                if(resident.getHealthStatus() == Constants.DEAD)
                     return false;
                 return true;
             }
