@@ -46,6 +46,7 @@ public class EbolaBuilder
         ebolaSim.roadNetwork = new Network();
         ebolaSim.roadLinks = new GeomVectorField(ebolaSim.world_width, ebolaSim.world_height);
         ebolaSim.adminBoundaries = new GeomVectorField(ebolaSim.world_width, ebolaSim.world_height);
+        ebolaSim.adminShape = new GeomVectorField(ebolaSim.world_width, ebolaSim.world_height);
         System.out.println("(" + ebolaSim.world_width + ", " + ebolaSim.world_height + ")");
         GeomVectorField schools_vector = new GeomVectorField();
         GeomVectorField farms_vector = new GeomVectorField();
@@ -64,8 +65,8 @@ public class EbolaBuilder
 
         try
         {
-            String[] files = {Parameters.ROADS_SHAPE_PATH, Parameters.SCHOOLS_PATH, Parameters.FARMS_PATH, Parameters.HOSPITALS_PATH, "data/places_shapefile/all_places.shp", "data/admin_id_shapefile/all_admin.shp"};//all the files we want to read in
-            GeomVectorField[] vectorFields = {ebolaSim.roadLinks, schools_vector, farms_vector, hospitals_vector, places_vector, ebolaSim.adminBoundaries};//all the vector fields we want to fill
+            String[] files = {Parameters.ROADS_SHAPE_PATH, Parameters.SCHOOLS_PATH, Parameters.FARMS_PATH, Parameters.HOSPITALS_PATH, "data/places_shapefile/all_places.shp", "data/admin_id_shapefile/all_admin_boundary.shp", "data/admin_id_shapefile/all_admin.shp"};//all the files we want to read in
+            GeomVectorField[] vectorFields = {ebolaSim.roadLinks, schools_vector, farms_vector, hospitals_vector, places_vector, ebolaSim.adminBoundaries, ebolaSim.adminShape};//all the vector fields we want to fill
             readInShapefile(files, vectorFields);
 
             System.out.println("Done getting information, now analyzing.");
@@ -153,6 +154,11 @@ public class EbolaBuilder
             {
                 String filePath = files[i];
                 Bag schools_masked = new Bag();
+                if(vectorFields[i].hashCode() == ebolaSim.adminShape.hashCode())
+                {
+                    schools_masked.add("IPUMSID");
+                    schools_masked.add("ISO");
+                }
                 File schools_file = new File(filePath);
                 URL shapeURI = schools_file.toURI().toURL();
                 ShapeFileImporter.read(shapeURI, vectorFields[i], schools_masked);

@@ -238,7 +238,7 @@ public class EbolaABM extends SimState
                     {
                         simState.finish();
                         try {
-			    //System.out.println("killing all");
+			    System.out.println("killing all");
                             Runtime.getRuntime().exec("killall java");
                         }catch(IOException e) {e.printStackTrace();}
                     }

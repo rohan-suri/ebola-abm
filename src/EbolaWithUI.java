@@ -4,7 +4,10 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.plot.dial.*;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYSeriesCollection;
 import sim.display.Console;
 import sim.display.Controller;
 import sim.display.Display2D;
@@ -16,15 +19,15 @@ import sim.portrayal.continuous.ContinuousPortrayal2D;
 import sim.portrayal.geo.GeomPortrayal;
 import sim.portrayal.geo.GeomVectorFieldPortrayal;
 import sim.portrayal.grid.SparseGridPortrayal2D;
-import sim.portrayal.network.NetworkPortrayal2D;
-import sim.portrayal.network.SimpleEdgePortrayal2D;
-import sim.portrayal.network.SpatialNetwork2D;
 import sim.portrayal.simple.OvalPortrayal2D;
 import sim.portrayal.simple.RectanglePortrayal2D;
+import sim.util.geo.MasonGeometry;
+import sim.util.media.chart.ChartGenerator;
 import sim.util.media.chart.TimeSeriesChartGenerator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
 
 /**
  * Created by rohansuri on 7/8/15.
@@ -44,10 +47,20 @@ public class EbolaWithUI extends GUIState
     public void init(Controller c)
     {
         super.init(c);
-        display = new Display2D(1000, 1000, this); //creates the display
+
+        //set dimen and position of controller
+        ((Console)c).setSize(350, 80);
+        ((Console)c).setLocation(0, 680);
+
+
+        display = new Display2D(1180, 1180, this); //creates the display
+        display.setRefresRate(32);
+        //display.setScale(2);
+
         displayFrame = display.createFrame();
         c.registerFrame(displayFrame);
         displayFrame.setVisible(true);
+        displayFrame.setSize(1870, 1180);
 
         JFreeChart roadNetworkChart;
         roadNetworkChart = ChartFactory.createBarChart("Distribution Chart", "Distance",
@@ -97,7 +110,26 @@ public class EbolaWithUI extends GUIState
 
         //chart for cumulative cases
         TimeSeriesChartGenerator charSeriesCumalative;
-        charSeriesCumalative = new TimeSeriesChartGenerator();
+        charSeriesCumalative = new TimeSeriesChartGenerator()
+        {
+            @Override
+            public void buildChart()
+            {
+                XYSeriesCollection collection = new XYSeriesCollection();
+                this.chart = ChartFactory.createXYLineChart("Untitled Chart", "Untitled X Axis", "Untitled Y Axis", collection, PlotOrientation.VERTICAL, false, false, false);
+                ((XYLineAndShapeRenderer)((XYLineAndShapeRenderer)((XYPlot)((XYPlot)this.chart.getPlot())).getRenderer())).setDrawSeriesLineAsPath(true);
+                this.chart.setAntiAlias(true);
+                this.chartPanel = this.buildChartPanel(this.chart);
+                this.setChartPanel(this.chartPanel);
+                this.setSeriesDataset(collection);
+            }
+
+//            @Override
+//            public ChartGenerator.ScrollableChartPanel buildChartPanel(JFreeChart chart) {
+//                return new ChartGenerator.ScrollableChartPanel(chart, true);
+//            }
+
+        };
         charSeriesCumalative.createFrame();
         charSeriesCumalative.setSize(dm);
         charSeriesCumalative.setTitle("Cumulative Cases");
@@ -108,8 +140,8 @@ public class EbolaWithUI extends GUIState
 //        chartSeriesCholera.setMinimumChartDrawSize(400, 300); // makes it scale at small sizes
 //        chartSeriesCholera.setPreferredChartSize(400, 300); // lets it be small
 
-        charSeriesCumalative.addSeries(((EbolaABM) this.state).totalLiberia , null);
-        charSeriesCumalative.addSeries(((EbolaABM) this.state).totalGuinea , null);
+        charSeriesCumalative.addSeries(((EbolaABM) this.state).totalLiberia, null);
+        charSeriesCumalative.addSeries(((EbolaABM) this.state).totalGuinea, null);
         charSeriesCumalative.addSeries(((EbolaABM) this.state).totalSierra_Leone, null);
         charSeriesCumalative.addSeries(((EbolaABM) this.state).totalGuineaActual, null);
         charSeriesCumalative.addSeries(((EbolaABM) this.state).totalLiberiaActual, null);
@@ -121,6 +153,11 @@ public class EbolaWithUI extends GUIState
 
         JFrame cumalativeFrameSeries = charSeriesCumalative.createFrame(this);
         cumalativeFrameSeries.pack();
+
+        cumalativeFrameSeries.setVisible(true);
+        cumalativeFrameSeries.setSize(612, 450);//680 by 500
+        cumalativeFrameSeries.setLocation(0, 760);
+
         c.registerFrame(cumalativeFrameSeries);
 
         //make a chart for total actual cases
@@ -220,18 +257,62 @@ public class EbolaWithUI extends GUIState
         timeframe.setSize(200, 100);
         timeframe.pack();
         c.registerFrame(timeframe);
+
+        ((Console) c).pressPlay();
     }
 
     @Override
     public void start()
     {
         super.start();
+
         setupPortrayals();
     }
 
     public void setupPortrayals()
     {
 
+        GeomVectorFieldPortrayal adminShapePortrayal = new GeomVectorFieldPortrayal();
+        adminShapePortrayal.setField(((EbolaABM) state).adminShape);
+        adminShapePortrayal.setPortrayalForAll(new GeomPortrayal(new Color(0.42f, 0.42f, 0.42f, 0.5f), 2.0, true) {
+            @Override
+            public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
+            {
+                MasonGeometry mg = (MasonGeometry)object;
+
+                String countryString = mg.getStringAttribute("ISO");
+                int country;
+                if(countryString.equals("GIN"))
+                    country = Parameters.GUINEA;
+                else if(countryString.equals("LBR"))
+                    country = Parameters.LIBERIA;
+                else
+                    country = Parameters.SL;
+                HashMap<Integer, Integer> temp = ((EbolaABM)state).adminInfectedTotals.get(country);
+                int admin_id = mg.getIntegerAttribute("IPUMSID");
+                int cases = 0;
+                if(temp.containsKey(admin_id))
+                    cases = temp.get(admin_id);
+
+                if(cases == 0)
+                    paint = Color.WHITE;
+                if(cases > 0 && cases <= 10)
+                    paint = new Color(0.9529412f, 0.79607844f, 0.7372549f);
+                else if(cases > 10 && cases <= 50)
+                    paint = new Color(227, 137, 109);
+                else if(cases > 50 && cases <= 100)
+                    paint = new Color(206, 82, 66);
+                else if(cases > 100 && cases <= 250)
+                    paint = new Color(196, 6, 3);
+                else if(cases > 250 && cases <= 500)
+                    paint = new Color(128, 25, 32);
+                else if(cases > 500)
+                    paint = new Color(49, 15, 14);
+
+                super.draw(object, graphics, info);
+            }
+        });
+        display.attach(adminShapePortrayal, "Admin Shape");
 
         FieldPortrayal2D householdortrayal = new SparseGridPortrayal2D();
         householdortrayal.setField(((EbolaABM)state).householdGrid);
@@ -277,34 +358,29 @@ public class EbolaWithUI extends GUIState
         display.attach(schoolPortrayal, "Schools");
 
         //Farms
-        FieldPortrayal2D farmPortrayal = new SparseGridPortrayal2D();
-        farmPortrayal.setField(((EbolaABM) state).farmGrid);
-        farmPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(17, 202, 255), 1.0, false)
-        {
-            @Override
-            public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
-            {
-                WorkLocation wl = (WorkLocation)object;
-
-                if(wl.getSector_id() == Constants.HEALTH)
-                {
-                    paint = new Color(193, 0, 255);
-                    //super.scale = 4.0;
-                }
-                else
-                {
-                    paint = new Color(17, 202, 255);
-                }
-
-                super.draw(object, graphics, info);
-            }
-        });
-        display.attach(farmPortrayal, "Work Locations");
-
-//        NetworkPortrayal2D roadNetworkPortrayal = new NetworkPortrayal2D();
-//        roadNetworkPortrayal.setField(new SpatialNetwork2D(((EbolaABM)state).allRoadNodes, ((EbolaABM)state).roadNetwork));
-//        roadNetworkPortrayal.setPortrayalForAll(new SimpleEdgePortrayal2D());
-//        display.attach(roadNetworkPortrayal, "Road Network");
+//        FieldPortrayal2D farmPortrayal = new SparseGridPortrayal2D();
+//        farmPortrayal.setField(((EbolaABM) state).farmGrid);
+//        farmPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(17, 202, 255), 1.0, false)
+//        {
+//            @Override
+//            public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
+//            {
+//                WorkLocation wl = (WorkLocation)object;
+//
+//                if(wl.getSector_id() == Constants.HEALTH)
+//                {
+//                    paint = new Color(193, 0, 255);
+//                    //super.scale = 4.0;
+//                }
+//                else
+//                {
+//                    paint = new Color(17, 202, 255);
+//                }
+//
+//                super.draw(object, graphics, info);
+//            }
+//        });
+//        display.attach(farmPortrayal, "Work Locations");
 
         ContinuousPortrayal2D residentPortrayal = new ContinuousPortrayal2D();
 
@@ -335,11 +411,11 @@ public class EbolaWithUI extends GUIState
                 super.draw(object, graphics, info);
             }
         });
-        display.attach(residentPortrayal, "Residents");
+        //display.attach(residentPortrayal, "Residents");
 
         FieldPortrayal2D hotspotsPortrayal = new SparseGridPortrayal2D();
         hotspotsPortrayal.setField(((EbolaABM)state).hotSpotsGrid);
-        hotspotsPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(1.0f, 0.0f, 0.09f, 0.5f), 3.0, true));
+        hotspotsPortrayal.setPortrayalForAll(new RectanglePortrayal2D(new Color(1.0f, 0.0f, 0.09f, 0.8f), 5, true));
         display.attach(hotspotsPortrayal, "Hotspot Area");
 
         GeomVectorFieldPortrayal boundaryPortrayal = new GeomVectorFieldPortrayal();

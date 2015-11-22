@@ -87,7 +87,9 @@ public class Resident implements Steppable
             }
             else if(time_to_infectious <= 0)//now become infectious
             {
+                ebolaSim.total_exposed--;
                 this.setHealthStatus(Constants.INFECTIOUS);
+                ebolaSim.total_infectious++;
             }
             else if(!isMoving())
                 time_to_infectious--;
@@ -107,10 +109,13 @@ public class Resident implements Steppable
             }
             else if(time_to_resolution <= 0)
             {
-                if(doomed_to_die)
+                if (doomed_to_die) {
                     setHealthStatus(Constants.DEAD);
-                else
+                    ebolaSim.total_infectious--;
+                } else {
                     setHealthStatus(Constants.RECOVERED);
+                    ebolaSim.total_infectious--;
+                }
             }
             else if(!isMoving())
                 time_to_resolution--;
@@ -138,6 +143,14 @@ public class Resident implements Steppable
                         if(rand < (resident.isMoving()?Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS:Parameters.SUSCEPTIBLE_TO_EXPOSED))//infect this agent
                         {
                             resident.setHealthStatus(Constants.EXPOSED);
+                            ebolaSim.total_exposed++;
+                            //update the tally for each region
+                            if(!ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry()).containsKey(resident.getHousehold().getAdmin_id()))
+                                ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry()).put(resident.getHousehold().getAdmin_id(), 0);
+                            ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry())
+                                    .put(resident.getHousehold().getAdmin_id(), ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry()).get(resident.getHousehold().getAdmin_id())+1);
+
+                            //update the tally for each country
                             if(resident.getHousehold().getCountry() == Parameters.LIBERIA)
                                 ebolaSim.totalLiberiaInt++;
                             else if(resident.getHousehold().getCountry() == Parameters.SL)

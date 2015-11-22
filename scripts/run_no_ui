@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+#make the classes directory if it doesn't already exist
+mkdir -p classes
+
+#compile before running
+javac -classpath lib/csv4j-0.4.0.jar:lib/geomason.1.5.jar:lib/jcommon-1.0.16.jar:lib/jfreechart-1.0.9.jar:lib/jts-1.13.jar:lib/mason/jar/*  -d classes src/*.java
+
+#check if we need to download road_cost.dat
+if [ ! -f data/road_cost.dat ]; then
+	echo "Downloading road_cost file..."
+	curl -# -L -o data/road_cost.dat.gz https://www.dropbox.com/s/r4xtyeq64c0l45v/road_cost.dat.gz?dl=1
+	gunzip data/road_cost.dat.gz
+fi
+
+#run EbolaWithUI
+java -Xmx12288m -cp classes:lib/csv4j-0.4.0.jar:lib/geomason.1.5.jar:lib/jcommon-1.0.16.jar:lib/jfreechart-1.0.9.jar:lib/jts-1.13.jar:lib/mason/jar/* EbolaABM
