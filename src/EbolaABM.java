@@ -323,8 +323,13 @@ public class EbolaABM extends SimState
                     List<MovementPattern> list = movementPatternMap.get(key);
                     for(MovementPattern mp: list)//move over each movement pattern
                     {
+			//decide if this is international and use a different scale instead
+			double pop_flow_scale = Parameters.POPULATION_FLOW_SCALE;			
+			if(mp.source_country != mp.to_country)
+				pop_flow_scale = Paramters.INTERNATIONAL_POP_FLOW_SCALE;
+			
                         //use poisson distribution to get the number of people that should move in a given day
-                        Poisson poisson = new Poisson(mp.annual_amnt/365.0*Parameters.POPULATION_FLOW_SCALE, random);
+                        Poisson poisson = new Poisson(mp.annual_amnt/365.0*pop_flow_scale, random);
                         int move_num = poisson.nextInt();
                         if(move_num > 0)
                         {
