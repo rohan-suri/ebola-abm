@@ -326,7 +326,7 @@ public class EbolaABM extends SimState
 			//decide if this is international and use a different scale instead
 			double pop_flow_scale = Parameters.POPULATION_FLOW_SCALE;			
 			if(mp.source_country != mp.to_country)
-				pop_flow_scale = Paramters.INTERNATIONAL_POP_FLOW_SCALE;
+				pop_flow_scale = Parameters.INTERNATIONAL_POP_FLOW_SCALE;
 			
                         //use poisson distribution to get the number of people that should move in a given day
                         Poisson poisson = new Poisson(mp.annual_amnt/365.0*pop_flow_scale, random);
