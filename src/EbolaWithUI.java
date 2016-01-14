@@ -54,7 +54,7 @@ public class EbolaWithUI extends GUIState
 
 
         display = new Display2D(1180, 1180, this); //creates the display
-        display.setRefresRate(32);
+        //display.setRefresRate(32);
         //display.setScale(2);
 
         displayFrame = display.createFrame();
