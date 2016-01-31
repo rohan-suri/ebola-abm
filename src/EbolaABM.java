@@ -124,6 +124,8 @@ public class EbolaABM extends SimState
     public XYSeries totalGuinea = new XYSeries("Guinea");
     public XYSeries totalSierra_Leone = new XYSeries("Sierra Leone");
 
+    public List<XYSeries> effectiveReproductiveRates = new ArrayList<>();
+
     //xy series for actual cases
     public XYSeries totalGuineaActual = new XYSeries("Guinea Actual");
     public XYSeries totalLiberiaActual = new XYSeries("Liberia Actual");
@@ -162,6 +164,7 @@ public class EbolaABM extends SimState
         {
             adminInfectedTotals.add(new HashMap<>());
             adminInfectedSeries.add(new HashMap<>());
+			effectiveReproductiveRates.add(new XYSeries("Effective Reproductive Rate"));
         }
         EbolaBuilder.initializeWorld(this, Parameters.POP_PATH, Parameters.ADMIN_PATH, Parameters.AGE_DIST_PATH);
         readInActualCases(actualGuineaCases, Parameters.ACTUAL_CASES_GUINEA);
@@ -435,6 +438,12 @@ public class EbolaABM extends SimState
                     XYSeries xySeries = adminInfectedSeries.get(i).get(key);
                     writeXYSeriesToCSV((i==Parameters.GUINEA?"GIN":(i==Parameters.LIBERIA?"LBR":"SLE")) + "_" + key + ".csv", xySeries);
                 }
+		//write effective reproductive rates
+		for(int i = 0; i < effectiveReproductiveRates.size(); i++)
+		{
+        	XYSeries xySeries = effectiveReproductiveRates.get(i);
+			writeXYSeriesToCSV((i==Parameters.GUINEA?"guinea":(i==Parameters.LIBERIA?"liberia":"sierra_leone")) + "_reproductive_rate.csv", xySeries);
+		}
 
         super.finish();
     }

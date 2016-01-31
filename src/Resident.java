@@ -44,6 +44,8 @@ public class Resident implements Steppable
     boolean doomed_to_die = false;
     double time_to_resolution = -1;
     double time_to_infectious = -1;
+    int infected_count = 0;
+	int day_infected = 0;
 
     private int religion;
 
@@ -99,11 +101,14 @@ public class Resident implements Steppable
         {
             if(doomed_to_die && time_to_resolution == -1)
             {
+				day_infected = ((int)cStep)/24;
                 //decide to kill or be recovered
                 time_to_resolution = ((ebolaSim.random.nextGaussian()*Parameters.FATALITY_PERIOD_STDEV)+Parameters.FATALITY_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
             }
             else if(time_to_resolution == -1)
             {
+				//set date infected
+				day_infected = ((int)cStep)/24;
                 //decide when to recover
                 time_to_resolution = ((ebolaSim.random.nextGaussian()*Parameters.RECOVERY_PERIOD_STDEV)+Parameters.RECOVERY_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
             }
@@ -116,6 +121,8 @@ public class Resident implements Steppable
                     setHealthStatus(Constants.RECOVERED);
                     ebolaSim.total_infectious--;
                 }
+                //add your infected count to the xyseries
+                ebolaSim.effectiveReproductiveRates.get(this.getHousehold().getCountry()).add(day_infected, infected_count);
             }
             else if(!isMoving())
                 time_to_resolution--;
@@ -144,6 +151,7 @@ public class Resident implements Steppable
                         {
                             resident.setHealthStatus(Constants.EXPOSED);
                             ebolaSim.total_exposed++;
+                            infected_count++;
                             //update the tally for each region
                             if(!ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry()).containsKey(resident.getHousehold().getAdmin_id()))
                                 ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry()).put(resident.getHousehold().getAdmin_id(), 0);
