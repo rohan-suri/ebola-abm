@@ -306,6 +306,7 @@ public class Resident implements Steppable
 
     private void calcGoal(long cStep, EbolaABM ebolaSim)
     {
+        long days_since_start = cStep/24;
         int dayOfWeek = (int)((cStep*Parameters.TEMPORAL_RESOLUTION)/24%7);
         if(dayOfWeek < 5)//weekday
         {
@@ -315,7 +316,15 @@ public class Resident implements Steppable
                 double rand = ebolaSim.random.nextDouble();
                 if(rand < 0.7)
                 {
-                    setGoal(this.getHousehold(), workDayDestination, dailyWorkHours, Parameters.WALKING_SPEED);
+                    //check to make sure schools are open
+                    if(workDayDestination instanceof School)//we are a student
+                    {
+                        boolean schools_closed = Parameters.CLOSE_SCHOOLS && days_since_start >= Parameters.CLOSE_SCHOOLS_START;
+                        if(!schools_closed)
+                            setGoal(this.getHousehold(), workDayDestination, dailyWorkHours, Parameters.WALKING_SPEED);
+                    }
+                    else
+                        setGoal(this.getHousehold(), workDayDestination, dailyWorkHours, Parameters.WALKING_SPEED);
                 }
             }
 

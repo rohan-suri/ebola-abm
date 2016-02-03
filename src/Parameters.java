@@ -210,6 +210,10 @@ public class Parameters
         return (val*1000.0)/(Parameters.POP_BLOCK_METERS/Parameters.WORLD_TO_POP_SCALE);
     }
 
+    //Intervention Toggles
+    public static boolean CLOSE_SCHOOLS = true;//close all schools in all countries
+    public static int CLOSE_SCHOOLS_START = 90;//day in which the school closures would be placed
+
     //Ebola Disease Model Parameters
     public static double SUSCEPTIBLE_TO_EXPOSED = 0.0040 * Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
     public static double INCUBATION_PERIOD_AVERAGE = 15.0;//as reported by Who Ebola Resonse Team source: http://www.nejm.org/doi/full/10.1056/NEJMoa1411100?rss=mostCited&
