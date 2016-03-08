@@ -4,7 +4,7 @@
 public class Parameters
 {
     public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
-    public static double POPULATION_FLOW_SCALE = 0.40;//scale of how many people move around
+    public static double POPULATION_FLOW_SCALE = 0.30;//scale of how many people move around
     public static double INTERNATIONAL_POP_FLOW_SCALE = POPULATION_FLOW_SCALE/1.0;//scale of international travel
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
     public static double WORLD_DISCRETIZTION = 0.1;//discretization or buckets for world granularity
@@ -211,7 +211,7 @@ public class Parameters
     }
 
     //Intervention Toggles
-    public static boolean CLOSE_SCHOOLS = true;//close all schools in all countries
+    public static boolean CLOSE_SCHOOLS = false;//close all schools in all countries
     public static int CLOSE_SCHOOLS_START = 90;//day in which the school closures would be placed
 
     //Ebola Disease Model Parameters
