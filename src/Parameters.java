@@ -211,7 +211,7 @@ public class Parameters
     }
 
     //Intervention Toggles
-    public static boolean CLOSE_SCHOOLS = false;//close all schools in all countries
+    public static boolean CLOSE_SCHOOLS = true;//close all schools in all countries
     public static int CLOSE_SCHOOLS_START = 90;//day in which the school closures would be placed
 
     //Ebola Disease Model Parameters
