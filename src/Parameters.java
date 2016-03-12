@@ -1,6 +1,8 @@
 /**
  * Created by rohansuri on 7/7/15
  */
+import java.lang.Math;
+
 public class Parameters
 {
     public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
@@ -212,7 +214,26 @@ public class Parameters
 
     //Intervention Toggles
     public static boolean CLOSE_SCHOOLS = false;//close all schools in all countries
-    public static int CLOSE_SCHOOLS_START = 90;//day in which the school closures would be placed
+    public static int CLOSE_SCHOOLS_START = 80;//day in which the school closures would be placed
+	//awareness
+	public static boolean AWARENESS_ON = true;//whether to model increased awareness
+	public static int AWARENESS_START = 80;//day to start modeling awareness
+	//constants for the awareness function
+	public static double AWARENESS_K = 15;
+	public static double AWARENESS_C = 50;
+	public static double AWARENESS_L = 0.8;
+	//Awareness function based off of the percent of an indviduals home and work network infected
+	//returns value between 0 and 1
+	public static double calcAwareness(double percent_network_infected)
+	{
+		return (AWARENESS_L / (1 + AWARENESS_C*Math.exp(-1*AWARENESS_K*percent_network_infected))) - 0.0157;
+	}
+	//reduce probability function
+	//decides how to incorporate the awareness into reducing the probability of infection at given time step
+	public static double calcReducedProb(double awareness)
+	{
+		return Parameters.SUSCEPTIBLE_TO_EXPOSED*(1-awareness);
+	}
 
     //Ebola Disease Model Parameters
     public static double SUSCEPTIBLE_TO_EXPOSED = 0.0080 * Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution

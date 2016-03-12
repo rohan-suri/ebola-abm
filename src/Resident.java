@@ -147,7 +147,14 @@ public class Resident implements Steppable
                     if(!Parameters.INFECT_ONLY_YOUR_STRUCTURE || (currentStructure != null && currentStructure.getMembers().contains(resident)))
                     {
                         double rand = ebolaSim.random.nextDouble();
-                        if(rand < (resident.isMoving()?Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS:Parameters.SUSCEPTIBLE_TO_EXPOSED))//infect this agent
+						//incorporate awareness if needed
+						double contact_rate = Parameters.SUSCEPTIBLE_TO_EXPOSED;
+						if(Parameters.AWARENESS_ON && cStep%24 > Parameters.AWARENESS_START)
+						{	
+							double awareness = Parameters.calcAwareness(calcNetworkSick());
+							contact_rate = Parameters.calcReducedProb(awareness);
+						}
+                        if(rand < (resident.isMoving()?Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS:contact_rate))//infect this agent
                         {
                             resident.setHealthStatus(Constants.EXPOSED);
                             ebolaSim.total_exposed++;
@@ -470,6 +477,19 @@ public class Resident implements Steppable
     public void setReligion(int religion) {
         this.religion = religion;
     }
+	//returns the percentage of agents in this agent's house or workplace
+	public double calcNetworkSick()
+	{
+		HashSet<Resident> residents = household.getMembers();
+		if(workDayDestination != null)
+			residents.addAll(workDayDestination.getMembers());//TODO Make sure there are actually people in this members
+		int infected_count = 0;
+		for(Resident resident: residents)
+			if(resident.getHealthStatus() != Constants.SUSCEPTIBLE || resident.getHealthStatus() != Constants.EXPOSED)
+				infected_count++;
+		return residents.size()*1.0/infected_count;
+			
+	}
 
     /**
      * @param newAdminId
