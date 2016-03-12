@@ -107,8 +107,8 @@ public class Resident implements Steppable
             }
             else if(time_to_resolution == -1)
             {
-				//set date infected
-				day_infected = ((int)cStep)/24;
+		//set date infected
+		day_infected = ((int)cStep)/24;
                 //decide when to recover
                 time_to_resolution = ((ebolaSim.random.nextGaussian()*Parameters.RECOVERY_PERIOD_STDEV)+Parameters.RECOVERY_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
             }
@@ -147,15 +147,15 @@ public class Resident implements Steppable
                     if(!Parameters.INFECT_ONLY_YOUR_STRUCTURE || (currentStructure != null && currentStructure.getMembers().contains(resident)))
                     {
                         double rand = ebolaSim.random.nextDouble();
-						//incorporate awareness if needed
-						double contact_rate = Parameters.SUSCEPTIBLE_TO_EXPOSED;
-						if(Parameters.AWARENESS_ON && cStep%24 > Parameters.AWARENESS_START)
-						{	
-							double awareness = Parameters.calcAwareness(calcNetworkSick());
-							contact_rate = Parameters.calcReducedProb(awareness);
-						}
+			//incorporate awareness if needed
+			double contact_rate = Parameters.SUSCEPTIBLE_TO_EXPOSED;
+			if(Parameters.AWARENESS_ON && ((int)cStep)/24 > Parameters.AWARENESS_START)
+			{
+				double awareness = Parameters.calcAwareness(calcNetworkSick());
+				contact_rate = Parameters.calcReducedProb(awareness);
+			}
                         if(rand < (resident.isMoving()?Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS:contact_rate))//infect this agent
-                        {
+                       	{
                             resident.setHealthStatus(Constants.EXPOSED);
                             ebolaSim.total_exposed++;
                             infected_count++;
