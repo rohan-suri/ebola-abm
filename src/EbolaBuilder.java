@@ -1473,8 +1473,8 @@ public class EbolaBuilder
                 double y = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(10)).intValue();
                 Int2D location = convertToWorld(x, y);
 
-                double amount = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(18/*kenyan model*/)).intValue();
-
+                double amount = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(16/*ivory coast model*/)).intValue();
+		System.out.println("length of line = " + line.size());
                 mp.source_admin = from_admin_id;
                 mp.to_admin = to_admin_id;
                 mp.annual_amnt = amount;
