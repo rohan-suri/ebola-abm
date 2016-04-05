@@ -22,15 +22,15 @@ This is the first spatially expilicit, 1:1, agent based model for the spread of 
 	```
 
 ##Checking Output
-After a run is finished, model output will be written in CSV files located in the output/ directory
-###3 Types of Output
+After a run is finished, model output will be written in CSV files located in the output/ directory</br>
+3 Types of Output:
 - Cumulative cases for each of the three countries (liberia_cumulative.csv)
-- Cumulative cases for each district.  Files will be [IPUMS_ID].csv
-- Effective contact rates for each country ()
+- Cumulative cases for each district.  Files will be LBR_[IPUMSID].csv
+- Effective contact rates for each country (liberia_reproductive_rate.csv)
 
 ##Parameters
 - All paraemters are located in the Parameters.java file
-- Parameters derived from a number of sources including previous literature and Labour Market Surveys
+- Parameters derived from a number of sources including previous literature and labour market surveys
 - Fitted parameters include:
 	- Contact Rate: the probablity of infecting another agent in the same structure at each time step 
 	- Populuation Flow Scale: Scales the movement of agents between districts
