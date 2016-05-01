@@ -239,7 +239,7 @@ public class EbolaABM extends SimState
 //                    totalDeadSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_dead);//every hour
 //                    totalExposedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_exposed);//every hour
 
-                    if(cStep/24 > 10/*TEMPTEMP*/ || totalGuineaInt > 40000 || (cStep > 1 && ((EbolaABM)simState).total_infectious+((EbolaABM)simState).total_exposed == 0))
+                    if(cStep/24 > 360/*TEMPTEMP*/ || totalGuineaInt > 40000 || (cStep > 1 && ((EbolaABM)simState).total_infectious+((EbolaABM)simState).total_exposed == 0))
                     {
                         simState.finish();
 //                        try {
