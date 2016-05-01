@@ -89,9 +89,12 @@ public class Resident implements Steppable
             }
             else if(time_to_infectious <= 0)//now become infectious
             {
-                ebolaSim.total_exposed--;
+                synchronized (ebolaSim)
+                {
+                    ebolaSim.total_infectious++;
+                    ebolaSim.total_exposed--;
+                }
                 this.setHealthStatus(Constants.INFECTIOUS);
-                ebolaSim.total_infectious++;
             }
             else if(!isMoving())
                 time_to_infectious--;
@@ -122,7 +125,10 @@ public class Resident implements Steppable
                     ebolaSim.total_infectious--;
                 }
                 //add your infected count to the xyseries
-                ebolaSim.effectiveReproductiveRates.get(this.getHousehold().getCountry()).add(day_infected, infected_count);
+                synchronized (ebolaSim.effectiveReproductiveRates.get(this.getHousehold().getCountry()))
+                {
+                    ebolaSim.effectiveReproductiveRates.get(this.getHousehold().getCountry()).add(day_infected, infected_count);
+                }
             }
             else if(!isMoving())
                 time_to_resolution--;
@@ -157,21 +163,24 @@ public class Resident implements Steppable
                         if(rand < (resident.isMoving()?Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS:contact_rate))//infect this agent
                        	{
                             resident.setHealthStatus(Constants.EXPOSED);
-                            ebolaSim.total_exposed++;
-                            infected_count++;
-                            //update the tally for each region
-                            if(!ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry()).containsKey(resident.getHousehold().getAdmin_id()))
-                                ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry()).put(resident.getHousehold().getAdmin_id(), 0);
-                            ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry())
+                            synchronized (ebolaSim)
+                            {
+                                ebolaSim.total_exposed++;
+                                infected_count++;
+                                //update the tally for each region
+                                if(!ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry()).containsKey(resident.getHousehold().getAdmin_id()))
+                                    ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry()).put(resident.getHousehold().getAdmin_id(), 0);
+                                ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry())
                                     .put(resident.getHousehold().getAdmin_id(), ebolaSim.adminInfectedTotals.get(resident.getHousehold().getCountry()).get(resident.getHousehold().getAdmin_id())+1);
 
-                            //update the tally for each country
-                            if(resident.getHousehold().getCountry() == Parameters.LIBERIA)
-                                ebolaSim.totalLiberiaInt++;
-                            else if(resident.getHousehold().getCountry() == Parameters.SL)
-                                ebolaSim.totalSierra_LeoneInt++;
-                            else if(resident.getHousehold().getCountry() == Parameters.GUINEA)
-                                ebolaSim.totalGuineaInt++;
+                                //update the tally for each country
+                                if(resident.getHousehold().getCountry() == Parameters.LIBERIA)
+                                    ebolaSim.totalLiberiaInt++;
+                                else if(resident.getHousehold().getCountry() == Parameters.SL)
+                                    ebolaSim.totalSierra_LeoneInt++;
+                                else if(resident.getHousehold().getCountry() == Parameters.GUINEA)
+                                    ebolaSim.totalGuineaInt++;
+                            }
                         }
                     }
                 }
@@ -222,12 +231,15 @@ public class Resident implements Steppable
                                     {
                                         System.out.println("TRAVELING AGENT INFECTED SOMEONE in " + this.getHousehold().getAdmin_id() + " admin and " + this.getHousehold().getCountry() + " country");
                                         resident.setHealthStatus(Constants.EXPOSED);
-                                        if(resident.getHousehold().getCountry() == Parameters.LIBERIA)
-                                            ebolaSim.totalLiberiaInt++;
-                                        else if(resident.getHousehold().getCountry() == Parameters.SL)
-                                            ebolaSim.totalSierra_LeoneInt++;
-                                        else if(resident.getHousehold().getCountry() == Parameters.GUINEA)
-                                            ebolaSim.totalGuineaInt++;
+                                        synchronized (ebolaSim)
+                                        {
+                                            if(resident.getHousehold().getCountry() == Parameters.LIBERIA)
+                                                ebolaSim.totalLiberiaInt++;
+                                            else if(resident.getHousehold().getCountry() == Parameters.SL)
+                                                ebolaSim.totalSierra_LeoneInt++;
+                                            else if(resident.getHousehold().getCountry() == Parameters.GUINEA)
+                                                ebolaSim.totalGuineaInt++;
+                                        }
                                     }
                             }
                         }
@@ -534,7 +546,7 @@ public class Resident implements Steppable
 
         } while(residentToMoveInWith.getWorkDayDestination() == null && residentsInUrbanArea.size() > 0);
 
-        if(residentToMoveInWith.getWorkDayDestination() == null)
+        if(residentToMoveInWith.getWorkDayDestination() == null)//TODO getting Nullpointer Exception
             return false;
 
         Household newHousehold = residentToMoveInWith.getHousehold();

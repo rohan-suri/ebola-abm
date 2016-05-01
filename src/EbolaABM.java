@@ -4,6 +4,8 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultValueDataset;
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
+import org.json.simple.JSONObject;
+import sim.engine.Schedule;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.field.continuous.Continuous2D;
@@ -237,13 +239,13 @@ public class EbolaABM extends SimState
 //                    totalDeadSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_dead);//every hour
 //                    totalExposedSeries.add(cStep*Parameters.TEMPORAL_RESOLUTION, total_exposed);//every hour
 
-                    if(cStep/24 > 360 || totalGuineaInt > 40000 || (cStep > 1 && ((EbolaABM)simState).total_infectious+((EbolaABM)simState).total_exposed == 0))
+                    if(cStep/24 > 10/*TEMPTEMP*/ || totalGuineaInt > 40000 || (cStep > 1 && ((EbolaABM)simState).total_infectious+((EbolaABM)simState).total_exposed == 0))
                     {
                         simState.finish();
-                        try {
-			    //System.out.println("killing all");
-                            Runtime.getRuntime().exec("killall java");
-                        }catch(IOException e) {e.printStackTrace();}
+//                        try {
+//			    //System.out.println("killing all");
+//                            Runtime.getRuntime().exec("killall java");
+//                        }catch(IOException e) {e.printStackTrace();}
                     }
                     //update hourDialer and day Dialer
                     double day = cStep*Parameters.TEMPORAL_RESOLUTION/24;
@@ -418,39 +420,92 @@ public class EbolaABM extends SimState
     @Override
     public void finish()
     {
-	System.out.println("Finishing...");
-        writeXYSeriesToCSV("liberia_cumalative.csv", this.totalLiberia);
-        writeXYSeriesToCSV("sierra_leone_cumalative.csv", this.totalSierra_Leone);
-        writeXYSeriesToCSV("guinea_cumalative.csv", this.totalGuinea);
-
-	//create directory output if not exists
-	File output = new File("output");
-	if(!output.exists())
-	{
-		try{
-			output.mkdir();
-		}catch (Exception e) {e.printStackTrace();}
-	}
-
-        for(int i = 0; i < adminInfectedSeries.size(); i++)
-            for(int key: adminInfectedSeries.get(i).keySet())
-                {
-                    XYSeries xySeries = adminInfectedSeries.get(i).get(key);
-                    writeXYSeriesToCSV((i==Parameters.GUINEA?"GIN":(i==Parameters.LIBERIA?"LBR":"SLE")) + "_" + key + ".csv", xySeries);
-                }
-		//write effective reproductive rates
-		for(int i = 0; i < effectiveReproductiveRates.size(); i++)
-		{
-        	XYSeries xySeries = effectiveReproductiveRates.get(i);
-			writeXYSeriesToCSV((i==Parameters.GUINEA?"guinea":(i==Parameters.LIBERIA?"liberia":"sierra_leone")) + "_reproductive_rate.csv", xySeries);
-		}
-
+	    System.out.println("Finishing...");
         super.finish();
     }
-
+    /**
+     arg[0] = contact_rate
+     arg[1] = popflow_scale
+     arg[2] = process id
+     arg[3] = paramsweep directory
+    */
     public static void main(String[] args)
     {
-        doLoop(EbolaABM.class, args);
+        long seed = System.currentTimeMillis();
+        String output_path = "";
+        if(args.length == 4)
+        {
+            Parameters.SUSCEPTIBLE_TO_EXPOSED = Double.parseDouble(args[0]);
+            Parameters.POPULATION_FLOW_SCALE = Double.parseDouble(args[1]);
+            int proc_id = Integer.parseInt(args[2]);
+            //example: ~/assip/paramsweep_8/0.0080_0.30/trial_1_31525235/
+            output_path = "../" + args[3] + "/" + args[0] + "_" + args[1] + "/" + "trial_" + proc_id + "_" + seed + "/";
+//            System.out.println(output_path);
+            //create our run directory
+            File outputFile = new File(output_path);
+//            try {
+//                Runtime.getRuntime().exec("echo \"hello\"");
+//            }catch(IOException e) {e.printStackTrace();}
+
+            if(!outputFile.exists())
+            {
+                try{
+                    outputFile.mkdirs();
+                }catch (Exception e) {e.printStackTrace();}
+            }
+        }
+        EbolaABM simState = new EbolaABM(seed);
+        simState.start();
+        Schedule schedule = simState.schedule;
+        while(true) {
+            if(!schedule.step(simState)) {
+                break;
+            }
+        }
+        //write output data to output
+        //create directory output if not exists
+        File output = new File(output_path + "output");
+        if(!output.exists())
+        {
+            try{
+                output.mkdir();
+            }catch (Exception e) {e.printStackTrace();}
+        }
+        simState.writeXYSeriesToCSV(output_path, "liberia_cumalative.csv", simState.totalLiberia);
+        simState.writeXYSeriesToCSV(output_path, "sierra_leone_cumalative.csv", simState.totalSierra_Leone);
+        simState.writeXYSeriesToCSV(output_path, "guinea_cumalative.csv", simState.totalGuinea);
+        for(int i = 0; i < simState.adminInfectedSeries.size(); i++)
+            for(int key: simState.adminInfectedSeries.get(i).keySet())
+            {
+                XYSeries xySeries = simState.adminInfectedSeries.get(i).get(key);
+                simState.writeXYSeriesToCSV(output_path, (i == Parameters.GUINEA ? "GIN" : (i == Parameters.LIBERIA ? "LBR" : "SLE")) + "_" + key + ".csv", xySeries);
+            }
+        //write effective reproductive rates
+        for(int i = 0; i < simState.effectiveReproductiveRates.size(); i++)
+        {
+            XYSeries xySeries = simState.effectiveReproductiveRates.get(i);
+            simState.writeXYSeriesToCSV(output_path, (i == Parameters.GUINEA ? "guinea" : (i == Parameters.LIBERIA ? "liberia" : "sierra_leone")) + "_reproductive_rate.csv", xySeries);
+        }
+
+
+        //write run meta data to a json object and save it
+        JSONObject obj = new JSONObject();
+        obj.put("seed", seed);
+        obj.put("time", (System.currentTimeMillis()-seed)/1000);
+        JSONObject params = new JSONObject();
+        params.put("contact_rate", Parameters.SUSCEPTIBLE_TO_EXPOSED);
+        params.put("popflow_scale", Parameters.POPULATION_FLOW_SCALE);
+        params.put("awareness_on", Parameters.AWARENESS_ON);
+        obj.put("params", params);
+        try {
+            FileWriter file = new FileWriter(output_path + "run_info.json");
+            file.write(obj.toJSONString());
+            file.flush();
+            file.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //doLoop(EbolaABM.class, args);
         System.exit(0);
     }
 
@@ -504,12 +559,12 @@ public class EbolaABM extends SimState
         }
     }
 
-    private void writeXYSeriesToCSV(String file_name, XYSeries series)
+    public void writeXYSeriesToCSV(String output_path, String file_name, XYSeries series)
     {
         List<XYDataItem> data = series.getItems();
         try
         {
-            PrintWriter writer = new PrintWriter("output/" + file_name, "UTF-8");
+            PrintWriter writer = new PrintWriter(output_path + "output/" + file_name, "UTF-8");
 
             for(int i = 0; i < data.size(); i++)
             {
