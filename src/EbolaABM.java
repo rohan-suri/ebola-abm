@@ -493,10 +493,13 @@ public class EbolaABM extends SimState
 
 
         //write run meta data to a json object and save it
+        long run_time = (System.currentTimeMillis()-seed)/1000;
         JSONObject obj = new JSONObject();
         obj.put("seed", seed);
-        obj.put("time", (System.currentTimeMillis()-seed)/1000);
+        obj.put("time", run_time);
         obj.put("io_time", io_time);
+        obj.put("time_per_day", (run_time-io_time)/(simState.schedule.getSteps()/24));
+        obj.put("days", simState.schedule.getSteps()/24);
         JSONObject params = new JSONObject();
         params.put("contact_rate", Parameters.SUSCEPTIBLE_TO_EXPOSED);
         params.put("popflow_scale", Parameters.POPULATION_FLOW_SCALE);
