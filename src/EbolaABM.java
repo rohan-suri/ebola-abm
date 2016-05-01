@@ -441,12 +441,23 @@ public class EbolaABM extends SimState
             //example: ~/assip/paramsweep_8/0.0080_0.30/trial_1_31525235/
             output_path = "../" + args[3] + "/" + args[0] + "_" + args[1] + "/" + "trial_" + proc_id + "_" + seed + "/";
             System.out.println(output_path);
-            //create our run directory
-            File outputFile = new File(output_path);
-//            try {
-//                Runtime.getRuntime().exec("echo \"hello\"");
-//            }catch(IOException e) {e.printStackTrace();}
+        }
+        EbolaABM simState = new EbolaABM(seed);
+        long io_start = System.currentTimeMillis();
+        simState.start();
+        long io_time = (System.currentTimeMillis()-io_start)/1000;
+        System.out.println("io_time = " + io_time);
+        Schedule schedule = simState.schedule;
+        while(true) {
+            if(!schedule.step(simState)) {
+                break;
+            }
+        }
 
+        //create our run directory
+        if(!output_path.equals(""))
+        {
+            File outputFile = new File(output_path);
             if(!outputFile.exists())
             {
                 try{
@@ -454,14 +465,7 @@ public class EbolaABM extends SimState
                 }catch (Exception e) {e.printStackTrace();}
             }
         }
-        EbolaABM simState = new EbolaABM(seed);
-        simState.start();
-        Schedule schedule = simState.schedule;
-        while(true) {
-            if(!schedule.step(simState)) {
-                break;
-            }
-        }
+
         //write output data to output
         //create directory output if not exists
         File output = new File(output_path + "output");
@@ -492,6 +496,7 @@ public class EbolaABM extends SimState
         JSONObject obj = new JSONObject();
         obj.put("seed", seed);
         obj.put("time", (System.currentTimeMillis()-seed)/1000);
+        obj.put("io_time", io_time);
         JSONObject params = new JSONObject();
         params.put("contact_rate", Parameters.SUSCEPTIBLE_TO_EXPOSED);
         params.put("popflow_scale", Parameters.POPULATION_FLOW_SCALE);
