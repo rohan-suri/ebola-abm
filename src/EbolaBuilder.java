@@ -360,12 +360,12 @@ public class EbolaBuilder
                 count++;
             }
         }
-        for(int i = 0; i < frequency.length; i++)
-        {
-            System.out.print(frequency[i] + "\t\t");
-        }
-        System.out.println("\nAverage distance = " + sum/count + " km");
-        System.out.println("Max distance household to node = " + max_distance + " kilometers");
+//        for(int i = 0; i < frequency.length; i++)
+//        {
+//            System.out.print(frequency[i] + "\t\t");
+//        }
+        //System.out.println("\nAverage distance = " + sum/count + " km");
+        //System.out.println("Max distance household to node = " + max_distance + " kilometers");
     }
 
     private static void addToListInMap(Map map, Object key, Object value)
@@ -468,8 +468,8 @@ public class EbolaBuilder
                     readLineString((LineString) mls.getGeometryN(i), xcols, ycols, xmin, ymin, xmax, ymax, ebolaSim);
                 }
             }
-            if(count%10000 == 0)
-                System.out.println("# of linestrings = " + count);
+//            if(count%10000 == 0)
+//                System.out.println("# of linestrings = " + count);
 
         }
 
@@ -976,8 +976,8 @@ public class EbolaBuilder
                 if(school.getMembers().size() > max_size)
                     max_size = school.getMembers().size();
             }
-            System.out.println("average school population = " + sum*1.0/count);
-            System.out.println("max school pop = " + max_size);
+            //System.out.println("average school population = " + sum*1.0/count);
+            //System.out.println("max school pop = " + max_size);
 
             //print distribution of distance to farm
             Bag allResidents = ebolaSim.world.getAllObjects();
@@ -1003,13 +1003,13 @@ public class EbolaBuilder
 
             }
             System.out.println("Percent of employed people who are at a bad node = " + go_nowhere*1.0/employed*100);
-            for(int i = 0; i < farmDistanceFrequency.length; i++)
-            {
-                ebolaSim.distribution.addValue((Number)(farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop), "All distances", i);
-                if((farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop * 100) > ebolaSim.max)
-                    ebolaSim.max = (farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop * 100);
-                System.out.print(farmDistanceFrequency[i] * 1.0 * 1.0 / ebolaSim.total_scaled_pop * 100 + "%" + "\t\t");
-            }
+//            for(int i = 0; i < farmDistanceFrequency.length; i++)
+//            {
+//                ebolaSim.distribution.addValue((Number)(farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop), "All distances", i);
+//                if((farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop * 100) > ebolaSim.max)
+//                    ebolaSim.max = (farmDistanceFrequency[i] * 1.0 / ebolaSim.total_scaled_pop * 100);
+//                System.out.print(farmDistanceFrequency[i] * 1.0 * 1.0 / ebolaSim.total_scaled_pop * 100 + "%" + "\t\t");
+//            }
             System.out.println("");
         }
         catch(FileNotFoundException e)
@@ -1378,8 +1378,8 @@ public class EbolaBuilder
                 sectorProbabilities[i] = newValue;
             else
                 sectorProbabilities[i] = ((sectorProbabilities[i]*total))/(total-1);
-        if(sectorProbabilities[index] < 0)
-            System.out.println("Sector Id dropped below zero for sector " + index);
+//        if(sectorProbabilities[index] < 0)
+//            System.out.println("Sector Id dropped below zero for sector " + index);
     }
 
     private static WorkLocation createWorkLocation(Resident resident, double on_road_distance, double off_road_distance, Map<Node, List<Structure>> nodeStructureMap, SparseGrid2D grid)
@@ -1474,7 +1474,6 @@ public class EbolaBuilder
                 Int2D location = convertToWorld(x, y);
 
                 double amount = NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(16/*ivory coast model*/)).intValue();
-		System.out.println("length of line = " + line.size());
                 mp.source_admin = from_admin_id;
                 mp.to_admin = to_admin_id;
                 mp.annual_amnt = amount;

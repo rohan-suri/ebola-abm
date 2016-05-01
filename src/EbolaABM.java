@@ -440,7 +440,7 @@ public class EbolaABM extends SimState
             int proc_id = Integer.parseInt(args[2]);
             //example: ~/assip/paramsweep_8/0.0080_0.30/trial_1_31525235/
             output_path = "../" + args[3] + "/" + args[0] + "_" + args[1] + "/" + "trial_" + proc_id + "_" + seed + "/";
-//            System.out.println(output_path);
+            System.out.println(output_path);
             //create our run directory
             File outputFile = new File(output_path);
 //            try {
