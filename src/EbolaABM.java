@@ -431,9 +431,9 @@ public class EbolaABM extends SimState
     */
     public static void main(String[] args)
     {
-        long seed = System.currentTimeMillis();
+        long seed = System.currentTimeMillis();//1462533750853L;//best seed (0.0080, 0.48)
         String output_path = "";
-        if(args.length == 4)
+        if(args.length >= 4)
         {
             Parameters.SUSCEPTIBLE_TO_EXPOSED = Double.parseDouble(args[0]);
             Parameters.POPULATION_FLOW_SCALE = Double.parseDouble(args[1]);
@@ -442,6 +442,8 @@ public class EbolaABM extends SimState
             output_path = "../" + args[3] + "/" + args[0] + "_" + args[1] + "/" + "trial_" + proc_id + "_" + seed + "/";
             System.out.println(output_path);
         }
+        if(args.length == 5)
+            seed = Long.parseLong(args[4]);
         EbolaABM simState = new EbolaABM(seed);
         long io_start = System.currentTimeMillis();
         simState.start();
