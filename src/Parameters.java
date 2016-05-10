@@ -5,7 +5,7 @@ import java.lang.Math;
 
 public class Parameters
 {
-    public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.005; //percentage of total population that agents will be created.  Maximimum of 1
     public static double POPULATION_FLOW_SCALE = 0.50;//scale of how many people move around
     public static double INTERNATIONAL_POP_FLOW_SCALE = POPULATION_FLOW_SCALE/1.0;//scale of international travel
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household
@@ -31,6 +31,9 @@ public class Parameters
     public static String ACTUAL_CASES_GUINEA = "data/actual_cases/guinea_actual.csv";//path to csv file containing actual cases for guinea
     public static String ACTUAL_CASES_LIBERIA = "data/actual_cases/liberia_actual.csv";//path to csv file containing actual cases for liberia
     public static String ACTUAL_CASES_SIERRA_LEONE = "data/actual_cases/sierra_leone_actual.csv";//path to csv file containing actual cases for sierra leone
+    public static String ETC_GUINEA = "data/gin_heal_pt_unmeer_ebolacarefacilities.csv";
+    public static String ETC_LIBERIA = "data/lbr_heal_pt_unmeer_ebolacarefacilities.csv";
+    public static String ETC_SIERRA_LEONE = "data/sle_heal_pt_unmeer_ebolacarefacilities.csv";
 
     public static double MIN_POP_URBAN = 500.45;//Minimum population density per 926 meters or 1000 people per square mile to be urban. Source: http://cber.cba.ua.edu/asdc/urban_rural.html
     public static double MIN_POP_SURROUNDING = 500.73;//Minimum surrounding population density per 926 meters.  An urban district must be surrounded by

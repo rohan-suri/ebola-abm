@@ -139,7 +139,6 @@ public class EbolaBuilder
     static void alignVectorFields(GeomGridField base, GeomVectorField[] others)
     {
         Envelope globalMBR = base.getMBR();
-
         for(GeomVectorField vf: others)
             globalMBR.expandToInclude(vf.getMBR());
         for(GeomVectorField vf: others)

@@ -412,9 +412,10 @@ public class EbolaABM extends SimState
             }
 
         };
-
-
         this.schedule.scheduleRepeating(movementManager);
+
+        Steppable oETCmanager = new ETCmanager(this);
+        this.schedule.scheduleRepeating(oETCmanager);
     }
 
     @Override

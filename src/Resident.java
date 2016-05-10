@@ -670,4 +670,9 @@ public class Resident implements Steppable
     {
         return isMoving;
     }
+
+    void admittedToETC(ETC myETC)
+    {
+
+    }
 }
