@@ -18,6 +18,7 @@ public class Resident implements Steppable
     private boolean inactive;
 
     private Household household;
+    private ETC myETC;
     private boolean isUrban;//true - urban, false - rural
     private School nearestSchool;
     private Route route;
@@ -40,16 +41,28 @@ public class Resident implements Steppable
     private int healthStatus;
 
     private boolean isMoving = false;
+    private boolean shouldApplyToETC = false;
     private int isMovingCountdown = 1;
 
     boolean doomed_to_die = false;
     double time_to_resolution = -1;
     double time_to_infectious = -1;
+    double time_to_apply_to_etc = -1;
     int infected_count = 0;
 	int day_infected = 0;
 
     private int daysFollowedUp = 0;
     private boolean hasBeenFollowedUp = false;
+
+    //this residents disease model parameters
+    private double SUSCEPTIBLE_TO_EXPOSED;
+    private double INCUBATION_PERIOD_AVERAGE;
+    private double INCUBATION_PERIOD_STDEV;
+    private double CASE_FATALITY_RATIO;
+    private double RECOVERY_PERIOD_AVERAGE;
+    private double RECOVERY_PERIOD_STDEV;
+    private double FATALITY_PERIOD_AVERAGE;
+    private double FATALITY_PERIOD_STDEV;
 
     private int religion;
 
@@ -63,6 +76,16 @@ public class Resident implements Steppable
         this.sector_id = -1;//set default to no sector
         this.employed = false;//default isfalse
         this.healthStatus = Constants.SUSCEPTIBLE;
+
+        //set current status of disease parameters
+        SUSCEPTIBLE_TO_EXPOSED = Parameters.SUSCEPTIBLE_TO_EXPOSED;
+        INCUBATION_PERIOD_AVERAGE = Parameters.INCUBATION_PERIOD_AVERAGE;
+        INCUBATION_PERIOD_STDEV = Parameters.INCUBATION_PERIOD_STDEV;
+        CASE_FATALITY_RATIO = Parameters.CASE_FATALITY_RATIO;
+        RECOVERY_PERIOD_AVERAGE = Parameters.RECOVERY_PERIOD_AVERAGE;
+        RECOVERY_PERIOD_STDEV = Parameters.RECOVERY_PERIOD_STDEV;
+        FATALITY_PERIOD_AVERAGE = Parameters.FATALITY_PERIOD_AVERAGE;
+        FATALITY_PERIOD_STDEV = Parameters.FATALITY_PERIOD_STDEV;
     }
 
     @Override
@@ -78,11 +101,11 @@ public class Resident implements Steppable
         {
             if(time_to_infectious == -1)//time to infectious has not been determined yet
             {
-                time_to_infectious = ((ebolaSim.random.nextGaussian()*Parameters.INCUBATION_PERIOD_STDEV)+Parameters.INCUBATION_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
+                time_to_infectious = ((ebolaSim.random.nextGaussian()*INCUBATION_PERIOD_STDEV)+INCUBATION_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
 
                 //decide whether you will die or stay alive
                 double rand = ebolaSim.random.nextDouble();
-                if(rand < Parameters.CASE_FATALITY_RATIO)
+                if(rand < CASE_FATALITY_RATIO)
                     doomed_to_die = true;//this case will die
                 else
                     doomed_to_die = false;//this case will recover
@@ -106,24 +129,46 @@ public class Resident implements Steppable
         }
         else if(healthStatus == Constants.INFECTIOUS)//infect everyone!!!
         {
+            if(time_to_resolution == -1 && shouldApplyToETC)
+            {
+                time_to_apply_to_etc = ((ebolaSim.random.nextGaussian()*Parameters.STD_TIME_TO_REPORT)+Parameters.AVG_TIME_TO_REPORT)*24.0 * Parameters.TEMPORAL_RESOLUTION;
+            }
+            else if (shouldApplyToETC && time_to_apply_to_etc <= 0)
+            {
+                //apply to etc here
+                ETC etc = ebolaSim.myETCmanager.getNearestETC(this);
+                if(etc != null)//TODO apply everyday
+                    etc.requestAdmission(this);
+                //apply for contact tracing
+
+            }
+            else if (shouldApplyToETC)
+                time_to_apply_to_etc--;
+
             if(doomed_to_die && time_to_resolution == -1)
             {
 				day_infected = ((int)cStep)/24;
                 //decide to kill or be recovered
-                time_to_resolution = ((ebolaSim.random.nextGaussian()*Parameters.FATALITY_PERIOD_STDEV)+Parameters.FATALITY_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
+                time_to_resolution = ((ebolaSim.random.nextGaussian()*FATALITY_PERIOD_STDEV)+FATALITY_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
             }
             else if(time_to_resolution == -1)
             {
-		//set date infected
-		day_infected = ((int)cStep)/24;
+                //set date infected
+                day_infected = ((int)cStep)/24;
                 //decide when to recover
-                time_to_resolution = ((ebolaSim.random.nextGaussian()*Parameters.RECOVERY_PERIOD_STDEV)+Parameters.RECOVERY_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
+                time_to_resolution = ((ebolaSim.random.nextGaussian()*RECOVERY_PERIOD_STDEV)+RECOVERY_PERIOD_AVERAGE)*24.0 * Parameters.TEMPORAL_RESOLUTION;
             }
             else if(time_to_resolution <= 0)
             {
                 if (doomed_to_die) {
                     setHealthStatus(Constants.DEAD);
                     ebolaSim.total_infectious--;
+
+                    //request Burial and contact traced
+                    if(time_to_apply_to_etc > 0)
+                    {
+                        //TODO apply to get buried and contact traced
+                    }
                 } else {
                     setHealthStatus(Constants.RECOVERED);
                     ebolaSim.total_infectious--;
@@ -134,19 +179,23 @@ public class Resident implements Steppable
                     ebolaSim.effectiveReproductiveRates.get(this.getHousehold().getCountry()).add(day_infected, infected_count);
                 }
             }
-            else if(!isMoving())
+            else if(!isMoving())//TODO remove this condition
+            {
                 time_to_resolution--;
+                time_to_apply_to_etc--;
+            }
 
             //now infect nearby people
             Bag nearByPeople = ebolaSim.world.getNeighborsWithinDistance(new Double2D(location), 1);
 
-            //Determine current structure
+            //Determine current structure TODO move this to its own method
             Structure currentStructure = null;//null if traveling
             if(location.equals(household.getLocation()))
                 currentStructure = household;
             else if(workDayDestination != null && location.equals(workDayDestination.getLocation()))
                 currentStructure = workDayDestination;
-
+            else if(myETC != null && location.equals(myETC.getLocation()))
+                currentStructure = myETC;
             if(nearByPeople == null)//if you are nearby no one just return
                 return;
             for(Object o: nearByPeople)
@@ -157,14 +206,14 @@ public class Resident implements Steppable
                     if(!Parameters.INFECT_ONLY_YOUR_STRUCTURE || (currentStructure != null && currentStructure.getMembers().contains(resident)))
                     {
                         double rand = ebolaSim.random.nextDouble();
-			//incorporate awareness if needed
-			double contact_rate = Parameters.SUSCEPTIBLE_TO_EXPOSED;
-			if(Parameters.AWARENESS_ON && ((int)cStep)/24 > Parameters.AWARENESS_START)
-			{
-				double awareness = Parameters.calcAwareness(calcNetworkSick());
-				contact_rate = Parameters.calcReducedProb(awareness);
-			}
-                        if(rand < (resident.isMoving()?Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS:contact_rate))//infect this agent
+                        //incorporate awareness if needed
+                        double contact_rate = SUSCEPTIBLE_TO_EXPOSED;
+                        if(Parameters.AWARENESS_ON && ((int)cStep)/24 > Parameters.AWARENESS_START)
+                        {
+                            double awareness = Parameters.calcAwareness(calcNetworkSick());
+                            contact_rate = Parameters.calcReducedProb(awareness);
+                        }
+                        if(rand < (contact_rate))//infect this agent
                        	{
                             resident.setHealthStatus(Constants.EXPOSED);
                             synchronized (ebolaSim)
@@ -191,7 +240,7 @@ public class Resident implements Steppable
             }
 
         }
-        if(workDayDestination == null)
+        if(workDayDestination == null || myETC != null)
             return;
 
 
@@ -222,31 +271,6 @@ public class Resident implements Steppable
                     if(isMoving)
                     {
                         //arrived after traveling
-                        if(this.getHealthStatus() == Constants.EXPOSED && Parameters.TRAVELLING_SET_TO_INFECTIOUS)
-                            this.setHealthStatus(Constants.INFECTIOUS);
-                        if(this.getHealthStatus() == Constants.INFECTIOUS && Parameters.INFECT_HOUSEHOLD_ON_ARRIVAl)
-                        {
-                            //if the agent is infected we need to give a chance that he infects other members of the household
-                            HashSet<Resident> residents = this.getHousehold().getMembers();
-                            for(Resident resident: residents)
-                            {
-                                if(resident.getHealthStatus() == Constants.SUSCEPTIBLE)
-                                    if(ebolaSim.random.nextDouble() < Parameters.SUSCEPTIBLE_TO_EXPOSED_TRAVELERS)
-                                    {
-                                        System.out.println("TRAVELING AGENT INFECTED SOMEONE in " + this.getHousehold().getAdmin_id() + " admin and " + this.getHousehold().getCountry() + " country");
-                                        resident.setHealthStatus(Constants.EXPOSED);
-                                        synchronized (ebolaSim)
-                                        {
-                                            if(resident.getHousehold().getCountry() == Parameters.LIBERIA)
-                                                ebolaSim.totalLiberiaInt++;
-                                            else if(resident.getHousehold().getCountry() == Parameters.SL)
-                                                ebolaSim.totalSierra_LeoneInt++;
-                                            else if(resident.getHousehold().getCountry() == Parameters.GUINEA)
-                                                ebolaSim.totalGuineaInt++;
-                                        }
-                                    }
-                            }
-                        }
                         isMoving = false;
                     }
                     goal = null;
@@ -264,7 +288,6 @@ public class Resident implements Steppable
                 }
             }
         }
-
 //        if(route == null && goToSchool && !cannotMove)
 //        {
 //            route = household.getRoute(this.workDayDestination);
@@ -483,7 +506,14 @@ public class Resident implements Steppable
     }
 
     public void setHealthStatus(int healthStatus) {
+        int old_health_status = this.healthStatus;
         this.healthStatus = healthStatus;
+        if(old_health_status == Constants.EXPOSED && this.healthStatus == Constants.INFECTIOUS) {
+            if(Parameters.ETC_ON)
+            {
+                shouldApplyToETC = true;
+            }
+        }
     }
 
     public int getReligion() {
@@ -683,9 +713,28 @@ public class Resident implements Steppable
         return isMoving;
     }
 
-    void admittedToETC(ETC myETC)
+    /**
+     * Moves this agent to this ETC, changes disease model parameters and prevents the agent from participating in daily activities
+     * @param myETC
+     */
+    public void admittedToETC(ETC myETC)
     {
+        //set disease parameters to the ETC
+        this.SUSCEPTIBLE_TO_EXPOSED = Parameters.ETC_SUSCEPTIBLE_TO_EXPOSED;
+        this.CASE_FATALITY_RATIO = Parameters.CASE_FATALITY_RATIO;
 
+        //now move locations to the ETC
+        this.setLocation(myETC.getLocation());
+        this.myETC = myETC;
+    }
+
+    public void dischargeFromETC()
+    {
+        //set myETC to null
+        this.myETC = null;
+
+        //move back to your household
+        this.setLocation(this.getHousehold().getLocation());
     }
 
     int getFollowedUpDays()

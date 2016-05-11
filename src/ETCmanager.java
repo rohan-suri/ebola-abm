@@ -177,4 +177,34 @@ public class ETCmanager implements Steppable
 
 		etcManager.listAll();
 	}
+
+	/**
+	 * @param resident
+	 * @return nearest open and non filled ETC @null if none available
+	 */
+	public ETC getNearestETC(Resident resident)
+	{
+		double min_distance = Double.MAX_VALUE;
+		int min_index = -1;
+		for(int i = 0; i < allETCs.size(); i++)
+		{
+			if (allETCs.get(i).isOpen() && allETCs.get(i).hasSpace())
+			{
+				double dist = squareDistance(resident.getHousehold().getLocation(), allETCs.get(i).getLocation());
+				if(dist < min_distance)
+				{
+					min_distance = dist;
+					min_index = i;
+				}
+			}
+		}
+		if(min_index == -1)//no open ETCs with extra space
+			return null;
+		return allETCs.get(min_index);
+	}
+
+	private static double squareDistance(Int2D a, Int2D b)
+	{
+		return ((a.getX() - b.getX()) * (a.getX() - b.getX())) +((a.getY() - b.getY()) * (a.getY() - b.getY()));
+	}
 }

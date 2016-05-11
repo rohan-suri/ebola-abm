@@ -242,17 +242,24 @@ public class Parameters
     public static double SUSCEPTIBLE_TO_EXPOSED = 0.0080 * Parameters.TEMPORAL_RESOLUTION;//per temporal resolution TODO Make indepent of temporal resolution
     public static double INCUBATION_PERIOD_AVERAGE = 15.0;//as reported by Who Ebola Resonse Team source: http://www.nejm.org/doi/full/10.1056/NEJMoa1411100?rss=mostCited&
     public static double INCUBATION_PERIOD_STDEV = 1.0;//Standard deviation from reports above
-    public static double CASE_FATALITY_RATIO = 0.70;//number of cases resulting in death
+    public static double CASE_FATALITY_RATIO = 0.80;//number of cases resulting in death
     public static double RECOVERY_PERIOD_AVERAGE = 14.0;
     public static double RECOVERY_PERIOD_STDEV = 1.0;
-
-    public static double SUSCEPTIBLE_TO_EXPOSED_TRAVELERS = 0.0 * Parameters.TEMPORAL_RESOLUTION;//special for travellers
-
     public static double FATALITY_PERIOD_AVERAGE = 8.0;
     public static double FATALITY_PERIOD_STDEV = 1.0;
     public static boolean INFECT_ONLY_YOUR_STRUCTURE = true;
-    public static boolean TRAVELLING_SET_TO_INFECTIOUS = false;//decides whether a traveling agent that is exposed should default to infectious on arrival in his new location
-    public static boolean INFECT_HOUSEHOLD_ON_ARRIVAl = false;//decides whether a travelling agent should be given a special chance to infect new family members upon arrival to new household.  This would usually be at a much higher rate.
 
     public static double PERCENT_CONTACTS_IDENTIFIED = 0.6;
+
+    //Case Finding Parameters
+    public static double AVG_TIME_TO_REPORT = 6;//TODO find value
+    public static double STD_TIME_TO_REPORT = 2;
+    public static double PERCENT_REPORT = 0.75;//CDC Estimated (should go up as the epidemic worsens)
+
+    //Ebola Treatment Center parameters
+    public static boolean ETC_ON = true;
+    public static double ETC_SUSCEPTIBLE_TO_EXPOSED = Parameters.SUSCEPTIBLE_TO_EXPOSED/20.0;
+    public static double ETC_CASE_FATALITY_RATIO = 0.5;//According to WHO (TODO get link)
+    public static double AVG_TIME_TO_ADMIT = 2.5;//Estimated by CDC
+    public static double STD_TIME_TO_ADMIT = 0.5;
 }

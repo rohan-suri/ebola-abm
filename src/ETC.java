@@ -1,17 +1,14 @@
 import sim.util.Int2D;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Created by rohansuri on 5/8/16.
  */
-public class ETC
+public class ETC extends Structure
 {
 	private int                 capacity;
-	private Int2D               location;
 	private ArrayList<Resident> patients;
 	private int                 workerCount;
 	private LocalDate           whenOpened;
@@ -21,6 +18,7 @@ public class ETC
 
 	public ETC(String _country, String _name, int _capacity, Int2D _location, LocalDate _whenOpened)
 	{
+		super(_location);
 		country     = _country;
 		name        = _name;
 		capacity    = _capacity;
@@ -37,6 +35,7 @@ public class ETC
 		if (opened && patients.size() < capacity)
 		{
 			patients.add(newPatient);
+			members.add(newPatient);
 			newPatient.admittedToETC(this);
 			return true;
 		}
@@ -53,14 +52,12 @@ public class ETC
 		{
 			Resident patient = patientIterator.next();
 
-			if (patient.getHealthStatus() == Constants.DEAD || patient.getHealthStatus() == Constants.RECOVERED)
-			{
+			if (patient.getHealthStatus() == Constants.DEAD || patient.getHealthStatus() == Constants.RECOVERED) {
 				patientIterator.remove();
+				members.remove(patient);
 				countCleared++;
+				patient.dischargeFromETC();
 			}
-
-			// if patient has RECOVERED, then call a dischargePatient on it
-
 		}
 
 		return countCleared;
@@ -83,11 +80,6 @@ public class ETC
 	public int getWorkerCount()
 	{
 		return workerCount;
-	}
-
-	public Int2D getLocation()
-	{
-		return location;
 	}
 
 	public ArrayList<Resident> getPatients()
@@ -125,5 +117,9 @@ public class ETC
 	public void setOpened(boolean _opened)
 	{
 		opened = _opened;
+	}
+	public boolean hasSpace()
+	{
+		return patients.size() < capacity;
 	}
 }
