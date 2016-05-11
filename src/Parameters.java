@@ -253,4 +253,6 @@ public class Parameters
     public static boolean INFECT_ONLY_YOUR_STRUCTURE = true;
     public static boolean TRAVELLING_SET_TO_INFECTIOUS = false;//decides whether a traveling agent that is exposed should default to infectious on arrival in his new location
     public static boolean INFECT_HOUSEHOLD_ON_ARRIVAl = false;//decides whether a travelling agent should be given a special chance to infect new family members upon arrival to new household.  This would usually be at a much higher rate.
+
+    public static double PERCENT_CONTACTS_IDENTIFIED = 0.6;
 }
