@@ -151,6 +151,9 @@ public class EbolaABM extends SimState
 
     boolean started_index_case = false;
 
+    //ETC Manager
+    public ETCmanager myETCmanager;
+
     public EbolaABM(long seed)
     {
         super(seed);
@@ -414,8 +417,8 @@ public class EbolaABM extends SimState
         };
         this.schedule.scheduleRepeating(movementManager);
 
-        Steppable oETCmanager = new ETCmanager(this);
-        this.schedule.scheduleRepeating(oETCmanager);
+        myETCmanager = new ETCmanager(this);
+        this.schedule.scheduleRepeating(myETCmanager);
     }
 
     @Override
