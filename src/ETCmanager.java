@@ -131,7 +131,7 @@ public class ETCmanager implements Steppable
 				}
 				else
 				{
-					System.out.println("Not opening ETC: " + etc.getName() + " since it's opening date: " + etcOpenDate + " is later than today: " + todayDate);
+					//System.out.println("Not opening ETC: " + etc.getName() + " since it's opening date: " + etcOpenDate + " is later than today: " + todayDate);
 				}
 			}
 			else

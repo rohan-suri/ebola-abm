@@ -5,7 +5,7 @@ import java.lang.Math;
 
 public class Parameters
 {
-    public static double SCALE = 0.005; //percentage of total population that agents will be created.  Maximimum of 1
+    public static double SCALE = 0.01; //percentage of total population that agents will be created.  Maximimum of 1
     public static double POPULATION_FLOW_SCALE = 0.50;//scale of how many people move around
     public static double INTERNATIONAL_POP_FLOW_SCALE = POPULATION_FLOW_SCALE/1.0;//scale of international travel
     public static int WORLD_TO_POP_SCALE = 10; //scale up from the population data for each household

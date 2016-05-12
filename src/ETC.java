@@ -36,6 +36,7 @@ public class ETC extends Structure
 		{
 			patients.add(newPatient);
 			members.add(newPatient);
+			System.out.println("added patient to etc " + this.toString());
 			newPatient.admittedToETC(this);
 			return true;
 		}

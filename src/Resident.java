@@ -134,7 +134,10 @@ public class Resident implements Steppable
                 //apply to etc here
                 ETC etc = ebolaSim.myETCmanager.getNearestETC(this);
                 if(etc != null)//TODO apply everyday
+                {
                     etc.requestAdmission(this);
+                    shouldApplyToETC = false;
+                }
                 //apply for contact tracing
 
             }
