@@ -7,6 +7,7 @@ import sim.util.Int2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by rohansuri on 7/7/15.
@@ -49,6 +50,9 @@ public class Resident implements Steppable
     double time_to_apply_to_etc = -1;
     int infected_count = 0;
 	int day_infected = 0;
+
+    private int daysFollowedUp = 0;
+    private boolean hasBeenFollowedUp = false;
 
     //this residents disease model parameters
     private double SUSCEPTIBLE_TO_EXPOSED;
@@ -536,6 +540,14 @@ public class Resident implements Steppable
 			
 	}
 
+    public Set<Resident> getAllContacts()
+    {
+        HashSet<Resident> residents = household.getMembers();
+        if(workDayDestination != null)
+            residents.addAll(workDayDestination.getMembers());//TODO Make sure there are actually people in this members
+        return residents;
+    }
+
     /**
      * @param newAdminId
      * @param ebolaSim
@@ -726,5 +738,25 @@ public class Resident implements Steppable
 
         //move back to your household
         this.setLocation(this.getHousehold().getLocation());
+    }
+
+    int getFollowedUpDays()
+    {
+        return daysFollowedUp;
+    }
+
+    void incrementFollowUpDays()
+    {
+        daysFollowedUp++;
+    }
+
+    public void setFollowedUp(boolean _followedUp)
+    {
+        hasBeenFollowedUp = _followedUp;
+    }
+
+    public boolean hasBeenFollowedUp()
+    {
+        return hasBeenFollowedUp;
     }
 }

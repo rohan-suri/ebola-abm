@@ -249,6 +249,8 @@ public class Parameters
     public static double FATALITY_PERIOD_STDEV = 1.0;
     public static boolean INFECT_ONLY_YOUR_STRUCTURE = true;
 
+    public static double PERCENT_CONTACTS_IDENTIFIED = 0.6;
+
     //Case Finding Parameters
     public static double AVG_TIME_TO_REPORT = 6;//TODO find value
     public static double STD_TIME_TO_REPORT = 2;
@@ -260,5 +262,4 @@ public class Parameters
     public static double ETC_CASE_FATALITY_RATIO = 0.5;//According to WHO (TODO get link)
     public static double AVG_TIME_TO_ADMIT = 2.5;//Estimated by CDC
     public static double STD_TIME_TO_ADMIT = 0.5;
-
 }
