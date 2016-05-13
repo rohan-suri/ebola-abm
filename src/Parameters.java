@@ -267,4 +267,5 @@ public class Parameters
     static final int DAYS_BETWEEN_CHECKS  =  2;
     static final int DAYS_TO_IDENTIFY     =  4;
     static final int FOLLOW_UP_DAYS       = 21;
+    static final int HOURS_TO_BURY        = 12;
 }
