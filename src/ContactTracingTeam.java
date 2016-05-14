@@ -11,13 +11,7 @@ public class ContactTracingTeam implements Steppable
 {
 	private ArrayList<ArrayList<Resident>> followUpLists;
 
-	private static final int DAILY_FOLLOW_UPS     = 10;
-	private static final int DAYS_BETWEEN_CHECKS  =  2;
-
-	private static final int DAYS_TO_IDENTIFY     =  4;
-	private static final int FOLLOW_UP_DAYS       = 21;
-
-	private static final int FOLLOW_UP_CAPACITY   = DAILY_FOLLOW_UPS * DAYS_BETWEEN_CHECKS;
+	private static final int followUpCapacity = Parameters.DAILY_FOLLOW_UPS * Parameters.DAYS_BETWEEN_CHECKS;
 
 	public  enum State {FREE, IDENTIFYING, FOLLOWING_UP};
 
@@ -33,9 +27,9 @@ public class ContactTracingTeam implements Steppable
 		myManager = _myManager;
 		teamName  = _teamName;
 
-		followUpLists = new ArrayList<ArrayList<Resident>>(DAYS_BETWEEN_CHECKS);
+		followUpLists = new ArrayList<ArrayList<Resident>>(Parameters.DAYS_BETWEEN_CHECKS);
 
-		for (int i=0; i < DAYS_BETWEEN_CHECKS; i++)
+		for (int i = 0; i < Parameters.DAYS_BETWEEN_CHECKS; i++)
 			followUpLists.add(new ArrayList<Resident>());
 
 		state = State.FREE;
@@ -65,7 +59,7 @@ public class ContactTracingTeam implements Steppable
 
 		if (state == State.IDENTIFYING)
 		{
-			if (daysIdentifying == DAYS_TO_IDENTIFY)
+			if (daysIdentifying == Parameters.DAYS_TO_IDENTIFY)
 			{
 				// we are done identifying, tell manager to add discovered contacts of this resident
 				myManager.addContactsForFollowUp(whoseContactsBeingIdentified);
@@ -80,12 +74,12 @@ public class ContactTracingTeam implements Steppable
 
 		if (state == State.FOLLOWING_UP)
 		{
-			int todaysListIndex = totalFollowUpDays % DAYS_BETWEEN_CHECKS;
+			int todaysListIndex = totalFollowUpDays % Parameters.DAYS_BETWEEN_CHECKS;
 			ArrayList<Resident> todaysList = followUpLists.get(todaysListIndex);
 
 			for (Resident resident: todaysList)
 			{
-				if (resident.getFollowedUpDays() == FOLLOW_UP_DAYS)
+				if (resident.getFollowedUpDays() == Parameters.FOLLOW_UP_DAYS)
 				{
 					// no need to check this resident further, remove this resident from our day's list
 					todaysList.remove(resident);
@@ -101,6 +95,9 @@ public class ContactTracingTeam implements Steppable
 				else // increment resident's follow up day count
 					resident.incrementFollowUpDays();
 			}
+
+			if (getFollowUpCapacity() == 0)
+				state = State.FREE;
 
 			totalFollowUpDays++;
 		}
@@ -136,14 +133,14 @@ public class ContactTracingTeam implements Steppable
 
 	public ArrayList<Resident> getSmallestDailyList()
 	{
-		int                 minSize = DAILY_FOLLOW_UPS+1;
+		int                 minSize = Parameters.DAILY_FOLLOW_UPS+1;
 		ArrayList<Resident> minList = null;
 
 		for (ArrayList<Resident> dailyList : followUpLists)
 		{
 			int size = dailyList.size();
 
-			if (size == DAILY_FOLLOW_UPS) continue; // ignore a full list
+			if (size == Parameters.DAILY_FOLLOW_UPS) continue; // ignore a full list
 
 			if (size < minSize)
 			{
@@ -159,7 +156,7 @@ public class ContactTracingTeam implements Steppable
 	{
 		// gets total residents in all follow up lists
 
-		int totalLoad = -1;
+		int totalLoad = 0;
 
 		for (ArrayList<Resident> followUpList: followUpLists)
 			totalLoad += followUpList.size();
@@ -174,16 +171,35 @@ public class ContactTracingTeam implements Steppable
 
 	public static int getFollowUpCapacity()
 	{
-		return FOLLOW_UP_CAPACITY;
+		return followUpCapacity;
+	}
+
+	public ArrayList<ArrayList<Resident>> getFollowUpLists()
+	{
+		return followUpLists;
+	}
+
+	public ArrayList<Resident> getDailyList(int day)
+	{
+		if (day >= Parameters.DAYS_BETWEEN_CHECKS ) throw new IllegalArgumentException("Specified day (" + day + ") is greater than days between checks of this team");
+
+		return followUpLists.get(day);
+	}
+
+	public void setDailyList(ArrayList<Resident> list, int day)
+	{
+		if (day >= Parameters.DAYS_BETWEEN_CHECKS ) throw new IllegalArgumentException("Specified day (" + day + ") is greater than days between checks of this team");
+
+		followUpLists.set(day, list);
+	}
+
+	public void setState(State _state)
+	{
+		state = _state;
 	}
 
 	public String toString()
 	{
-		String stateString = "Free";
-
-		if (state == State.IDENTIFYING) stateString = "Identifying for " + daysIdentifying + " days";
-		if (state == State.FOLLOWING_UP) stateString = "Following up " + getWorkLoad() + " contacts";
-
 		StringBuffer sb = new StringBuffer(teamName);
 
 		if (state == State.FREE)

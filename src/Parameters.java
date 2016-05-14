@@ -262,4 +262,10 @@ public class Parameters
     public static double ETC_CASE_FATALITY_RATIO = 0.5;//According to WHO (TODO get link)
     public static double AVG_TIME_TO_ADMIT = 2.5;//Estimated by CDC
     public static double STD_TIME_TO_ADMIT = 0.5;
+
+    static final int DAILY_FOLLOW_UPS     = 10;
+    static final int DAYS_BETWEEN_CHECKS  =  2;
+    static final int DAYS_TO_IDENTIFY     =  4;
+    static final int FOLLOW_UP_DAYS       = 21;
+    static final int HOURS_TO_BURY        = 12;
 }
