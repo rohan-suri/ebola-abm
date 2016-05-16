@@ -42,6 +42,8 @@ public class Resident implements Steppable
 
     private boolean isMoving = false;
     private boolean shouldApplyToETC = false;
+    private boolean flag_get_burial = false;
+    private boolean applied_to_contact_tracing = false;
     private int isMovingCountdown = 1;
 
     boolean doomed_to_die = false;
@@ -92,8 +94,9 @@ public class Resident implements Steppable
     public void step(SimState state)
     {
         if(healthStatus == Constants.DEAD)
+        {
             return;
-
+        }
         EbolaABM ebolaSim = (EbolaABM) state;
         long cStep = ebolaSim.schedule.getSteps();
 
@@ -121,7 +124,7 @@ public class Resident implements Steppable
                     ebolaSim.total_infectious++;
                     ebolaSim.total_exposed--;
                 }
-                this.setHealthStatus(Constants.INFECTIOUS);
+                this.setHealthStatus(Constants.INFECTIOUS, ebolaSim);
             }
             else if(!isMoving())
                 time_to_infectious--;
@@ -143,7 +146,11 @@ public class Resident implements Steppable
                     shouldApplyToETC = false;
                 }
                 //apply for contact tracing
-
+                if(!applied_to_contact_tracing)
+                {
+                    if(ebolaSim.myContactTracerManager.applyForTracing(this))
+                        applied_to_contact_tracing = true;
+                }
             }
             else if (shouldApplyToETC)
                 time_to_apply_to_etc--;
@@ -164,16 +171,17 @@ public class Resident implements Steppable
             else if(time_to_resolution <= 0)
             {
                 if (doomed_to_die) {
-                    setHealthStatus(Constants.DEAD);
-                    ebolaSim.total_infectious--;
-
                     //request Burial and contact traced
                     if(time_to_apply_to_etc > 0)
                     {
                         //TODO apply to get buried and contact traced
+                        ebolaSim.myContactTracerManager.applyForTracing(this);
+                        flag_get_burial = true;
                     }
+                    setHealthStatus(Constants.DEAD, ebolaSim);
+                    ebolaSim.total_infectious--;
                 } else {
-                    setHealthStatus(Constants.RECOVERED);
+                    setHealthStatus(Constants.RECOVERED, ebolaSim);
                     ebolaSim.total_infectious--;
                 }
                 //add your infected count to the xyseries
@@ -218,7 +226,7 @@ public class Resident implements Steppable
                         }
                         if(rand < (contact_rate))//infect this agent
                        	{
-                            resident.setHealthStatus(Constants.EXPOSED);
+                            resident.setHealthStatus(Constants.EXPOSED, ebolaSim);
                             synchronized (ebolaSim)
                             {
                                 ebolaSim.total_exposed++;
@@ -508,13 +516,30 @@ public class Resident implements Steppable
         return healthStatus;
     }
 
-    public void setHealthStatus(int healthStatus) {
+    public void setHealthStatus(int healthStatus, EbolaABM ebolaABM) {
         int old_health_status = this.healthStatus;
         this.healthStatus = healthStatus;
         if(old_health_status == Constants.EXPOSED && this.healthStatus == Constants.INFECTIOUS) {
             if(Parameters.ETC_ON)
             {
                 shouldApplyToETC = true;
+            }
+        }
+        else if(old_health_status == Constants.INFECTIOUS && this.healthStatus == Constants.DEAD) {
+            //perform burial
+            double burial_contact_rate = Parameters.BURIAL_CONTACT_RATE;
+            //decide whether we will apply for a burial
+            if(ebolaABM.random.nextDouble() < Parameters.PERCENT_REQUEST_BURIAL || myETC != null || flag_get_burial) {
+                if(ebolaABM.myBurialTeamManager.applyForBurial(this))
+                    burial_contact_rate = Parameters.SAFE_BURIAL_CONTACT_RATE;
+            }
+            //just stick to household members and maybe relatives
+            for(Resident resident: this.getAllContacts())
+            {
+                if(resident.getHealthStatus() == Constants.SUSCEPTIBLE) {
+                    if(ebolaABM.random.nextDouble() < burial_contact_rate)
+                        resident.setHealthStatus(Constants.EXPOSED, ebolaABM);
+                }
             }
         }
     }
@@ -724,7 +749,7 @@ public class Resident implements Steppable
     {
         //set disease parameters to the ETC
         this.SUSCEPTIBLE_TO_EXPOSED = Parameters.ETC_SUSCEPTIBLE_TO_EXPOSED;
-        this.CASE_FATALITY_RATIO = Parameters.CASE_FATALITY_RATIO;
+        this.CASE_FATALITY_RATIO = Parameters.ETC_CASE_FATALITY_RATIO;
 
         //now move locations to the ETC
         this.setLocation(myETC.getLocation());

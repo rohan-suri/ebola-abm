@@ -11,19 +11,21 @@ public class BurialTeamManager
 	//	Manages burial teams
 
 	private EbolaABM              ebolaABM;
-	private int                   numberOfTeams;
 
 	public  ArrayList<BurialTeam> allTeams;
 	private static final boolean  DEBUG = false;
 
-	public BurialTeamManager(int _numberOfTeams, EbolaABM _ebolaABM)
+	public BurialTeamManager(EbolaABM _ebolaABM)
 	{
 		ebolaABM      = _ebolaABM;
-		numberOfTeams = _numberOfTeams;
-		allTeams      = new ArrayList<BurialTeam>(numberOfTeams);
+		allTeams      = new ArrayList<BurialTeam>();
+	}
 
-		for (int i=0; i < numberOfTeams; i++)
-			allTeams.add(new BurialTeam("Burial team " + i));
+	private void addBurialTeam()
+	{
+		BurialTeam bt = new BurialTeam("Burial Team " + allTeams.size());
+		allTeams.add(bt);
+		ebolaABM.schedule.scheduleRepeating(bt);
 	}
 
 	public boolean applyForBurial(Resident resident)
@@ -39,5 +41,12 @@ public class BurialTeamManager
 			}
 		}
 		return false;
+	}
+
+	public void updateTeams(int hr) {
+		int num_add = (int)Math.round((hr/Parameters.HR_PER_BURIAL_TEAM)) - allTeams.size();
+		for(int i = 0; i < num_add; i++) {
+			this.addBurialTeam();
+		}
 	}
 }

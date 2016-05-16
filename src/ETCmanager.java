@@ -131,7 +131,7 @@ public class ETCmanager implements Steppable
 				}
 				else
 				{
-					//System.out.println("Not opening ETC: " + etc.getName() + " since it's opening date: " + etcOpenDate + " is later than today: " + todayDate);
+//					System.out.println("Not opening ETC: " + etc.getName() + " since it's opening date: " + etcOpenDate + " is later than today: " + todayDate);
 				}
 			}
 			else
@@ -180,7 +180,7 @@ public class ETCmanager implements Steppable
 
 	/**
 	 * @param resident
-	 * @return nearest open and non filled ETC @null if none available
+	 * @return nearest open and non filled TE
 	 */
 	public ETC getNearestETC(Resident resident)
 	{
@@ -206,5 +206,21 @@ public class ETCmanager implements Steppable
 	private static double squareDistance(Int2D a, Int2D b)
 	{
 		return ((a.getX() - b.getX()) * (a.getX() - b.getX())) +((a.getY() - b.getY()) * (a.getY() - b.getY()));
+	}
+
+	public void updateCapacity(int hr) {
+		int current_beds = 0;
+		for(ETC etc: allETCs) {
+			if(etc.isOpen())
+				current_beds += etc.getCapacity();
+		}
+		if(current_beds == 0) return;
+		double scale_to_beds = hr/Parameters.HR_PER_BED;
+		double add_beds_amt = scale_to_beds - current_beds;
+		for(ETC etc: allETCs) {
+			if(etc.isOpen()) {
+				etc.setCapacity(etc.getCapacity() + (int)Math.round((add_beds_amt*(etc.getCapacity()*1.0/current_beds))));
+			}
+		}
 	}
 }

@@ -249,8 +249,6 @@ public class Parameters
     public static double FATALITY_PERIOD_STDEV = 1.0;
     public static boolean INFECT_ONLY_YOUR_STRUCTURE = true;
 
-    public static double PERCENT_CONTACTS_IDENTIFIED = 0.6;
-
     //Case Finding Parameters
     public static double AVG_TIME_TO_REPORT = 6;//TODO find value
     public static double STD_TIME_TO_REPORT = 2;
@@ -262,10 +260,26 @@ public class Parameters
     public static double ETC_CASE_FATALITY_RATIO = 0.5;//According to WHO (TODO get link)
     public static double AVG_TIME_TO_ADMIT = 2.5;//Estimated by CDC
     public static double STD_TIME_TO_ADMIT = 0.5;
+    public static double HR_PER_BED = 0.8333;//WHO
 
-    static final int DAILY_FOLLOW_UPS     = 10;
-    static final int DAYS_BETWEEN_CHECKS  =  2;
-    static final int DAYS_TO_IDENTIFY     =  4;
-    static final int FOLLOW_UP_DAYS       = 21;
-    static final int HOURS_TO_BURY        = 12;
+    //contact tracing parameters
+    public static double PERCENT_CONTACTS_IDENTIFIED = 0.6;
+    public static int DAILY_FOLLOW_UPS     = 10;
+    public static int DAYS_BETWEEN_CHECKS  =  1;
+    public static int DAYS_TO_IDENTIFY     =  4;
+    public static int FOLLOW_UP_DAYS       = 21;
+    public static double HR_PER_CONTACT_TRACING_TEAM = 2;//WHO
+
+    //safe burial parameters
+    public static int HOURS_TO_BURY        = 12;
+    public static double PERCENT_REQUEST_BURIAL = 0.20;
+    public static double HR_PER_BURIAL_TEAM = 4;//WHO
+    public static double BURIAL_CONTACT_RATE = 0.1;
+    public static double SAFE_BURIAL_CONTACT_RATE = 0.01;
+
+
+    //who itnervention allocations
+    public static double PERCENT_ETC = 0.6;
+    public static double PERCENT_CONTACT_TRACING = 0.3;
+    public static double PERCENT_SAFE_BURIALS = 0.1;
 }

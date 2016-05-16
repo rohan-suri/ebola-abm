@@ -11,22 +11,15 @@ public class ContactTracerManager implements Steppable
 	//	Manages teams of contact tracers
 
 	private EbolaABM                      ebolaABM;
-	private int                           numberOfTeams;
 
 	public  ArrayList<ContactTracingTeam> allTeams;
 	private ArrayList<Resident>           masterFollowUpList;
-	private int                           MAX_RESIDENTS_FOLLOWING = numberOfTeams * ContactTracingTeam.getFollowUpCapacity();
-
 	private static final boolean          DEBUG = false;
 
-	public ContactTracerManager(int _numberOfTeams, EbolaABM _ebolaABM)
+	public ContactTracerManager(EbolaABM _ebolaABM)
 	{
 		ebolaABM      = _ebolaABM;
-		numberOfTeams = _numberOfTeams;
-		allTeams      = new ArrayList<ContactTracingTeam>(numberOfTeams);
-
-		for (int i=0; i < numberOfTeams; i++)
-			allTeams.add(new ContactTracingTeam(this, "Team " + i));
+		allTeams      = new ArrayList<ContactTracingTeam>();
 
 		masterFollowUpList = new ArrayList<Resident>();
 	}
@@ -53,7 +46,7 @@ public class ContactTracerManager implements Steppable
 
 		for (Resident contact : contacts)
 		{
-			if (!contact.hasBeenFollowedUp() && masterFollowUpList.size() < MAX_RESIDENTS_FOLLOWING)  // ignore any contacts that have already been followed up
+			if (!contact.hasBeenFollowedUp() && masterFollowUpList.size() < allTeams.size()*ContactTracingTeam.getFollowUpCapacity())  // ignore any contacts that have already been followed up
 			{
 				double prob = ebolaABM.random.nextDouble();
 
@@ -219,7 +212,7 @@ public class ContactTracerManager implements Steppable
 
 		int nTeams = fill.length;
 
-		ContactTracerManager manager = new ContactTracerManager(nTeams, null);
+		ContactTracerManager manager = new ContactTracerManager(null);
 
 		for (int i=0; i<nTeams; i++)
 		{
@@ -256,5 +249,20 @@ public class ContactTracerManager implements Steppable
 			System.out.println(team);
 		}
 		System.out.println("Total Residents after reassign = " + finalResidents);
+	}
+
+	private void addTeam()
+	{
+		ContactTracingTeam ctm = new ContactTracingTeam(this, "Contact Tracing Team " + allTeams.size());
+		ebolaABM.schedule.scheduleRepeating(ctm);
+		allTeams.add(ctm);
+	}
+
+	public void updateTeams(int hr)
+	{
+		int num_add = (int)Math.round((hr/Parameters.HR_PER_CONTACT_TRACING_TEAM)) - allTeams.size();
+		for(int i = 0; i < num_add; i++) {
+			this.addTeam();
+		}
 	}
 }

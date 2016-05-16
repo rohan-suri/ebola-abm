@@ -153,6 +153,10 @@ public class EbolaABM extends SimState
 
     //ETC Manager
     public ETCmanager myETCmanager;
+    public BurialTeamManager myBurialTeamManager;
+    public ContactTracerManager myContactTracerManager;
+    //Human Reource manager
+    public HRManager myHRManager;
 
     public EbolaABM(long seed)
     {
@@ -171,6 +175,11 @@ public class EbolaABM extends SimState
             adminInfectedSeries.add(new HashMap<>());
 			effectiveReproductiveRates.add(new XYSeries("Effective Reproductive Rate"));
         }
+
+        myHRManager = new HRManager(this);
+        myContactTracerManager = new ContactTracerManager(this);
+        myBurialTeamManager = new BurialTeamManager(this);
+
         EbolaBuilder.initializeWorld(this, Parameters.POP_PATH, Parameters.ADMIN_PATH, Parameters.AGE_DIST_PATH);
         readInActualCases(actualGuineaCases, Parameters.ACTUAL_CASES_GUINEA);
         readInActualCases(actualLiberiaCases, Parameters.ACTUAL_CASES_LIBERIA);
@@ -208,7 +217,7 @@ public class EbolaABM extends SimState
                     Bag residents = world.getNeighborsWithinDistance(new Double2D(6045, 4935), 6);
                     Resident resident = (Resident)residents.get(random.nextInt(residents.size()));
                     resident.setWorkDayDestination(null);//effectively make them a toddler
-                    resident.setHealthStatus(Constants.INFECTIOUS);
+                    resident.setHealthStatus(Constants.INFECTIOUS, (EbolaABM)simState);
                     ((EbolaABM)simState).total_infectious++;
                     started_index_case = true;
                 }
