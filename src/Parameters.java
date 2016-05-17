@@ -252,7 +252,7 @@ public class Parameters
     //Case Finding Parameters
     public static double AVG_TIME_TO_REPORT = 6;//TODO find value
     public static double STD_TIME_TO_REPORT = 2;
-    public static double PERCENT_REPORT = 0.75;//CDC Estimated (should go up as the epidemic worsens)
+    public static double PERCENT_REPORT = 0.8;//CDC Estimated (should go up as the epidemic worsens)
 
     //Ebola Treatment Center parameters
     public static boolean ETC_ON = true;
@@ -263,7 +263,7 @@ public class Parameters
     public static double HR_PER_BED = 0.8333;//WHO
 
     //contact tracing parameters
-    public static double PERCENT_CONTACTS_IDENTIFIED = 0.6;
+    public static double PERCENT_CONTACTS_IDENTIFIED = 0.9;
     public static int DAILY_FOLLOW_UPS     = 10;
     public static int DAYS_BETWEEN_CHECKS  =  1;
     public static int DAYS_TO_IDENTIFY     =  4;
@@ -272,9 +272,9 @@ public class Parameters
 
     //safe burial parameters
     public static int HOURS_TO_BURY        = 12;
-    public static double PERCENT_REQUEST_BURIAL = 0.20;
+    public static double PERCENT_REQUEST_BURIAL = 0.40;
     public static double HR_PER_BURIAL_TEAM = 4;//WHO
-    public static double BURIAL_CONTACT_RATE = 0.1;
+    public static double BURIAL_CONTACT_RATE = 0.05;
     public static double SAFE_BURIAL_CONTACT_RATE = 0.01;
 
 
