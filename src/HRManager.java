@@ -78,8 +78,8 @@ public class HRManager implements Steppable
         int days = (int)(steps/24);
         int people_today = hr_by_day.get(days);
         int etc_hr = (int)Math.round(people_today*Parameters.PERCENT_ETC);
-        int safe_burial_hr = (int)Math.round(people_today*Parameters.PERCENT_ETC);
-        int contact_tracing_hr = (int)Math.round(people_today*Parameters.PERCENT_ETC);
+        int safe_burial_hr = (int)Math.round(people_today*Parameters.PERCENT_SAFE_BURIALS);
+        int contact_tracing_hr = (int)Math.round(people_today*Parameters.PERCENT_CONTACT_TRACING);
         ebolaABM.myETCmanager.updateCapacity(etc_hr);
         ebolaABM.myBurialTeamManager.updateTeams(safe_burial_hr);
         ebolaABM.myContactTracerManager.updateTeams(contact_tracing_hr);

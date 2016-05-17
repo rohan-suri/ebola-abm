@@ -264,9 +264,9 @@ public class Parameters
 
     //contact tracing parameters
     public static double PERCENT_CONTACTS_IDENTIFIED = 0.9;
-    public static int DAILY_FOLLOW_UPS     = 10;
+    public static int DAILY_FOLLOW_UPS     = 13;
     public static int DAYS_BETWEEN_CHECKS  =  1;
-    public static int DAYS_TO_IDENTIFY     =  4;
+    public static int DAYS_TO_IDENTIFY     =  1;
     public static int FOLLOW_UP_DAYS       = 21;
     public static double HR_PER_CONTACT_TRACING_TEAM = 2;//WHO
 
@@ -279,7 +279,7 @@ public class Parameters
 
 
     //who itnervention allocations
-    public static double PERCENT_ETC = 0.6;
-    public static double PERCENT_CONTACT_TRACING = 0.3;
-    public static double PERCENT_SAFE_BURIALS = 0.1;
+    public static double PERCENT_ETC = 0.698;
+    public static double PERCENT_CONTACT_TRACING = 0.245;
+    public static double PERCENT_SAFE_BURIALS = 0.167;
 }
